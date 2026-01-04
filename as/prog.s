@@ -3,7 +3,7 @@
 
 _start:
   addi s2, zero, 144
-  add s3, s2, zero
+  addi s3, s2, 0
 
 a:
   addi s3, s3, -72

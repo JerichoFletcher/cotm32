@@ -14,7 +14,7 @@ module inst_mem #(
   logic [`BYTE_WIDTH-1:0] mem_bytes [0:MEM_SIZE*INST_BYTE_COUNT-1];
   wire [ADDR_WIDTH-1:0] mem_addr = i_addr[ADDR_WIDTH+1:2];
 
-  always @* begin
+  always_comb begin
     for (int i = 0; i < INST_BYTE_COUNT; i++) begin
       o_inst[i*`BYTE_WIDTH+:`BYTE_WIDTH] = mem_bytes[mem_addr*INST_BYTE_COUNT+i];
     end
