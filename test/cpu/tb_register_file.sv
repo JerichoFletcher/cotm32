@@ -18,7 +18,8 @@ module tb_register_file;
   wire [XLEN-1:0] rdata [0:NUM_RPORTS-1];
 
   register_file #(
-    .N_RPORTS(NUM_RPORTS)
+    .N_RPORTS(NUM_RPORTS),
+    .N_REGS(NUM_REGS)
   ) dut(
     .i_clk(clk),
     .i_we(we),
@@ -105,25 +106,25 @@ module tb_register_file;
     #(CLK_PD);
     we = '0;
     raddr[0] = 5'h00;
-    assert_eq(rdata[0], '0);
+    assert_eq('0, rdata[0]);
 
     // Test: repeated writes
-    #(CLK_PD)
+    #(CLK_PD);
     waddr = 5'h02;
     wdata = 32'h00000001;
     we = '1;
     raddr[0] = 5'h02;
 
-    #(CLK_PD)
-    assert_eq(rdata[0], 32'h00000001);
+    #(CLK_PD);
+    assert_eq(32'h00000001, rdata[0]);
     wdata = 32'h00000002;
 
-    #(CLK_PD)
-    assert_eq(rdata[0], 32'h00000002);
+    #(CLK_PD);
+    assert_eq(32'h00000002, rdata[0]);
     wdata = 32'h00000003;
 
-    #(CLK_PD)
-    assert_eq(rdata[0], 32'h00000003);
+    #(CLK_PD);
+    assert_eq(32'h00000003, rdata[0]);
 
     #(CLK_PD) $finish;
   end

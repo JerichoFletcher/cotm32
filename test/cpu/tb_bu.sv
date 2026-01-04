@@ -33,42 +33,42 @@ module tb_bu;
     b = 32'd1;
     op = BU_EQ;
 
-    #10 assert_eq(take, 1'b1);
+    #10 assert_eq(1'b1, take);
 
     // take = 1 != 1
     a = 32'd1;
     b = 32'd1;
     op = BU_NE;
 
-    #10 assert_eq(take, 1'b0);
+    #10 assert_eq(1'b0, take);
 
     // take = 2 < 3
     a = 32'd2;
     b = 32'd3;
     op = BU_LT;
 
-    #10 assert_eq(take, 1'b1);
+    #10 assert_eq(1'b1, take);
 
     // take = 2 >= 3
     a = 32'd2;
     b = 32'd3;
     op = BU_GE;
 
-    #10 assert_eq(take, 1'b0);
+    #10 assert_eq(1'b0, take);
     
     // take = -1 u< 3 (eq. I32 max < 3)
     a = -32'd1;
     b = 32'd3;
     op = BU_LTU;
 
-    #10 assert_eq(take, 1'b0);
+    #10 assert_eq(1'b0, take);
 
     // take = -1 u>= 3 (eq. I32 max < 3)
     a = -32'd1;
     b = 32'd3;
     op = BU_GEU;
 
-    #10 assert_eq(take, 1'b1);
+    #10 assert_eq(1'b1, take);
 
     $finish;
   end

@@ -33,70 +33,70 @@ module tb_alu;
     b = 32'd2;
     op = ALU_ADD;
 
-    #10 assert_eq(o, 32'd3);
+    #10 assert_eq(32'd3, o);
 
     // 8 - 3 = 5
     a = 32'd8;
     b = 32'd3;
     op = ALU_SUB;
 
-    #10 assert_eq(o, 32'd5);
+    #10 assert_eq(32'd5, o);
 
     // b01101000 | b01010101 = b01111101
     a = 32'b01101000;
     b = 32'b01010101;
     op = ALU_OR;
 
-    #10 assert_eq(o, 32'b01111101);
+    #10 assert_eq(32'b01111101, o);
 
     // b01101000 & b01010101 = b01000000
     a = 32'b01101000;
     b = 32'b01010101;
     op = ALU_AND;
 
-    #10 assert_eq(o, 32'b01000000);
+    #10 assert_eq(32'b01000000, o);
 
     // b01101000 ^ b01010101 = b00111101
     a = 32'b01101000;
     b = 32'b01010101;
     op = ALU_XOR;
 
-    #10 assert_eq(o, 32'b00111101);
+    #10 assert_eq(32'b00111101, o);
 
     // -30 < 25
     a = -32'd30;
     b = 32'd25;
     op = ALU_SLT;
 
-    #10 assert_eq(o, 32'b1);
+    #10 assert_eq(32'b1, o);
 
     // -30 u< 25 (eq. 98 < 25)
     a = -32'd30;
     b = 32'd25;
     op = ALU_SLTU;
 
-    #10 assert_eq(o, 32'b0);
+    #10 assert_eq(32'b0, o);
 
     // 30 << 2 = 120
     a = 32'd30;
     b = 32'd2;
     op = ALU_SLL;
 
-    #10 assert_eq(o, 32'd120);
+    #10 assert_eq(32'd120, o);
 
     // hffffffff >> 8 = h00ffffff
     a = 32'hffffffff;
     b = 32'd8;
     op = ALU_SRL;
 
-    #10 assert_eq(o, 32'h00ffffff);
+    #10 assert_eq(32'h00ffffff, o);
 
     // -60 >> 2 = -15
     a = -32'd60;
     b = 32'd2;
     op = ALU_SRA;
 
-    #10 assert_eq(o, -32'd15);
+    #10 assert_eq(-32'd15, o);
 
     $finish;
   end

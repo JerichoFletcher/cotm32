@@ -29,33 +29,29 @@ module tb_sign_ext;
     // addi s2, zero, 144
     inst = 32'h09000913;
     sel = IMM_I;
-    #10 assert_eq(imm, 32'd144);
+    #10 assert_eq(32'd144, imm);
 
     // sw s3, -4(sp)
-    #10;
     inst = 32'hff312e23;
     sel = IMM_S;
-    #10 assert_eq(imm, -32'd4);
+    #10 assert_eq(-32'd4, imm);
 
     // beq s2, s3, -8
-    #10;
     inst = 32'hff390ce3;
     sel = IMM_B;
-    #10 assert_eq(imm, -32'd8);
+    #10 assert_eq(-32'd8, imm);
 
     // lui s4, 0xabc
-    #10;
     inst = 32'h00abca37;
     sel = IMM_U;
-    #10 assert_eq(imm, 32'habc000);
+    #10 assert_eq(32'habc000, imm);
 
     // jal zero, -4
-    #10;
     inst = 32'hffdff06f;
     sel = IMM_J;
-    #10; assert_eq(imm, -32'd4);
+    #10; assert_eq(-32'd4, imm);
 
-    #10 $finish;
+    $finish;
   end
 
 endmodule
