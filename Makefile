@@ -32,6 +32,7 @@ LD_FLAGS =
 OBJCOPY = "$(XPACKS_BIN_DIR)/riscv-none-elf-objcopy"
 OBJCOPY_FLAGS_BIN = -O binary
 OBJCOPY_FLAGS_VERILOG = -O verilog
+OBJDUMP = "$(XPACKS_BIN_DIR)/riscv-none-elf-objdump"
 
 RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_ARGS):;@:)
@@ -52,6 +53,8 @@ link: assemble
 objcopy: link
 	@$(OBJCOPY) $(OBJCOPY_FLAGS_BIN) $(LD_OUT_DIR)/$(LD_OUT) $(OBJCOPY_OUT_DIR)/$(OBJCOPY_OUT_BIN)
 	@$(OBJCOPY) $(OBJCOPY_FLAGS_VERILOG) $(LD_OUT_DIR)/$(LD_OUT) $(OBJCOPY_OUT_DIR)/$(OBJCOPY_OUT_VERILOG)
+objdump: link
+	@$(OBJDUMP) -d $(LD_OUT_DIR)/$(LD_OUT)
 
 clean:
 	@rm -f $(IVERILOG_OUT_DIR)/* $(AS_OUT_DIR)/* $(LD_OUT_DIR)/* $(OBJCOPY_OUT_DIR)/*

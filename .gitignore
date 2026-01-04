@@ -1,7 +1,7 @@
 # Build outputs
 out/
 gtkw/
-tb.vcd
+*.vcd
 
 # Dependencies
 xpacks/
