@@ -6,12 +6,14 @@ import cotm32_test_pkg::assert_eq;
 
 module tb_bu;
 
+  logic be;
   logic [XLEN-1:0] a;
   logic [XLEN-1:0] b;
   bu_op_t op;
   wire take;
 
   bu dut(
+    .i_be(be),
     .i_a(a),
     .i_b(b),
     .i_op(op),
@@ -19,7 +21,7 @@ module tb_bu;
   );
 
   always @* begin
-    $display("time %2t, a = %d, b = %d, op = %4b, take = %1b", $time, a, b, op, take);
+    $display("time %2t, bu = %1b, a = %d, b = %d, op = %4b, take = %1b", $time, bu, a, b, op, take);
   end
 
   initial begin
@@ -28,6 +30,8 @@ module tb_bu;
   end
 
   initial begin
+    be = '1;
+
     // take = 1 == 1
     a = 32'd1;
     b = 32'd1;

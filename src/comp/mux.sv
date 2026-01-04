@@ -10,6 +10,13 @@ module mux #(
   output logic [DATA_WIDTH-1:0] o_val
 );
   
+  genvar i;
+  generate
+    for (i = 0; i < N_OPTIONS; i++) begin : val
+      wire [DATA_WIDTH-1:0] v = i_val[i];
+    end
+  endgenerate
+
   assign o_val = i_val[i_sel];
 
 endmodule

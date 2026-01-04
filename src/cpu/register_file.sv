@@ -5,6 +5,7 @@ module register #(
   parameter DATA_WIDTH = XLEN
 ) (
   input logic i_clk,
+  input logic i_rst,
   input logic i_we,
   input logic [DATA_WIDTH-1:0] i_wdata,
   output logic [DATA_WIDTH-1:0] o_qbus
@@ -15,7 +16,9 @@ module register #(
   end
 
   always_ff @(posedge i_clk) begin
-    if (i_we) begin
+    if (i_rst) begin
+      o_qbus <= '0;
+    end else if (i_we) begin
       o_qbus <= i_wdata;
     end
   end
@@ -72,6 +75,7 @@ module register_file #(
   parameter DATA_WIDTH = XLEN
 ) (
   input logic i_clk,
+  input logic i_rst,
   input logic i_we,
   input logic [DATA_WIDTH-1:0] i_wdata,
   input logic [$clog2(N_REGS)-1:0] i_waddr,
@@ -81,6 +85,9 @@ module register_file #(
   
   logic [DATA_WIDTH-1:0] qbus [0:N_REGS-1];
   logic [N_REGS-1:0] we;
+
+  wire [DATA_WIDTH-1:0] rdata_a = o_rdata[0];
+  wire [DATA_WIDTH-1:0] rdata_b = o_rdata[1];
 
   assign qbus[0] = '0;
 
@@ -99,6 +106,7 @@ module register_file #(
         .DATA_WIDTH(DATA_WIDTH)
       ) r(
         .i_clk(i_clk),
+        .i_rst(i_rst),
         .i_we(we[i]),
         .i_wdata(i_wdata),
         .o_qbus(qbus[i])

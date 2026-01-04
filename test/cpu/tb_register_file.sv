@@ -11,6 +11,7 @@ module tb_register_file;
   localparam ADDR_WIDTH = $clog2(NUM_REGS);
 
   logic clk;
+  logic rst;
   logic we;
   logic [XLEN-1:0] wdata;
   logic [ADDR_WIDTH-1:0] waddr;
@@ -22,6 +23,7 @@ module tb_register_file;
     .N_REGS(NUM_REGS)
   ) dut(
     .i_clk(clk),
+    .i_rst(rst),
     .i_we(we),
     .i_wdata(wdata),
     .i_waddr(waddr),
@@ -52,6 +54,7 @@ module tb_register_file;
 
   initial begin
     clk = '0;
+    rst = '0;
     we = '0;
     waddr = '0;
     wdata = '0;
@@ -126,7 +129,13 @@ module tb_register_file;
     #(CLK_PD);
     assert_eq(32'h00000003, rdata[0]);
 
-    #(CLK_PD) $finish;
+    // Test: reset signal
+    rst = '1;
+
+    #(CLK_PD);
+    assert_eq(32'h0, rdata[0]);
+
+    $finish;
   end
 
 endmodule

@@ -9,7 +9,8 @@ module lsu #(
   input logic [DATA_WIDTH-1:0] i_rdata,
   output logic [DATA_WIDTH-1:0] o_wdata,
   output logic [DATA_WIDTH-1:0] o_rdata,
-  output logic [DATA_WIDTH/BYTE_WIDTH-1:0] o_wstrb
+  output logic [DATA_WIDTH/BYTE_WIDTH-1:0] o_wstrb,
+  output logic o_we
 );
 
   always_comb begin
@@ -28,18 +29,22 @@ module lsu #(
       LSU_STORE_B : begin
         o_wdata = {{(3*DATA_WIDTH/4){1'b0}}, i_wdata[DATA_WIDTH/4-1:0]};
         o_wstrb = 4'b0001;
+        o_we = '1;
       end
       LSU_STORE_H : begin
         o_wdata = {{(DATA_WIDTH/2){1'b0}}, i_wdata[DATA_WIDTH/2-1:0]};
         o_wstrb = 4'b0011;
+        o_we = '1;
       end
       LSU_STORE_W : begin
         o_wdata = i_wdata[DATA_WIDTH-1:0];
         o_wstrb = 4'b1111;
+        o_we = '1;
       end
       default     : begin
         o_wdata = i_wdata[DATA_WIDTH-1:0];
         o_wstrb = 4'b0000;
+        o_we = '0;
       end
     endcase
   end

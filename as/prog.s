@@ -2,14 +2,14 @@
 .globl _start
 
 _start:
-  addi s2, zero, 144
-  addi s3, s2, 0
+  li x10, 1
+  li x11, 10
 
-a:
-  addi s3, s3, -72
-  sw s3, -4(sp)
-  beq s2, s3, a
+inc:
+  addi x10, x10, 1
+  blt x10, x11, inc
+  li x11, 0
 
-b:
-  lui s4, 0xabc
-  j b
+dec:
+  addi x10, x10, -1
+  bge x10, x11, dec
