@@ -42,6 +42,19 @@ typedef enum logic [2:0] {
   IMM_J
 } imm_t;
 
+// LSU load-store selectors
+typedef enum logic [3:0] {
+  LSU_LOAD_B,
+  LSU_LOAD_H,
+  LSU_LOAD_W,
+  LSU_LOAD_BU,
+  LSU_LOAD_HU,
+  LSU_STORE_B,
+  LSU_STORE_H,
+  LSU_STORE_W,
+  LSU_NONE
+} lsu_ls_t;
+
 // Opcodes
 typedef enum logic [OPCODE_WIDTH-1:0] {
   OP_ALU    = 7'b0110011,

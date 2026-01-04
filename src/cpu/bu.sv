@@ -9,14 +9,14 @@ module bu (
 );
 
   always_comb begin
-    case (i_op)
-      BU_EQ:  o_take = i_a == i_b;
-      BU_NE:  o_take = i_a != i_b;
-      BU_LT:  o_take = $signed(i_a) < $signed(i_b);
-      BU_GE:  o_take = $signed(i_a) >= $signed(i_b);
-      BU_LTU: o_take = i_a < i_b;
-      BU_GEU: o_take = i_a >= i_b;
-      default: o_take = '0;
+    unique case (i_op)
+      BU_EQ   : o_take = i_a == i_b;
+      BU_NE   : o_take = i_a != i_b;
+      BU_LT   : o_take = $signed(i_a) < $signed(i_b);
+      BU_GE   : o_take = $signed(i_a) >= $signed(i_b);
+      BU_LTU  : o_take = i_a < i_b;
+      BU_GEU  : o_take = i_a >= i_b;
+      default : o_take = '0;
     endcase
   end
 
