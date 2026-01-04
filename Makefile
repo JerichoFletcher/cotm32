@@ -1,6 +1,6 @@
 SRC_FILES = \
-	rtl/**/*.sv
-INCLUDE_DIR = rtl/include
+	src/**/*.sv
+INCLUDE_DIR = src/include
 IVERILOG_OUT_DIR = ./out/iverilog
 IVERILOG_OUT = sim
 
