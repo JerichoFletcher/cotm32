@@ -1,17 +1,9 @@
-`include "defs.svh"
+import cotm32_pkg::*;
 
-typedef enum logic [2:0] {
-  BU_EQ,
-  BU_NE,
-  BU_LT,
-  BU_GE,
-  BU_LTU,
-  BU_GEU
-} bu_op_t;
-
+// Branch unit
 module bu (
-  input logic [`XLEN-1:0] i_a,
-  input logic [`XLEN-1:0] i_b,
+  input logic [XLEN-1:0] i_a,
+  input logic [XLEN-1:0] i_b,
   input bu_op_t i_op,
   output logic o_take
 );

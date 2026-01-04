@@ -1,15 +1,14 @@
 `default_nettype none
 `timescale 1ns/1ns
 
-`include "defs.svh"
-`include "defs_rv32i.svh"
-`include "assert.svh"
+import cotm32_pkg::*;
+import cotm32_test_pkg::assert_eq;
 
 module tb_sign_ext;
 
-  logic [`XLEN-1:0] inst;
+  logic [XLEN-1:0] inst;
   imm_t sel;
-  wire [`XLEN-1:0] imm;
+  wire [XLEN-1:0] imm;
 
   sign_ext dut(
     .i_inst(inst),
@@ -30,31 +29,31 @@ module tb_sign_ext;
     // addi s2, zero, 144
     inst = 32'h09000913;
     sel = IMM_I;
-    #10 `assert(imm, 32'd144);
+    #10 assert_eq(imm, 32'd144);
 
     // sw s3, -4(sp)
     #10;
     inst = 32'hff312e23;
     sel = IMM_S;
-    #10 `assert(imm, -32'd4);
+    #10 assert_eq(imm, -32'd4);
 
     // beq s2, s3, -8
     #10;
     inst = 32'hff390ce3;
     sel = IMM_B;
-    #10 `assert(imm, -32'd8);
+    #10 assert_eq(imm, -32'd8);
 
     // lui s4, 0xabc
     #10;
     inst = 32'h00abca37;
     sel = IMM_U;
-    #10 `assert(imm, 32'habc000);
+    #10 assert_eq(imm, 32'habc000);
 
     // jal zero, -4
     #10;
     inst = 32'hffdff06f;
     sel = IMM_J;
-    #10; `assert(imm, -32'd4);
+    #10; assert_eq(imm, -32'd4);
 
     #10 $finish;
   end

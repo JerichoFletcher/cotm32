@@ -1,23 +1,11 @@
-`include "defs.svh"
+import cotm32_pkg::*;
 
-typedef enum logic [3:0] {
-  ALU_ADD,
-  ALU_SUB,
-  ALU_OR,
-  ALU_AND,
-  ALU_XOR,
-  ALU_SLT,
-  ALU_SLTU,
-  ALU_SLL,
-  ALU_SRL,
-  ALU_SRA
-} alu_op_t;
-
+// Arithmetic-logic unit
 module alu (
-  input logic [`XLEN-1:0] i_a,
-  input logic [`XLEN-1:0] i_b,
+  input logic [XLEN-1:0] i_a,
+  input logic [XLEN-1:0] i_b,
   input alu_op_t i_op,
-  output logic [`XLEN-1:0] o
+  output logic [XLEN-1:0] o
 );
 
   always_comb begin

@@ -1,12 +1,12 @@
-`include "defs.svh"
+import cotm32_pkg::*;
 
 // N-bit multiplexer
 module mux #(
-  parameter NUM_OPTIONS = 2,
-  parameter DATA_WIDTH = `XLEN
+  parameter N_OPTIONS = 2,
+  parameter DATA_WIDTH = XLEN
 ) (
-  input logic [$clog2(NUM_OPTIONS)-1:0] i_sel,
-  input logic [DATA_WIDTH-1:0] i_val [0:NUM_OPTIONS-1],
+  input logic [$clog2(N_OPTIONS)-1:0] i_sel,
+  input logic [DATA_WIDTH-1:0] i_val [0:N_OPTIONS-1],
   output logic [DATA_WIDTH-1:0] o_val
 );
   

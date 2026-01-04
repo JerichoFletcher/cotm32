@@ -1,6 +1,7 @@
 SRC_FILES = \
+	src/cotm32_pkg.sv \
+	test/cotm32_test_pkg.sv \
 	src/**/*.sv
-INCLUDE_DIR = src/include
 IVERILOG_OUT_DIR = ./out/iverilog
 IVERILOG_OUT = sim
 
@@ -16,7 +17,7 @@ OBJCOPY_OUT_VERILOG = prog.verilog
 LD_LINK_FILE = ./as/link.ld
 
 IVERILOG = iverilog
-IVERILOG_FLAGS = -g2012 -I $(INCLUDE_DIR)
+IVERILOG_FLAGS = -g2012
 
 VVP = vvp
 VVP_FLAGS = 
@@ -39,21 +40,20 @@ $(eval $(RUN_ARGS):;@:)
 
 # HDL
 compile:
-	@$(IVERILOG) $(IVERILOG_FLAGS) -o $(IVERILOG_OUT_DIR)/$(IVERILOG_OUT) $(SRC_FILES) $(RUN_ARGS)
+	$(IVERILOG) $(IVERILOG_FLAGS) -o $(IVERILOG_OUT_DIR)/$(IVERILOG_OUT) $(SRC_FILES) $(RUN_ARGS)
 sim: compile
 	@$(VVP) $(VVP_FLAGS) $(IVERILOG_OUT_DIR)/$(IVERILOG_OUT)
-gtkw: sim
 	@$(GTKWAVE) $(GTKWAVE_FLAGS) ./*.vcd
 
 # Assembly
-assemble:
+obj:
 	@$(AS) $(AS_FLAGS) -o $(AS_OUT_DIR)/$(AS_OUT) $(RUN_ARGS)
-link: assemble
+link: obj
 	@$(LD) $(LD_FLAGS) -T $(LD_LINK_FILE) -o $(LD_OUT_DIR)/$(LD_OUT) $(AS_OUT_DIR)/$(AS_OUT)
-objcopy: link
+asbin: link
 	@$(OBJCOPY) $(OBJCOPY_FLAGS_BIN) $(LD_OUT_DIR)/$(LD_OUT) $(OBJCOPY_OUT_DIR)/$(OBJCOPY_OUT_BIN)
 	@$(OBJCOPY) $(OBJCOPY_FLAGS_VERILOG) $(LD_OUT_DIR)/$(LD_OUT) $(OBJCOPY_OUT_DIR)/$(OBJCOPY_OUT_VERILOG)
-objdump: link
+asdump: link
 	@$(OBJDUMP) -d $(LD_OUT_DIR)/$(LD_OUT)
 
 clean:

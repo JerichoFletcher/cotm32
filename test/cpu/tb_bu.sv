@@ -1,13 +1,13 @@
 `default_nettype none
 `timescale 1ns/1ns
 
-`include "defs.svh"
-`include "assert.svh"
+import cotm32_pkg::*;
+import cotm32_test_pkg::assert_eq;
 
 module tb_bu;
 
-  logic [`XLEN-1:0] a;
-  logic [`XLEN-1:0] b;
+  logic [XLEN-1:0] a;
+  logic [XLEN-1:0] b;
   bu_op_t op;
   wire take;
 
@@ -33,42 +33,42 @@ module tb_bu;
     b = 32'd1;
     op = BU_EQ;
 
-    #10 `assert(take, 1'b1);
+    #10 assert_eq(take, 1'b1);
 
     // take = 1 != 1
     a = 32'd1;
     b = 32'd1;
     op = BU_NE;
 
-    #10 `assert(take, 1'b0);
+    #10 assert_eq(take, 1'b0);
 
     // take = 2 < 3
     a = 32'd2;
     b = 32'd3;
     op = BU_LT;
 
-    #10 `assert(take, 1'b1);
+    #10 assert_eq(take, 1'b1);
 
     // take = 2 >= 3
     a = 32'd2;
     b = 32'd3;
     op = BU_GE;
 
-    #10 `assert(take, 1'b0);
+    #10 assert_eq(take, 1'b0);
     
     // take = -1 u< 3 (eq. I32 max < 3)
     a = -32'd1;
     b = 32'd3;
     op = BU_LTU;
 
-    #10 `assert(take, 1'b0);
+    #10 assert_eq(take, 1'b0);
 
     // take = -1 u>= 3 (eq. I32 max < 3)
     a = -32'd1;
     b = 32'd3;
     op = BU_GEU;
 
-    #10 `assert(take, 1'b1);
+    #10 assert_eq(take, 1'b1);
 
     $finish;
   end

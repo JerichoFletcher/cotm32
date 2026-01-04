@@ -1,14 +1,10 @@
-`include "defs.svh"
-`include "defs_rv32i.svh"
+import cotm32_pkg::*;
 
-typedef enum logic [2:0] {
-  IMM_I, IMM_S, IMM_B, IMM_U, IMM_J
-} imm_t;
-
+// Immediate sign extender
 module sign_ext (
-  input logic [`INST_WIDTH-1:0] i_inst,
+  input logic [INST_WIDTH-1:0] i_inst,
   input imm_t i_sel,
-  output logic [`XLEN-1:0] o_imm
+  output logic [XLEN-1:0] o_imm
 );
 
   always_comb begin

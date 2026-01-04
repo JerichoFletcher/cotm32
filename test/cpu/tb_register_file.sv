@@ -1,24 +1,24 @@
 `default_nettype none
 `timescale 1ns/1ns
 
-`include "defs.svh"
-`include "assert.svh"
+import cotm32_pkg::*;
+import cotm32_test_pkg::assert_eq;
 
 module tb_register_file;
 
   localparam NUM_RPORTS = 2;
   localparam CLK_PD = 10;
-  localparam ADDR_WIDTH = $clog2(`NUM_REGS);
+  localparam ADDR_WIDTH = $clog2(NUM_REGS);
 
   logic clk;
   logic we;
-  logic [`XLEN-1:0] wdata;
+  logic [XLEN-1:0] wdata;
   logic [ADDR_WIDTH-1:0] waddr;
   logic [ADDR_WIDTH-1:0] raddr [0:NUM_RPORTS-1];
-  wire [`XLEN-1:0] rdata [0:NUM_RPORTS-1];
+  wire [XLEN-1:0] rdata [0:NUM_RPORTS-1];
 
   register_file #(
-    .NUM_RPORTS(NUM_RPORTS)
+    .N_RPORTS(NUM_RPORTS)
   ) dut(
     .i_clk(clk),
     .i_we(we),
@@ -67,7 +67,7 @@ module tb_register_file;
     #(CLK_PD);
     we = '0;
     raddr[0] = 5'h01;
-    `assert(rdata[0], 32'h12345600);
+    assert_eq(rdata[0], 32'h12345600);
 
     // Test: x15 = 32'habcdef00
     #(CLK_PD);
@@ -79,8 +79,8 @@ module tb_register_file;
     #(CLK_PD);
     we = '0;
     raddr[1] = 5'h0f;
-    `assert(rdata[0], 32'h12345600);
-    `assert(rdata[1], 32'habcdef00);
+    assert_eq(rdata[0], 32'h12345600);
+    assert_eq(rdata[1], 32'habcdef00);
 
     // Test: x31 = 32'haabbccdd;
     #(CLK_PD);
@@ -93,8 +93,8 @@ module tb_register_file;
     we = '0;
     raddr[0] = 5'h1f;
     raddr[1] = 5'h01;
-    `assert(rdata[0], 32'haabbccdd);
-    `assert(rdata[1], 32'h12345600);
+    assert_eq(rdata[0], 32'haabbccdd);
+    assert_eq(rdata[1], 32'h12345600);
 
     // Test: x0 = 32'hccddeeff, A = x0, expect A == '0
     #(CLK_PD);
@@ -105,7 +105,7 @@ module tb_register_file;
     #(CLK_PD);
     we = '0;
     raddr[0] = 5'h00;
-    `assert(rdata[0], '0);
+    assert_eq(rdata[0], '0);
 
     // Test: repeated writes
     #(CLK_PD)
@@ -115,15 +115,15 @@ module tb_register_file;
     raddr[0] = 5'h02;
 
     #(CLK_PD)
-    `assert(rdata[0], 32'h00000001);
+    assert_eq(rdata[0], 32'h00000001);
     wdata = 32'h00000002;
 
     #(CLK_PD)
-    `assert(rdata[0], 32'h00000002);
+    assert_eq(rdata[0], 32'h00000002);
     wdata = 32'h00000003;
 
     #(CLK_PD)
-    `assert(rdata[0], 32'h00000003);
+    assert_eq(rdata[0], 32'h00000003);
 
     #(CLK_PD) $finish;
   end
