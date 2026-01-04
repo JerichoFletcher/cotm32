@@ -1,0 +1,7 @@
+# Build outputs
+out/
+gtkw/
+tb.vcd
+
+# Dependencies
+xpacks/
