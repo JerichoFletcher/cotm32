@@ -1,4 +1,5 @@
 import cotm32_pkg::*;
+import cotm32_priv_pkg::*;
 
 module processor_core (
   input logic i_clk,
@@ -7,6 +8,7 @@ module processor_core (
 
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 
+  // Signals
   logic [XLEN-1:0] pc_out;
   logic [INST_WIDTH-1:0] inst;
 
@@ -81,6 +83,18 @@ module processor_core (
     pc_wb_vals[1] = alu_out;
   end
 
+  // Trap signals
+  wire trap_req;
+  trap_cause_t trap_cause;
+  wire [MXLEN-1:0] trap_tval;
+
+  wire t_illegal_inst;
+  wire t_inst_addr_misaligned;
+  wire t_ecall_m;
+  wire t_ebreak;
+  wire t_load_addr_misaligned;
+  wire t_store_addr_misaligned;
+
   // Program counter
   prog_ctr #(
     .RESET_VECTOR(PC_RESET_VECTOR)
@@ -88,10 +102,11 @@ module processor_core (
     .i_clk(i_clk),
     .i_rst(i_rst),
     .i_addr(pc_wb),
-    .o_addr(pc_out)
+    .o_addr(pc_out),
+    .o_t_inst_addr_misaligned(t_inst_addr_misaligned)
   );
 
-  // Instruction memory
+  // IMEM
   inst_mem #(
     .MEM_SIZE(INST_MEM_SIZE)
   ) im(
@@ -109,8 +124,7 @@ module processor_core (
   // Register file
   register_file #(
     .N_RPORTS(2),
-    .N_REGS(NUM_REGS),
-    .DATA_WIDTH(XLEN)
+    .N_REGS(NUM_REGS)
   ) rf(
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -118,6 +132,7 @@ module processor_core (
     .i_wdata(reg_wb),
     .i_waddr(rd_addr),
     .i_raddr(rs_addr),
+    .i_trap_req(trap_req),
     .o_rdata(rs)
   );
 
@@ -172,12 +187,15 @@ module processor_core (
     .o_rs2_addr(rs2_addr),
     .o_imm_sel(imm_sel),
     .o_lsu_ls(lsu_ls_op),
-    .o_reg_wb_sel(reg_wb_sel)
+    .o_reg_wb_sel(reg_wb_sel),
+    .o_t_illegal_inst(t_illegal_inst),
+    .o_t_ecall_m(t_ecall_m),
+    .o_t_ebreak(t_ebreak)
   );
 
   // DMEM
-  dmem #(
-    .MEM_SIZE(DMEM_MEM_SIZE),
+  data_mem #(
+    .MEM_SIZE(DATA_MEM_SIZE),
     .DATA_WIDTH(XLEN)
   ) mem(
     .i_clk(i_clk),
@@ -189,16 +207,18 @@ module processor_core (
   );
 
   // LSU
-  lsu #(
-    .DATA_WIDTH(XLEN)
-  ) lsu(
+  lsu lsu(
     .i_op(lsu_ls_op),
+    .i_addr(alu_out),
     .i_wdata(rs2),
     .i_rdata(dmem_rdata),
+    .i_trap_req(trap_req),
     .o_wdata(dmem_wdata),
     .o_rdata(lsu_rdata),
     .o_wstrb(dmem_wstrb),
-    .o_we(dmem_we)
+    .o_we(dmem_we),
+    .o_t_load_addr_misaligned(t_load_addr_misaligned),
+    .o_t_store_addr_misaligned(t_store_addr_misaligned)
   );
 
   // Register writeback mux
@@ -219,6 +239,22 @@ module processor_core (
     .i_sel(take_branch),
     .i_val(pc_wb_vals),
     .o_val(pc_wb)
+  );
+
+  // Trap dispatch
+  trap_dispatch td(
+    .i_pc(pc_out),
+    .i_inst(inst),
+    .i_ls_addr(alu_out),
+    .i_illegal_inst(t_illegal_inst),
+    .i_inst_addr_misaligned(t_inst_addr_misaligned),
+    .i_ecall_m(t_ecall_m),
+    .i_ebreak(t_ebreak),
+    .i_load_addr_misaligned(t_load_addr_misaligned),
+    .i_store_addr_misaligned(t_store_addr_misaligned),
+    .o_trap_req(trap_req),
+    .o_trap_cause(trap_cause),
+    .o_trap_tval(trap_tval)
   );
 
 endmodule

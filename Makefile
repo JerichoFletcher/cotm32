@@ -1,7 +1,8 @@
 SRC_FILES = \
-	src/cotm32_pkg.sv \
-	test/cotm32_test_pkg.sv \
-	src/**/*.sv
+	test/*.sv \
+	src/*.sv \
+	src/**/*.sv \
+	src/**/**/*.sv
 IVERILOG_OUT_DIR = ./out/iverilog
 IVERILOG_OUT = sim
 

@@ -10,7 +10,7 @@ parameter NUM_REGS = 32;
 
 parameter PC_RESET_VECTOR = '0;
 parameter INST_MEM_SIZE = 1024;
-parameter DMEM_MEM_SIZE = 4096;
+parameter DATA_MEM_SIZE = 4096;
 
 // ALU operation selector
 typedef enum logic [3:0] {
@@ -103,6 +103,12 @@ typedef enum logic [6:0] {
   OP_MSCMEM = 7'b0001111,
   OP_SYSTEM = 7'b1110011
 } opcode_t;
+
+// Exact instructions
+typedef enum logic [INST_WIDTH-1:0] {
+  INST_EXACT_ECALL  = 32'h00000073,
+  INST_EXACT_EBREAK = 32'h00100073
+} inst_exact_t;
 
 // ALU operations funct7_funct3
 typedef enum logic [9:0] {

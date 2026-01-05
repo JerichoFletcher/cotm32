@@ -6,7 +6,7 @@ import cotm32_pkg::*;
 module tb_processor_core;
 
   localparam CLK_PD = 10;
-  localparam RUN_STEPS = 60;
+  localparam RUN_STEPS = 200;
 
   logic clk;
   logic rst;

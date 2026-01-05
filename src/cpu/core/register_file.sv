@@ -1,14 +1,12 @@
 import cotm32_pkg::*;
 
 // Register
-module register #(
-  parameter DATA_WIDTH = XLEN
-) (
+module register (
   input logic i_clk,
   input logic i_rst,
   input logic i_we,
-  input logic [DATA_WIDTH-1:0] i_wdata,
-  output logic [DATA_WIDTH-1:0] o_qbus
+  input logic [XLEN-1:0] i_wdata,
+  output logic [XLEN-1:0] o_qbus
 );
 
   initial begin
@@ -27,17 +25,16 @@ endmodule
 
 // Register read port
 module register_rport #(
-  parameter N_REGS = NUM_REGS,
-  parameter DATA_WIDTH = XLEN
+  parameter N_REGS = NUM_REGS
 ) (
   input logic [$clog2(N_REGS)-1:0] i_raddr,
-  input logic [DATA_WIDTH-1:0] i_qbus [0:N_REGS-1],
-  output logic [DATA_WIDTH-1:0] o_rdata
+  input logic [XLEN-1:0] i_qbus [0:N_REGS-1],
+  output logic [XLEN-1:0] o_rdata
 );
 
   mux #(
     .N_OPTIONS(N_REGS),
-    .DATA_WIDTH(DATA_WIDTH)
+    .DATA_WIDTH(XLEN)
   ) m(
     .i_sel(i_raddr),
     .i_val(i_qbus),
@@ -71,43 +68,44 @@ endmodule
 // Register file
 module register_file #(
   parameter N_RPORTS = 2,
-  parameter N_REGS = NUM_REGS,
-  parameter DATA_WIDTH = XLEN
+  parameter N_REGS = NUM_REGS
 ) (
   input logic i_clk,
   input logic i_rst,
   input logic i_we,
-  input logic [DATA_WIDTH-1:0] i_wdata,
+  input logic [XLEN-1:0] i_wdata,
   input logic [$clog2(N_REGS)-1:0] i_waddr,
   input logic [$clog2(N_REGS)-1:0] i_raddr [0:N_RPORTS-1],
-  output logic [DATA_WIDTH-1:0] o_rdata [0:N_RPORTS-1]
+
+  input logic i_trap_req,
+
+  output logic [XLEN-1:0] o_rdata [0:N_RPORTS-1]
 );
   
-  logic [DATA_WIDTH-1:0] qbus [0:N_REGS-1];
-  logic [N_REGS-1:0] we;
+  logic [XLEN-1:0] qbus [0:N_REGS-1];
+  logic [N_REGS-1:0] we_vec;
 
-  wire [DATA_WIDTH-1:0] rdata_a = o_rdata[0];
-  wire [DATA_WIDTH-1:0] rdata_b = o_rdata[1];
+  wire we = i_we & ~i_trap_req;
+  wire [XLEN-1:0] rdata_a = o_rdata[0];
+  wire [XLEN-1:0] rdata_b = o_rdata[1];
 
   assign qbus[0] = '0;
 
   register_wport #(
     .N_REGS(N_REGS)
   ) wport(
-    .i_we(i_we),
+    .i_we(we),
     .i_waddr(i_waddr),
-    .o_we(we)
+    .o_we(we_vec)
   );
 
   genvar i;
   generate;
     for (i = 1; i < N_REGS; i++) begin : gen_regs
-      register #(
-        .DATA_WIDTH(DATA_WIDTH)
-      ) r(
+      register r(
         .i_clk(i_clk),
         .i_rst(i_rst),
-        .i_we(we[i]),
+        .i_we(we_vec[i]),
         .i_wdata(i_wdata),
         .o_qbus(qbus[i])
       );
@@ -115,8 +113,7 @@ module register_file #(
 
     for (i = 0; i < N_RPORTS; i++) begin : gen_rports
       register_rport #(
-        .N_REGS(N_REGS),
-        .DATA_WIDTH(DATA_WIDTH)
+        .N_REGS(N_REGS)
       ) rport(
         .i_raddr(i_raddr[i]),
         .i_qbus(qbus),

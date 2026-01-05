@@ -1,8 +1,8 @@
 import cotm32_pkg::*;
 
 // Data memory
-module dmem #(
-  parameter MEM_SIZE = DMEM_MEM_SIZE,
+module data_mem #(
+  parameter MEM_SIZE = DATA_MEM_SIZE,
   parameter DATA_WIDTH = XLEN
 ) (
   input logic i_clk,

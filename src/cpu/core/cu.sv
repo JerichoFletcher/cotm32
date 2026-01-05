@@ -3,6 +3,7 @@ import cotm32_pkg::*;
 // Control unit
 module cu (
   input logic [INST_WIDTH-1:0] i_inst,
+
   output alu_op_t o_alu_op,
   output alu_a_sel_t o_alu_a_sel,
   output alu_b_sel_t o_alu_b_sel,
@@ -14,17 +15,21 @@ module cu (
   output logic [$clog2(NUM_REGS)-1:0] o_rs2_addr,
   output imm_t o_imm_sel,
   output lsu_ls_t o_lsu_ls,
-  output reg_wb_sel_t o_reg_wb_sel
+  output reg_wb_sel_t o_reg_wb_sel,
+
+  output logic o_t_illegal_inst,
+  output logic o_t_ecall_m,
+  output logic o_t_ebreak
 );
 
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 
-  wire [6:0] opcode = i_inst[6:0];
+  wire [6:0] opcode = i_inst[0+:7];
   wire [REG_ADDR_WIDTH-1:0] rd = i_inst[7+:REG_ADDR_WIDTH];
   wire [REG_ADDR_WIDTH-1:0] rs1 = i_inst[15+:REG_ADDR_WIDTH];
   wire [REG_ADDR_WIDTH-1:0] rs2 = i_inst[20+:REG_ADDR_WIDTH];
-  wire [6:0] funct7 = i_inst[31:25];
-  wire [2:0] funct3 = i_inst[14:12];
+  wire [6:0] funct7 = i_inst[25+:7];
+  wire [2:0] funct3 = i_inst[12+:3];
   
   inst_t inst_type;
 
@@ -32,6 +37,9 @@ module cu (
     o_bu_be = '0;
     o_regfile_we = '0;
     o_lsu_ls = LSU_NONE;
+    o_t_illegal_inst = '0;
+    o_t_ecall_m = '0;
+    o_t_ebreak = '0;
 
     unique case (opcode)
       OP_ALU    : begin
@@ -142,8 +150,25 @@ module cu (
         o_reg_wb_sel = REG_WB_PC4;
         o_regfile_we = '1;
       end
-      // OP_MSCMEM :
-      // OP_SYSTEM :
+      OP_MSCMEM : begin
+        $display("MISC-MEM instructions not implemented (%7b)", opcode);
+      end
+      OP_SYSTEM : begin
+        unique case (i_inst)
+          INST_EXACT_ECALL: begin
+            o_t_ecall_m = '1;
+          end
+          INST_EXACT_EBREAK: begin
+            o_t_ebreak = '1;
+          end
+          default: begin
+            o_t_illegal_inst = '1;
+          end
+        endcase
+      end
+      default: begin
+        o_t_illegal_inst = '1;
+      end
     endcase
   end
 
@@ -162,7 +187,7 @@ module cu (
       ALU_F7F3_SRA  : f7f3_to_alu_op = ALU_SRA;
       ALU_F7F3_OR   : f7f3_to_alu_op = ALU_OR;
       ALU_F7F3_AND  : f7f3_to_alu_op = ALU_AND;
-      default   : f7f3_to_alu_op = ALU_ADD;
+      default       : f7f3_to_alu_op = ALU_ADD;
     endcase
   endfunction
 
@@ -175,7 +200,7 @@ module cu (
       ALU_F7F3_SLL[2:0] : begin
         unique case (f7)
           ALU_F7F3_SLL[9:3] : f7f3_to_alui_op = ALU_SLL;
-          default       : f7f3_to_alui_op = ALU_SLL;
+          default           : f7f3_to_alui_op = ALU_SLL;
         endcase
       end
       ALU_F7F3_SLT[2:0] : f7f3_to_alui_op = ALU_SLT;
@@ -190,7 +215,7 @@ module cu (
       end
       ALU_F7F3_OR[2:0]  : f7f3_to_alui_op = ALU_OR;
       ALU_F7F3_AND[2:0] : f7f3_to_alui_op = ALU_AND;
-      default       : f7f3_to_alui_op = ALU_ADD;
+      default           : f7f3_to_alui_op = ALU_ADD;
     endcase
   endfunction
 

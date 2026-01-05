@@ -7,7 +7,8 @@ module prog_ctr #(
   input logic i_clk,
   input logic i_rst,
   input logic [XLEN-1:0] i_addr,
-  output logic [XLEN-1:0] o_addr
+  output logic [XLEN-1:0] o_addr,
+  output logic o_t_inst_addr_misaligned
 );
 
   initial begin
@@ -19,6 +20,13 @@ module prog_ctr #(
       o_addr <= RESET_VECTOR;
     end else begin
       o_addr <= i_addr;
+    end
+  end
+
+  always_comb begin
+    o_t_inst_addr_misaligned = '0;
+    if (i_addr[1:0] != '0) begin
+      o_t_inst_addr_misaligned = '1;
     end
   end
 

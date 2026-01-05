@@ -2,14 +2,25 @@
 .globl _start
 
 _start:
-  li x10, 1
-  li x11, 10
+  li s1, 1
+  li s2, 10
+  li s3, 0
 
 inc:
-  addi x10, x10, 1
-  blt x10, x11, inc
-  li x11, 0
+  sw s1, 0(s3)
+  addi s3, s3, 4
+  addi s1, s1, 1
+  blt s1, s2, inc
+  
+  li s1, 1
+  li s3, 0
 
 dec:
-  addi x10, x10, -1
-  bge x10, x11, dec
+  lw s2, 0(s3)
+  addi s3, s3, 4
+  bne s1, s2, end
+  addi s1, s1, 1
+  j dec
+
+end:
+  ecall
