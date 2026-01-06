@@ -151,7 +151,7 @@ module cu (
         o_regfile_we = '1;
       end
       OP_MSCMEM : begin
-        $display("MISC-MEM instructions not implemented (%7b)", opcode);
+        $error("MISC-MEM instructions not implemented (%7b)", opcode);
       end
       OP_SYSTEM : begin
         unique case (i_inst)

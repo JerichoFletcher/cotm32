@@ -71,6 +71,13 @@ typedef enum logic {
   ALU_B_IMM
 } alu_b_sel_t;
 
+// IFU PC selector
+typedef enum logic [1:0] {
+  IFU_PC_PC4,
+  IFU_PC_BRANCH,
+  IFU_PC_MTVEC
+} ifu_pc_sel_t;
+
 // LSU load-store selectors
 typedef enum logic [3:0] {
   LSU_NONE,

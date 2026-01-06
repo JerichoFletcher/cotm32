@@ -25,8 +25,8 @@ module tb_processor_core;
 
   initial begin
     clk = '0;
-    rst = '0;
-
+    rst = '1;
+    #(CLK_PD) rst = '0;
     #(CLK_PD * RUN_STEPS) $finish;
   end
 

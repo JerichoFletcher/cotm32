@@ -1,0 +1,70 @@
+import cotm32_pkg::*;
+import cotm32_priv_pkg::*;
+
+// Instruction fetch unit
+module inst_fetch #(
+  parameter RESET_VECTOR = '0
+) (
+  input logic i_clk,
+  input logic i_rst,
+  input logic i_take_branch,
+  input logic [XLEN-1:0] i_new_addr,
+
+  input logic i_trap_req,
+  input logic [MXLEN-1:0] i_mtvec,
+
+  output logic [XLEN-1:0] o_addr,
+  output logic [XLEN-1:0] o_addr_4,
+  output logic o_t_inst_addr_misaligned
+);
+
+  localparam PC_MUX_VALS_COUNT = 3;
+
+  ifu_pc_sel_t pc_sel;
+  wire [XLEN-1:0] pc_mux_vals [0:PC_MUX_VALS_COUNT-1];
+  wire [XLEN-1:0] pc_mux_out;
+
+  assign o_addr_4 = o_addr + 'd4;
+
+  assign pc_mux_vals[IFU_PC_PC4] = o_addr_4;
+  assign pc_mux_vals[IFU_PC_BRANCH] = i_new_addr;
+  assign pc_mux_vals[IFU_PC_MTVEC] = i_mtvec;
+
+  mux #(
+    .N_OPTIONS(PC_MUX_VALS_COUNT),
+    .DATA_WIDTH(XLEN)
+  ) m(
+    .i_sel(pc_sel),
+    .i_val(pc_mux_vals),
+    .o_val(pc_mux_out)
+  );
+
+  initial begin
+    o_addr = RESET_VECTOR;
+  end
+
+  always_comb begin
+    pc_sel = IFU_PC_PC4;
+    if (i_trap_req) begin
+      pc_sel = IFU_PC_MTVEC;
+    end else if (i_take_branch) begin
+      pc_sel = IFU_PC_BRANCH;
+    end
+  end
+
+  always_ff @(posedge i_clk) begin
+    if (i_rst) begin
+      o_addr <= RESET_VECTOR;
+    end else begin
+      o_addr <= pc_mux_out;
+    end
+  end
+
+  always_comb begin
+    o_t_inst_addr_misaligned = '0;
+    if (o_addr[1:0] != '0) begin
+      o_t_inst_addr_misaligned = '1;
+    end
+  end
+
+endmodule

@@ -9,7 +9,7 @@ module processor_core (
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 
   // Signals
-  logic [XLEN-1:0] pc_out;
+  logic [XLEN-1:0] pc;
   logic [INST_WIDTH-1:0] inst;
 
   imm_t imm_sel;
@@ -52,9 +52,7 @@ module processor_core (
   logic [XLEN-1:0] reg_wb;
 
   logic [XLEN-1:0] reg_wb_vals [0:3];
-  logic [XLEN-1:0] pc_wb_vals [0:1];
-
-  wire [XLEN-1:0] pc_4 = pc_out + 4;
+  wire [XLEN-1:0] pc_4;
 
   always_comb begin
     rs_addr[0] = rs1_addr;
@@ -63,7 +61,7 @@ module processor_core (
 
   always_comb begin
     alu_a_vals[ALU_A_RS1] = rs1;
-    alu_a_vals[ALU_A_PC] = pc_out;
+    alu_a_vals[ALU_A_PC] = pc;
   end
 
   always_comb begin
@@ -78,11 +76,6 @@ module processor_core (
     reg_wb_vals[REG_WB_LSU] = lsu_rdata;
   end
 
-  always_comb begin
-    pc_wb_vals[0] = pc_4;
-    pc_wb_vals[1] = alu_out;
-  end
-
   // Trap signals
   wire trap_req;
   trap_cause_t trap_cause;
@@ -95,14 +88,18 @@ module processor_core (
   wire t_load_addr_misaligned;
   wire t_store_addr_misaligned;
 
-  // Program counter
-  prog_ctr #(
+  // Instruction fetch unit
+  inst_fetch #(
     .RESET_VECTOR(PC_RESET_VECTOR)
-  ) pc(
+  ) ifu(
     .i_clk(i_clk),
     .i_rst(i_rst),
-    .i_addr(pc_wb),
-    .o_addr(pc_out),
+    .i_take_branch(take_branch),
+    .i_new_addr(alu_out),
+    .i_trap_req(trap_req),
+    .i_mtvec('0),
+    .o_addr(pc),
+    .o_addr_4(pc_4),
     .o_t_inst_addr_misaligned(t_inst_addr_misaligned)
   );
 
@@ -110,7 +107,7 @@ module processor_core (
   inst_mem #(
     .MEM_SIZE(INST_MEM_SIZE)
   ) im(
-    .i_addr(pc_out),
+    .i_addr(pc),
     .o_inst(inst)
   );
 
@@ -231,19 +228,9 @@ module processor_core (
     .o_val(reg_wb)
   );
 
-  // PC writeback mux
-  mux #(
-    .N_OPTIONS(2),
-    .DATA_WIDTH(XLEN)
-  ) mux_pc(
-    .i_sel(take_branch),
-    .i_val(pc_wb_vals),
-    .o_val(pc_wb)
-  );
-
   // Trap dispatch
   trap_dispatch td(
-    .i_pc(pc_out),
+    .i_pc(pc),
     .i_inst(inst),
     .i_ls_addr(alu_out),
     .i_illegal_inst(t_illegal_inst),
