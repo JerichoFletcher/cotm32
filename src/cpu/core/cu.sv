@@ -24,7 +24,7 @@ module cu (
 
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 
-  wire [6:0] opcode = i_inst[0+:7];
+  wire [INST_OPCODE_WIDTH-1:0] opcode = i_inst[0+:INST_OPCODE_WIDTH];
   wire [REG_ADDR_WIDTH-1:0] rd = i_inst[7+:REG_ADDR_WIDTH];
   wire [REG_ADDR_WIDTH-1:0] rs1 = i_inst[15+:REG_ADDR_WIDTH];
   wire [REG_ADDR_WIDTH-1:0] rs2 = i_inst[20+:REG_ADDR_WIDTH];
@@ -187,7 +187,10 @@ module cu (
       ALU_F7F3_SRA  : f7f3_to_alu_op = ALU_SRA;
       ALU_F7F3_OR   : f7f3_to_alu_op = ALU_OR;
       ALU_F7F3_AND  : f7f3_to_alu_op = ALU_AND;
-      default       : f7f3_to_alu_op = ALU_ADD;
+      default       : begin
+        o_t_illegal_inst = '1;
+        f7f3_to_alu_op = ALU_ADD;
+      end
     endcase
   endfunction
 
@@ -200,7 +203,10 @@ module cu (
       ALU_F7F3_SLL[2:0] : begin
         unique case (f7)
           ALU_F7F3_SLL[9:3] : f7f3_to_alui_op = ALU_SLL;
-          default           : f7f3_to_alui_op = ALU_SLL;
+          default           : begin
+            o_t_illegal_inst = '1;
+            f7f3_to_alui_op = ALU_SLL;
+          end
         endcase
       end
       ALU_F7F3_SLT[2:0] : f7f3_to_alui_op = ALU_SLT;
@@ -210,12 +216,18 @@ module cu (
         unique case (f7)
           ALU_F7F3_SRL[9:3] : f7f3_to_alui_op = ALU_SRL;
           ALU_F7F3_SRA[9:3] : f7f3_to_alui_op = ALU_SRA;
-          default       : f7f3_to_alui_op = ALU_SRL;
+          default           : begin
+            o_t_illegal_inst = '1;
+            f7f3_to_alui_op = ALU_SRL;
+          end
         endcase
       end
       ALU_F7F3_OR[2:0]  : f7f3_to_alui_op = ALU_OR;
       ALU_F7F3_AND[2:0] : f7f3_to_alui_op = ALU_AND;
-      default           : f7f3_to_alui_op = ALU_ADD;
+      default           : begin
+        o_t_illegal_inst = '1;
+        f7f3_to_alui_op = ALU_ADD;
+      end
     endcase
   endfunction
 
@@ -226,7 +238,10 @@ module cu (
       LS_F3_W   : f3_to_lsu_l = LSU_LOAD_W;
       LS_F3_BU  : f3_to_lsu_l = LSU_LOAD_BU;
       LS_F3_HU  : f3_to_lsu_l = LSU_LOAD_HU;
-      default   : f3_to_lsu_l = LSU_NONE;
+      default   : begin
+        o_t_illegal_inst = '1;
+        f3_to_lsu_l = LSU_NONE;
+      end
     endcase
   endfunction
 
@@ -235,7 +250,10 @@ module cu (
       LS_F3_B   : f3_to_lsu_s = LSU_STORE_B;
       LS_F3_H   : f3_to_lsu_s = LSU_STORE_H;
       LS_F3_W   : f3_to_lsu_s = LSU_STORE_W;
-      default   : f3_to_lsu_s = LSU_NONE;
+      default   : begin
+        o_t_illegal_inst = '1;
+        f3_to_lsu_s = LSU_NONE;
+      end
     endcase
   endfunction
 
@@ -247,6 +265,10 @@ module cu (
       BU_F3_GE  : f3_to_bu_op = BU_GE;
       BU_F3_LTU : f3_to_bu_op = BU_LTU;
       BU_F3_GEU : f3_to_bu_op = BU_GEU;
+      default   : begin
+        o_t_illegal_inst = '1;
+        f3_to_bu_op = BU_NEVER;
+      end
     endcase
   endfunction
 

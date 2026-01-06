@@ -4,6 +4,8 @@ package cotm32_pkg;
 parameter BYTE_WIDTH = 8;
 parameter INST_WIDTH = 32;
 
+parameter INST_OPCODE_WIDTH = 7;
+
 // Core parameters
 parameter XLEN = 32;
 parameter NUM_REGS = 32;
@@ -29,6 +31,7 @@ typedef enum logic [3:0] {
 // BU operation selector
 typedef enum logic [2:0] {
   BU_ALWAYS,
+  BU_NEVER,
   BU_EQ,
   BU_NE,
   BU_LT,
@@ -70,6 +73,7 @@ typedef enum logic {
 
 // LSU load-store selectors
 typedef enum logic [3:0] {
+  LSU_NONE,
   LSU_LOAD_B,
   LSU_LOAD_H,
   LSU_LOAD_W,
@@ -77,8 +81,7 @@ typedef enum logic [3:0] {
   LSU_LOAD_HU,
   LSU_STORE_B,
   LSU_STORE_H,
-  LSU_STORE_W,
-  LSU_NONE
+  LSU_STORE_W
 } lsu_ls_t;
 
 // Register writeback selectors
@@ -90,7 +93,7 @@ typedef enum logic [1:0] {
 } reg_wb_sel_t;
 
 // Opcodes
-typedef enum logic [6:0] {
+typedef enum logic [INST_OPCODE_WIDTH-1:0] {
   OP_ALU    = 7'b0110011,
   OP_ALUI   = 7'b0010011,
   OP_JALR   = 7'b1100111,

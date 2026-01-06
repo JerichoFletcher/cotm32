@@ -13,6 +13,7 @@ module bu (
     if (i_be) begin
       unique case (i_op)
         BU_ALWAYS : o_take = '1;
+        BU_NEVER  : o_take = '0;
         BU_EQ     : o_take = i_a == i_b;
         BU_NE     : o_take = i_a != i_b;
         BU_LT     : o_take = $signed(i_a) < $signed(i_b);
