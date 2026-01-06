@@ -12,16 +12,15 @@ module inst_fetch #(
 
   input logic i_trap_req,
   input logic [MXLEN-1:0] i_mtvec,
+  input logic [MXLEN-1:0] i_mepc,
 
   output logic [XLEN-1:0] o_addr,
   output logic [XLEN-1:0] o_addr_4,
   output logic o_t_inst_addr_misaligned
 );
 
-  localparam PC_MUX_VALS_COUNT = 3;
-
   ifu_pc_sel_t pc_sel;
-  wire [XLEN-1:0] pc_mux_vals [0:PC_MUX_VALS_COUNT-1];
+  wire [XLEN-1:0] pc_mux_vals [0:IFU_PC_VALCOUNT-1];
   wire [XLEN-1:0] pc_mux_out;
 
   assign o_addr_4 = o_addr + 'd4;
@@ -29,9 +28,10 @@ module inst_fetch #(
   assign pc_mux_vals[IFU_PC_PC4] = o_addr_4;
   assign pc_mux_vals[IFU_PC_BRANCH] = i_new_addr;
   assign pc_mux_vals[IFU_PC_MTVEC] = i_mtvec;
+  assign pc_mux_vals[IFU_PC_MEPC] = i_mepc;
 
   mux #(
-    .N_OPTIONS(PC_MUX_VALS_COUNT),
+    .N_OPTIONS(IFU_PC_VALCOUNT),
     .DATA_WIDTH(XLEN)
   ) m(
     .i_sel(pc_sel),

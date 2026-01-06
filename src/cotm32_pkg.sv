@@ -72,10 +72,12 @@ typedef enum logic {
 } alu_b_sel_t;
 
 // IFU PC selector
-typedef enum logic [1:0] {
+parameter IFU_PC_VALCOUNT = 4;
+typedef enum logic [$clog2(IFU_PC_VALCOUNT)-1:0] {
   IFU_PC_PC4,
   IFU_PC_BRANCH,
-  IFU_PC_MTVEC
+  IFU_PC_MTVEC,
+  IFU_PC_MEPC
 } ifu_pc_sel_t;
 
 // LSU load-store selectors

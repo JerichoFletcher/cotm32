@@ -88,6 +88,8 @@ module processor_core (
   wire t_load_addr_misaligned;
   wire t_store_addr_misaligned;
 
+  wire trap_mode;
+
   // Instruction fetch unit
   inst_fetch #(
     .RESET_VECTOR(PC_RESET_VECTOR)
@@ -242,6 +244,15 @@ module processor_core (
     .o_trap_req(trap_req),
     .o_trap_cause(trap_cause),
     .o_trap_tval(trap_tval)
+  );
+
+  // Trap control unit
+  trap_control tc(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_trap_req(trap_req),
+    .i_mret('0),
+    .o_trap_mode(trap_mode)
   );
 
 endmodule
