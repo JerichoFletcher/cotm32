@@ -10,12 +10,15 @@ parameter INST_OPCODE_WIDTH = 7;
 parameter XLEN = 32;
 parameter NUM_REGS = 32;
 
-parameter PC_RESET_VECTOR = '0;
+parameter PC_RESET_VECTOR = 32'h0000_0000;
 parameter INST_MEM_SIZE = 1024;
+parameter ROM_MEM_SIZE  = 1024;
 parameter DATA_MEM_SIZE = 4096;
 
 parameter INST_MEM_START  = 32'h0000_0000;
 parameter INST_MEM_END    = 32'(INST_MEM_START + INST_MEM_SIZE - 1);
+parameter ROM_MEM_START   = 32'h0001_0000;
+parameter ROM_MEM_END     = 32'(ROM_MEM_START + ROM_MEM_SIZE - 1);
 parameter DATA_MEM_START  = 32'h1000_0000;
 parameter DATA_MEM_END    = 32'(DATA_MEM_START + DATA_MEM_SIZE - 1);
 
@@ -97,6 +100,13 @@ typedef enum logic [$clog2(9)-1:0] {
   LSU_STORE_H,
   LSU_STORE_W
 } lsu_ls_t;
+
+// LSU memory source
+typedef enum logic [$clog2(3)-1:0] {
+  LSU_MEM_SRC_UNKNOWN,
+  LSU_MEM_SRC_ROM,
+  LSU_MEM_SRC_DMEM
+} lsu_mem_src_t;
 
 // Register writeback selectors
 parameter REG_WB_VALCOUNT = 5;

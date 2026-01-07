@@ -14,11 +14,11 @@ module data_mem #(
 );
   
   localparam DATA_BYTE_COUNT = DATA_WIDTH/BYTE_WIDTH;
-  localparam MEM_BYTE_COUNT = MEM_SIZE * DATA_BYTE_COUNT;
-  logic [BYTE_WIDTH-1:0] mem_bytes [0:MEM_BYTE_COUNT-1];
+  localparam MEM_COUNT = MEM_SIZE/DATA_BYTE_COUNT;
+  logic [BYTE_WIDTH-1:0] mem_bytes [0:MEM_SIZE-1];
 
   initial begin
-    for (int i = 0; i < MEM_BYTE_COUNT; i++) begin
+    for (int i = 0; i < MEM_SIZE; i++) begin
       mem_bytes[i] = '0;
     end
   end

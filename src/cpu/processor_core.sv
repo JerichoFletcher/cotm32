@@ -44,7 +44,10 @@ module processor_core (
   logic [XLEN/BYTE_WIDTH-1:0] dmem_wstrb;
   logic [XLEN-1:0] dmem_rdata;
 
+  logic [XLEN-1:0] rom_rdata;
+
   lsu_ls_t lsu_ls_op;
+  logic [XLEN-1:0] lsu_addr;
   logic [XLEN-1:0] lsu_rdata;
 
   reg_wb_sel_t reg_wb_sel;
@@ -133,10 +136,8 @@ module processor_core (
   );
 
   // IMEM
-  inst_mem #(
-    .MEM_SIZE(INST_MEM_SIZE)
-  ) im(
-    .i_inst_addr(pc),
+  inst_mem im(
+    .i_addr(pc),
     .o_inst(inst)
   );
 
@@ -236,10 +237,18 @@ module processor_core (
   ) mem(
     .i_clk(i_clk),
     .i_we(dmem_we),
-    .i_addr(alu_out),
+    .i_addr(lsu_addr),
     .i_wdata(dmem_wdata),
     .i_wstrb(dmem_wstrb),
     .o_rdata(dmem_rdata)
+  );
+
+  // ROM
+  rodata_mem #(
+    .DATA_WIDTH(XLEN)
+  ) rom(
+    .i_addr(lsu_addr),
+    .o_rdata(rom_rdata)
   );
 
   // LSU
@@ -247,12 +256,14 @@ module processor_core (
     .i_op(lsu_ls_op),
     .i_addr(alu_out),
     .i_wdata(rs2),
-    .i_rdata(dmem_rdata),
+    .i_rdata_dmem(dmem_rdata),
+    .i_rdata_rom(rom_rdata),
     .i_trap_req(trap_req),
+    .o_addr(lsu_addr),
     .o_wdata(dmem_wdata),
     .o_rdata(lsu_rdata),
     .o_wstrb(dmem_wstrb),
-    .o_we(dmem_we),
+    .o_we_dmem(dmem_we),
     .o_t_load_addr_misaligned(t_load_addr_misaligned),
     .o_t_store_addr_misaligned(t_store_addr_misaligned)
   );

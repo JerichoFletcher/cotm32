@@ -99,6 +99,10 @@ module cu (
         o_imm_sel = IMM_I;
         o_alu_op = ALU_ADD;
 
+        // Always take branch
+        o_bu_op = BU_ALWAYS;
+        o_bu_be = '1;
+
         // Write back from PC+4 to register
         o_reg_wb_sel = REG_WB_PC4;
         o_regfile_we = '1;

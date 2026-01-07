@@ -9,8 +9,6 @@ IVERILOG_OUT = sim
 
 AS_DIR = ./as
 AS_OUT_DIR = ./out
-LD_OUT_DIR = ./out
-OBJCOPY_OUT_DIR = ./out
 
 IVERILOG = iverilog
 IVERILOG_FLAGS = -g2012
@@ -27,12 +25,12 @@ AS_FLAGS = -march=rv32i_zicsr -mabi=ilp32
 LD = "$(XPACKS_BIN_DIR)/riscv-none-elf-ld"
 LD_FLAGS = 
 OBJCOPY = "$(XPACKS_BIN_DIR)/riscv-none-elf-objcopy"
-OBJCOPY_FLAGS_BIN = -O binary
 OBJCOPY_FLAGS_VERILOG = -O verilog
 OBJDUMP = "$(XPACKS_BIN_DIR)/riscv-none-elf-objdump"
 
 RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_ARGS):;@:)
+FILENAME := $(notdir $(basename $(RUN_ARGS)))
 
 # HDL
 compile:
@@ -43,14 +41,14 @@ sim: compile
 
 # Assembly
 obj:
-	@$(AS) $(AS_FLAGS) -o $(AS_OUT_DIR)/$(RUN_ARGS:.s=.o) $(RUN_ARGS)
+	@$(AS) $(AS_FLAGS) -o $(AS_OUT_DIR)/$(FILENAME).o $(RUN_ARGS)
 link: obj
-	@$(LD) $(LD_FLAGS) -T $(RUN_ARGS:.s=.ld) -o $(LD_OUT_DIR)/$(RUN_ARGS:.s=.elf) $(AS_OUT_DIR)/$(RUN_ARGS:.s=.o)
+	@$(LD) $(LD_FLAGS) -T $(RUN_ARGS:.s=.ld) -o $(AS_OUT_DIR)/$(FILENAME).elf $(AS_OUT_DIR)/$(FILENAME).o
 asbin: link
-	@$(OBJCOPY) $(OBJCOPY_FLAGS_BIN) $(LD_OUT_DIR)/$(RUN_ARGS:.s=.elf) $(OBJCOPY_OUT_DIR)/$(RUN_ARGS:.s=.bin)
-	@$(OBJCOPY) $(OBJCOPY_FLAGS_VERILOG) $(LD_OUT_DIR)/$(RUN_ARGS:.s=.elf) $(OBJCOPY_OUT_DIR)/$(RUN_ARGS:.s=.verilog)
+	@$(OBJCOPY) $(OBJCOPY_FLAGS_VERILOG) -j .text $(AS_OUT_DIR)/$(FILENAME).elf $(AS_OUT_DIR)/$(FILENAME)-text.verilog
+	@$(OBJCOPY) $(OBJCOPY_FLAGS_VERILOG) -j .rodata $(AS_OUT_DIR)/$(FILENAME).elf $(AS_OUT_DIR)/$(FILENAME)-rodata.verilog
 asdump: link
-	@$(OBJDUMP) -d $(LD_OUT_DIR)/$(RUN_ARGS:.s=.elf)
+	@$(OBJDUMP) -d $(AS_OUT_DIR)/$(FILENAME).elf
 
 clean:
-	@rm -f $(IVERILOG_OUT_DIR)/* $(AS_OUT_DIR)/* $(LD_OUT_DIR)/* $(OBJCOPY_OUT_DIR)/*
+	@rm -f $(IVERILOG_OUT_DIR)/* $(AS_OUT_DIR)/*

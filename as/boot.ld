@@ -1,14 +1,17 @@
 ENTRY(_start)
 
 MEMORY {
-  ROM (rx)  : ORIGIN = 0x00000000, LENGTH = 1K
-  RAM (rwx) : ORIGIN = 0x10000000, LENGTH = 4K
+  IMEM (rx) : ORIGIN = 0x00000000, LENGTH = 1K
+  ROM (rx)  : ORIGIN = 0x00010000, LENGTH = 1K
+  DMEM (rwx): ORIGIN = 0x10000000, LENGTH = 4K
 }
 
 SECTIONS {
+  . = ORIGIN(IMEM);
+  .text   : { *(.text*) } > IMEM
+
   . = ORIGIN(ROM);
-  .text   : { *(.text*) } > ROM
   .rodata : { *(.rodata*) } > ROM
 
-  _estack = ORIGIN(RAM) + LENGTH(RAM);
+  _estack = ORIGIN(DMEM) + LENGTH(DMEM);
 }

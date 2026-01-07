@@ -25,9 +25,11 @@ module tb_processor_core;
 
   initial begin
     $display(
-      "Memory sections:\nIMEM [%8h:%8h]\nDMEM [%8h:%8h]",
+      "Memory sections:\nIMEM [%8h:%8h]\nROM  [%8h:%8h]\nDMEM [%8h:%8h]",
       INST_MEM_START,
       INST_MEM_END,
+      ROM_MEM_START,
+      ROM_MEM_END,
       DATA_MEM_START,
       DATA_MEM_END
     );
