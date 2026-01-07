@@ -20,7 +20,7 @@ module register_file #(
   
   import cotm32_pkg::*;
 
-  logic [XLEN-1:0] qbus [0:N_REGS-1];
+  logic [XLEN-1:0] qbus [0:N_REGS-1] /* verilator public */;
   logic [N_REGS-1:0] we_vec;
 
   wire we = i_we & ~i_trap_req;

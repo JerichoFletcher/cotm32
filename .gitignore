@@ -1,5 +1,8 @@
 # Build outputs
 out/
 gtkw/
-obj_dir/
+build/
 *.vcd
+
+# Local settings
+.vscode/settings.json

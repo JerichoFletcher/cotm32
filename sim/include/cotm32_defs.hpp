@@ -1,0 +1,14 @@
+#pragma once
+
+#define INST_MEM_SIZE   1024
+#define ROM_MEM_SIZE    1024
+#define DATA_MEM_SIZE   4096
+
+#define INST_MEM_START  0x00000000
+#define INST_MEM_END    (INST_MEM_START + INST_MEM_SIZE - 1)
+#define ROM_MEM_START   0x00010000
+#define ROM_MEM_END     (ROM_MEM_START + ROM_MEM_SIZE - 1)
+#define DATA_MEM_START  0x10000000
+#define DATA_MEM_END    (DATA_MEM_START + DATA_MEM_SIZE - 1)
+
+

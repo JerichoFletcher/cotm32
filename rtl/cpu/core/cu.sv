@@ -54,12 +54,12 @@ module cu (
   wire [6:0] funct7 = i_inst[25+:7];
   wire [2:0] funct3 = i_inst[12+:3];
 
-  inst_t inst_type;
-
   assign o_csr_addr = zicsr_csr_addr_t'(i_inst[20+:ZICSR_CSR_ADDR_WIDTH]);
   assign o_csr_zimm = {27'b0, i_inst[19:15]};
 
   always_comb begin
+    bit invalid = 0;
+
     o_bu_be = '0;
     o_regfile_we = '0;
     o_lsu_ls = LSU_NONE;
@@ -81,7 +81,8 @@ module cu (
         // ALU A = RS1, B = RS2
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_RS2;
-        o_alu_op = f7f3_to_alu_op(funct7, funct3);
+        o_alu_op = f7f3_to_alu_op(funct7, funct3, invalid);
+        if (invalid) o_t_illegal_inst = '1;
 
         // Write back from ALU to register
         o_reg_wb_sel = REG_WB_ALU;
@@ -96,7 +97,8 @@ module cu (
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_I;
-        o_alu_op = f7f3_to_alui_op(funct7, funct3);
+        o_alu_op = f7f3_to_alui_op(funct7, funct3, invalid);
+        if (invalid) o_t_illegal_inst = '1;
 
         // Write back from ALU to register
         o_reg_wb_sel = REG_WB_ALU;
@@ -133,7 +135,8 @@ module cu (
         o_alu_op = ALU_ADD;
 
         // Write back from LSU to register
-        o_lsu_ls = f3_to_lsu_l(funct3);
+        o_lsu_ls = f3_to_lsu_l(funct3, invalid);
+        if (invalid) o_t_illegal_inst = '1;
         o_reg_wb_sel = REG_WB_LSU;
         o_regfile_we = '1;
       end
@@ -149,7 +152,8 @@ module cu (
         o_alu_op = ALU_ADD;
 
         // Write from RS2 to LSU
-        o_lsu_ls = f3_to_lsu_s(funct3);
+        o_lsu_ls = f3_to_lsu_s(funct3, invalid);
+        if (invalid) o_t_illegal_inst = '1;
       end
       OP_BRANCH : begin
         // Read from RS1, RS2
@@ -163,7 +167,8 @@ module cu (
         o_alu_op = ALU_ADD;
 
         // Enable branching
-        o_bu_op = f3_to_bu_op(funct3);
+        o_bu_op = f3_to_bu_op(funct3, invalid);
+        if (invalid) o_t_illegal_inst = '1;
         o_bu_be = '1;
       end
       OP_LUI    : begin
@@ -292,7 +297,8 @@ module cu (
 
   function alu_op_t f7f3_to_alu_op(
     input logic [6:0] f7,
-    input logic [2:0] f3
+    input logic [2:0] f3,
+    ref bit invalid
   );
     unique case (alu_f7_f3_t'({f7, f3}))
       ALU_F7F3_ADD  : f7f3_to_alu_op = ALU_ADD;
@@ -306,7 +312,7 @@ module cu (
       ALU_F7F3_OR   : f7f3_to_alu_op = ALU_OR;
       ALU_F7F3_AND  : f7f3_to_alu_op = ALU_AND;
       default       : begin
-        o_t_illegal_inst = '1;
+        invalid = 1;
         f7f3_to_alu_op = ALU_ADD;
       end
     endcase
@@ -314,7 +320,8 @@ module cu (
 
   function alu_op_t f7f3_to_alui_op(
     input logic [6:0] f7,
-    input logic [2:0] f3
+    input logic [2:0] f3,
+    ref bit invalid
   );
     unique case (f3)
       ALU_F7F3_ADD[2:0] : f7f3_to_alui_op = ALU_ADD;
@@ -322,7 +329,7 @@ module cu (
         unique case (f7)
           ALU_F7F3_SLL[9:3] : f7f3_to_alui_op = ALU_SLL;
           default           : begin
-            o_t_illegal_inst = '1;
+            invalid = 1;
             f7f3_to_alui_op = ALU_SLL;
           end
         endcase
@@ -335,7 +342,7 @@ module cu (
           ALU_F7F3_SRL[9:3] : f7f3_to_alui_op = ALU_SRL;
           ALU_F7F3_SRA[9:3] : f7f3_to_alui_op = ALU_SRA;
           default           : begin
-            o_t_illegal_inst = '1;
+            invalid = 1;
             f7f3_to_alui_op = ALU_SRL;
           end
         endcase
@@ -343,13 +350,13 @@ module cu (
       ALU_F7F3_OR[2:0]  : f7f3_to_alui_op = ALU_OR;
       ALU_F7F3_AND[2:0] : f7f3_to_alui_op = ALU_AND;
       default           : begin
-        o_t_illegal_inst = '1;
+        invalid = 1;
         f7f3_to_alui_op = ALU_ADD;
       end
     endcase
   endfunction
 
-  function lsu_ls_t f3_to_lsu_l(input logic [2:0] f3);
+  function lsu_ls_t f3_to_lsu_l(input logic [2:0] f3, ref bit invalid);
     unique case (f3)
       LS_F3_B   : f3_to_lsu_l = LSU_LOAD_B;
       LS_F3_H   : f3_to_lsu_l = LSU_LOAD_H;
@@ -357,25 +364,25 @@ module cu (
       LS_F3_BU  : f3_to_lsu_l = LSU_LOAD_BU;
       LS_F3_HU  : f3_to_lsu_l = LSU_LOAD_HU;
       default   : begin
-        o_t_illegal_inst = '1;
+        invalid = 1;
         f3_to_lsu_l = LSU_NONE;
       end
     endcase
   endfunction
 
-  function lsu_ls_t f3_to_lsu_s(input logic [2:0] f3);
+  function lsu_ls_t f3_to_lsu_s(input logic [2:0] f3, ref bit invalid);
     unique case (f3)
       LS_F3_B   : f3_to_lsu_s = LSU_STORE_B;
       LS_F3_H   : f3_to_lsu_s = LSU_STORE_H;
       LS_F3_W   : f3_to_lsu_s = LSU_STORE_W;
       default   : begin
-        o_t_illegal_inst = '1;
+        invalid = 1;
         f3_to_lsu_s = LSU_NONE;
       end
     endcase
   endfunction
 
-  function bu_op_t f3_to_bu_op(input logic [2:0] f3);
+  function bu_op_t f3_to_bu_op(input logic [2:0] f3, ref bit invalid);
     unique case (f3)
       BU_F3_EQ  : f3_to_bu_op = BU_EQ;
       BU_F3_NE  : f3_to_bu_op = BU_NE;
@@ -384,7 +391,7 @@ module cu (
       BU_F3_LTU : f3_to_bu_op = BU_LTU;
       BU_F3_GEU : f3_to_bu_op = BU_GEU;
       default   : begin
-        o_t_illegal_inst = '1;
+        invalid = 1;
         f3_to_bu_op = BU_NEVER;
       end
     endcase

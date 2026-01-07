@@ -9,12 +9,12 @@ module processor_core (
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 
   // Signals
-  logic [XLEN-1:0] pc;
-  logic [INST_WIDTH-1:0] inst;
+  logic [XLEN-1:0] pc /* verilator public */;
+  logic [INST_WIDTH-1:0] inst /* verilator public */;
 
-  imm_t imm_sel;
-  logic [XLEN-1:0] imm;
-  wire [XLEN-1:0] rs [0:1];
+  imm_t imm_sel /* verilator public */;
+  logic [XLEN-1:0] imm /* verilator public */;
+  wire [XLEN-1:0] rs [0:1] /* verilator public */;
   wire [XLEN-1:0] rs1 = rs[0];
   wire [XLEN-1:0] rs2 = rs[1];
 

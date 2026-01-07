@@ -1,0 +1,121 @@
+cmake_minimum_required(VERSION 3.16)
+project(cotm32 CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
+# Dependencies
+find_package(SDL2 REQUIRED)
+find_package(VERILATOR REQUIRED)
+
+find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
+find_program(RISCV_OBJCOPY  riscv64-unknown-elf-objcopy REQUIRED)
+
+# Bootloader
+set(BOOT_SRC  ${CMAKE_SOURCE_DIR}/sw/boot/boot.s)
+set(BOOT_LD   ${CMAKE_SOURCE_DIR}/sw/boot/boot.ld)
+set(BOOT_ELF  ${CMAKE_BINARY_DIR}/boot.elf)
+set(BOOT_BIN  ${CMAKE_BINARY_DIR}/boot.bin)
+
+add_custom_command(
+  OUTPUT ${BOOT_BIN}
+  COMMAND ${RISCV_GCC}
+    -march=rv32i_zicsr
+    -mabi=ilp32
+    -nostdlib
+    -T ${BOOT_LD}
+    -o ${BOOT_ELF}
+    ${BOOT_SRC}
+  COMMAND ${RISCV_OBJCOPY}
+    -O binary
+    ${BOOT_ELF}
+    ${BOOT_BIN}
+  DEPENDS
+    ${BOOT_SRC}
+    ${BOOT_LD}
+  COMMENT "Building RISC-V bootloader"
+)
+
+add_custom_target(bootloader ALL
+  DEPENDS ${BOOT_BIN}
+)
+
+# Verilator model
+set(CXX_SOURCES
+  sim/src/main.cpp
+  sim/src/vtop_adapter.cpp
+  sim/src/load_elf.cpp
+)
+
+set(RTL_SOURCES
+  rtl/cotm32_pkg.sv
+  rtl/cotm32_priv_pkg.sv
+  rtl/comp/dec.sv
+  rtl/comp/mux.sv
+  rtl/cpu/cotm32.sv
+  rtl/cpu/processor_core.sv
+  rtl/cpu/core/alu.sv
+  rtl/cpu/core/bu.sv
+  rtl/cpu/core/cu.sv
+  rtl/cpu/core/data_mem.sv
+  rtl/cpu/core/inst_fetch.sv
+  rtl/cpu/core/inst_mem.sv
+  rtl/cpu/core/lsu.sv
+  rtl/cpu/core/rodata_mem.sv
+  rtl/cpu/core/sign_ext.sv
+  rtl/cpu/core/register/register.sv
+  rtl/cpu/core/register/register_rport.sv
+  rtl/cpu/core/register/register_wport.sv
+  rtl/cpu/core/register/register_file.sv
+  rtl/cpu/priv/csr_file.sv
+  rtl/cpu/priv/trap_control.sv
+  rtl/cpu/priv/trap_dispatch.sv
+)
+
+add_executable(cotm32
+  ${CXX_SOURCES}
+
+  sim/third_party/imgui/imgui.cpp
+  sim/third_party/imgui/imgui_draw.cpp
+  sim/third_party/imgui/imgui_tables.cpp
+  sim/third_party/imgui/imgui_widgets.cpp
+  
+  sim/third_party/imgui/backends/imgui_impl_sdl2.cpp
+  sim/third_party/imgui/backends/imgui_impl_opengl3.cpp
+)
+
+verilate(cotm32
+  SOURCES ${RTL_SOURCES}    
+  TOP_MODULE cotm32
+  PREFIX Vtop
+  VERILATOR_ARGS
+    "-Wno-LATCH"
+    "-Wno-CASEINCOMPLETE"
+    "-Wno-MULTIDRIVEN"
+    "-Wno-WIDTHEXPAND"
+  TRACE
+)
+
+add_dependencies(cotm32 bootloader)
+
+# Target definitions
+target_sources(cotm32 PRIVATE
+  ${CXX_SOURCES}
+  ${RTL_SOURCES}
+)
+
+target_compile_definitions(cotm32 PRIVATE
+  BOOT_ROM_PATH="${BOOT_ELF}"
+)
+
+target_include_directories(cotm32 PRIVATE
+  sim/include
+  sim/third_party/imgui
+  sim/third_party/imgui/backends
+  ${SDL2_INCLUDE_DIRS}
+)
+
+target_link_libraries(cotm32 PRIVATE
+  ${SDL2_LIBRARIES}
+  GL
+)

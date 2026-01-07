@@ -13,7 +13,7 @@ module inst_mem (
   localparam INST_COUNT = INST_MEM_SIZE/INST_BYTE_COUNT;
   localparam ADDR_WIDTH = $clog2(INST_MEM_SIZE);
 
-  logic [BYTE_WIDTH-1:0] mem_bytes [INST_MEM_START:INST_MEM_END];
+  logic [BYTE_WIDTH-1:0] mem_bytes [INST_MEM_START:INST_MEM_END] /* verilator public_flat_rw */;
   wire [ADDR_WIDTH-1:0] mem_addr = i_addr[ADDR_WIDTH+1:2];
 
   always_comb begin
@@ -22,11 +22,11 @@ module inst_mem (
     end
   end
 
-  initial begin
-    for (int i = 0; i < INST_MEM_SIZE; i++) begin
-      mem_bytes[i] = '0;
-    end
-    $readmemh(INST_MEM_SRC_PATH, mem_bytes, INST_MEM_START, INST_MEM_END);
-  end
+  // initial begin
+  //   for (int i = 0; i < INST_MEM_SIZE; i++) begin
+  //     mem_bytes[i] = '0;
+  //   end
+  //   $readmemh(INST_MEM_SRC_PATH, mem_bytes, INST_MEM_START, INST_MEM_END);
+  // end
 
 endmodule

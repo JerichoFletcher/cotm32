@@ -14,7 +14,7 @@ module rodata_mem #(
   localparam ROM_COUNT = ROM_MEM_SIZE/ROM_BYTE_COUNT;
   localparam ADDR_WIDTH = $clog2(ROM_MEM_SIZE);
 
-  logic [BYTE_WIDTH-1:0] mem_bytes [ROM_MEM_START:ROM_MEM_END];
+  logic [BYTE_WIDTH-1:0] mem_bytes [ROM_MEM_START:ROM_MEM_END] /* verilator public_flat_rw */;
   wire [ADDR_WIDTH-1:0] mem_addr = i_addr[ADDR_WIDTH+1:2];
 
   always_comb begin
@@ -23,11 +23,11 @@ module rodata_mem #(
     end
   end
 
-  initial begin
-    for (int i = 0; i < ROM_MEM_SIZE; i++) begin
-      mem_bytes[i] = '0;
-    end
-    $readmemh(ROM_MEM_SRC_PATH, mem_bytes, ROM_MEM_START, ROM_MEM_END);
-  end
+  // initial begin
+  //   for (int i = 0; i < ROM_MEM_SIZE; i++) begin
+  //     mem_bytes[i] = '0;
+  //   end
+  //   $readmemh(ROM_MEM_SRC_PATH, mem_bytes, ROM_MEM_START, ROM_MEM_END);
+  // end
 
 endmodule
