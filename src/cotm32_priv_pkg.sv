@@ -23,7 +23,8 @@ typedef enum logic [ZICSR_CSR_ADDR_WIDTH-1:0] {
 } zicsr_csr_addr_t;
 
 // Zicsr CSR operation
-typedef enum logic [$clog2(3)-1:0] {
+typedef enum logic [$clog2(4)-1:0] {
+  ZICSR_CSR_OP_NONE,
   ZICSR_CSR_OP_RW,
   ZICSR_CSR_OP_RS,
   ZICSR_CSR_OP_RC

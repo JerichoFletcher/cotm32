@@ -73,7 +73,7 @@ module processor_core (
     reg_wb_vals[REG_WB_ALU] = alu_out;
     reg_wb_vals[REG_WB_PC4] = pc_4;
     reg_wb_vals[REG_WB_LSU] = lsu_rdata;
-    reg_wb_vals[REG_WB_CSR] = '0;
+    reg_wb_vals[REG_WB_CSR] = csr_rdata;
   end
 
   // Trap signals
@@ -81,7 +81,10 @@ module processor_core (
   trap_cause_t trap_cause;
   wire [MXLEN-1:0] trap_tval;
 
-  wire t_illegal_inst;
+  wire cu_t_illegal_inst;
+  wire csr_t_illegal_inst;
+
+  wire t_illegal_inst = cu_t_illegal_inst | csr_t_illegal_inst;
   wire t_inst_addr_misaligned;
   wire t_ecall_m;
   wire t_ebreak;
@@ -117,8 +120,11 @@ module processor_core (
     .i_rst(i_rst),
     .i_take_branch(take_branch),
     .i_new_addr(alu_out),
+
     .i_trap_req(trap_req),
-    .i_mtvec(32'b0),
+    .i_mtvec(csr_mtvec),
+    .i_mepc(csr_mepc),
+
     .o_addr(pc),
     .o_addr_4(pc_4),
     .o_t_inst_addr_misaligned(t_inst_addr_misaligned)
@@ -213,7 +219,7 @@ module processor_core (
     .o_csr_op(csr_op),
     .o_csr_zimm(csr_zimm),
 
-    .o_t_illegal_inst(t_illegal_inst),
+    .o_t_illegal_inst(cu_t_illegal_inst),
     .o_t_ecall_m(t_ecall_m),
     .o_t_ebreak(t_ebreak)
   );
@@ -291,8 +297,8 @@ module processor_core (
     .o_val(csr_wdata)
   );
 
-  // CSR
-  csr #(
+  // CSR file
+  csr_file #(
     .CSR_REG_WIDTH(MXLEN)
   ) csr(
     .i_clk(i_clk),
@@ -309,7 +315,9 @@ module processor_core (
 
     .o_rdata(csr_rdata),
     .o_mtvec(csr_mtvec),
-    .o_mepc(csr_mepc)
+    .o_mepc(csr_mepc),
+
+    .o_t_illegal_inst(csr_t_illegal_inst)
   );
 
 endmodule

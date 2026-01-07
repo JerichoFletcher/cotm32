@@ -48,6 +48,7 @@ module cu (
     o_regfile_we = '0;
     o_lsu_ls = LSU_NONE;
     o_csr_we = '0;
+    o_csr_op = ZICSR_CSR_OP_NONE;
 
     o_t_illegal_inst = '0;
     o_t_ecall_m = '0;
@@ -192,7 +193,7 @@ module cu (
         o_regfile_we = '1;
       end
       OP_MSCMEM : begin
-        $error("MISC-MEM instructions not implemented (%7b)", opcode);
+        // TODO: Implement
       end
       OP_SYSTEM : begin
         unique case (i_inst)
