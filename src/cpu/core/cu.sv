@@ -4,6 +4,7 @@ import cotm32_priv_pkg::*;
 // Control unit
 module cu (
   input logic [INST_WIDTH-1:0] i_inst,
+  input logic i_trap_mode,
 
   output alu_op_t o_alu_op,
   output alu_a_sel_t o_alu_a_sel,
@@ -26,7 +27,8 @@ module cu (
 
   output logic o_t_illegal_inst,
   output logic o_t_ecall_m,
-  output logic o_t_ebreak
+  output logic o_t_ebreak,
+  output logic o_trap_mret
 );
 
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
@@ -53,6 +55,7 @@ module cu (
     o_t_illegal_inst = '0;
     o_t_ecall_m = '0;
     o_t_ebreak = '0;
+    o_trap_mret = '0;
 
     unique case (opcode)
       OP_ALU    : begin
@@ -204,6 +207,13 @@ module cu (
           INST_EXACT_EBREAK: begin
             // Dispatch an ebreak trap request
             o_t_ebreak = '1;
+          end
+          INST_EXACT_MRET: begin
+            if (i_trap_mode) begin
+              o_trap_mret = '1;
+            end else begin
+              o_t_illegal_inst = '1;
+            end
           end
           default: begin
             // Write to RD

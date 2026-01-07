@@ -10,6 +10,7 @@ module inst_fetch #(
   input logic i_take_branch,
   input logic [XLEN-1:0] i_new_addr,
 
+  input logic i_trap_mret,
   input logic i_trap_req,
   input logic [MXLEN-1:0] i_mtvec,
   input logic [MXLEN-1:0] i_mepc,
@@ -47,6 +48,8 @@ module inst_fetch #(
     pc_sel = IFU_PC_PC4;
     if (i_trap_req) begin
       pc_sel = IFU_PC_MTVEC;
+    end if (i_trap_mret) begin
+      pc_sel = IFU_PC_MEPC;
     end else if (i_take_branch) begin
       pc_sel = IFU_PC_BRANCH;
     end

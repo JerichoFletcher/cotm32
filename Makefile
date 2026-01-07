@@ -16,8 +16,6 @@ LD_OUT = prog.elf
 OBJCOPY_OUT_BIN = prog.bin
 OBJCOPY_OUT_VERILOG = prog.verilog
 
-LD_LINK_FILE = ./as/link.ld
-
 IVERILOG = iverilog
 IVERILOG_FLAGS = -g2012
 
@@ -51,7 +49,7 @@ sim: compile
 obj:
 	@$(AS) $(AS_FLAGS) -o $(AS_OUT_DIR)/$(AS_OUT) $(RUN_ARGS)
 link: obj
-	@$(LD) $(LD_FLAGS) -T $(LD_LINK_FILE) -o $(LD_OUT_DIR)/$(LD_OUT) $(AS_OUT_DIR)/$(AS_OUT)
+	@$(LD) $(LD_FLAGS) -T $(RUN_ARGS:.s=.ld) -o $(LD_OUT_DIR)/$(LD_OUT) $(AS_OUT_DIR)/$(AS_OUT)
 asbin: link
 	@$(OBJCOPY) $(OBJCOPY_FLAGS_BIN) $(LD_OUT_DIR)/$(LD_OUT) $(OBJCOPY_OUT_DIR)/$(OBJCOPY_OUT_BIN)
 	@$(OBJCOPY) $(OBJCOPY_FLAGS_VERILOG) $(LD_OUT_DIR)/$(LD_OUT) $(OBJCOPY_OUT_DIR)/$(OBJCOPY_OUT_VERILOG)

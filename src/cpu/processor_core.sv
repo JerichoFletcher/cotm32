@@ -77,6 +77,7 @@ module processor_core (
   end
 
   // Trap signals
+  wire trap_mret;
   wire trap_req;
   trap_cause_t trap_cause;
   wire [MXLEN-1:0] trap_tval;
@@ -121,6 +122,7 @@ module processor_core (
     .i_take_branch(take_branch),
     .i_new_addr(alu_out),
 
+    .i_trap_mret(trap_mret),
     .i_trap_req(trap_req),
     .i_mtvec(csr_mtvec),
     .i_mepc(csr_mepc),
@@ -200,6 +202,8 @@ module processor_core (
   // CU
   cu cu(
     .i_inst(inst),
+    .i_trap_mode(trap_mode),
+
     .o_alu_op(alu_op),
     .o_alu_a_sel(alu_a_sel),
     .o_alu_b_sel(alu_b_sel),
@@ -221,7 +225,8 @@ module processor_core (
 
     .o_t_illegal_inst(cu_t_illegal_inst),
     .o_t_ecall_m(t_ecall_m),
-    .o_t_ebreak(t_ebreak)
+    .o_t_ebreak(t_ebreak),
+    .o_trap_mret(trap_mret)
   );
 
   // DMEM
@@ -282,8 +287,8 @@ module processor_core (
   trap_control tc(
     .i_clk(i_clk),
     .i_rst(i_rst),
+    .i_trap_mret(trap_mret),
     .i_trap_req(trap_req),
-    .i_mret('0),
     .o_trap_mode(trap_mode)
   );
 

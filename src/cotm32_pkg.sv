@@ -121,7 +121,8 @@ typedef enum logic [INST_OPCODE_WIDTH-1:0] {
 // Exact instructions
 typedef enum logic [INST_WIDTH-1:0] {
   INST_EXACT_ECALL  = 32'h00000073,
-  INST_EXACT_EBREAK = 32'h00100073
+  INST_EXACT_EBREAK = 32'h00100073,
+  INST_EXACT_MRET   = 32'h30200073
 } inst_exact_t;
 
 // ALU operations funct7_funct3

@@ -4,8 +4,8 @@ import cotm32_pkg::*;
 module trap_control (
   input logic i_clk,
   input logic i_rst,
+  input logic i_trap_mret,
   input logic i_trap_req,
-  input logic i_mret,
 
   output logic o_trap_mode
 );
@@ -19,7 +19,7 @@ module trap_control (
       o_trap_mode <= '0;
     end else if (i_trap_req) begin
       o_trap_mode <= '1;
-    end else if (i_mret) begin
+    end else if (i_trap_mret) begin
       o_trap_mode <= '0;
     end
   end
