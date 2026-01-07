@@ -20,7 +20,7 @@ stall:
   j     stall
 
 trap_entry:
-  # Establish stack and store registers
+  # Establish stack frame and store registers
   addi  sp, sp, -16
   sw    ra, 12(sp)
   sw    t0, 8(sp)
@@ -36,7 +36,7 @@ trap_entry:
   jr    t2
   
 trap_ret:
-  # Restore registers and tear down stack
+  # Restore registers and tear down stack frame
   lw    t2, 0(sp)
   lw    t1, 4(sp)
   lw    t0, 8(sp)
@@ -67,10 +67,10 @@ trap_handle_ecall_m:
   csrr  t0, mepc
   addi  t0, t0, 4
   csrw  mepc, t0
-  j trap_ret
+  j     trap_ret
 
 trap_handle_reserved:
-  j trap_handle_reserved
+  j     trap_handle_reserved
 
 .section .rodata
 trap_table:

@@ -6,13 +6,10 @@ import cotm32_test_pkg::assert_eq;
 
 module tb_inst_mem;
 
-  localparam MEM_SIZE = 1024;
   logic [$clog2(MEM_SIZE)-1:0] addr;
   logic [INST_WIDTH-1:0] inst;
   
-  inst_mem #(
-    .MEM_SIZE(MEM_SIZE)
-  ) dut(
+  inst_mem dut(
     .i_addr(addr),
     .o_inst(inst)
   );

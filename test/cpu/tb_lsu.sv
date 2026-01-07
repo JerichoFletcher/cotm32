@@ -7,16 +7,20 @@ import cotm32_test_pkg::assert_eq;
 module tb_lsu;
 
   lsu_ls_t op;
+  logic [XLEN-1:0] i_addr;
   logic [XLEN-1:0] i_wdata;
   logic [XLEN-1:0] i_rdata;
+  wire [XLEN-1:0] o_addr;
   wire [XLEN-1:0] o_wdata;
   wire [XLEN-1:0] o_rdata;
   wire [XLEN/BYTE_WIDTH-1:0] wstrb;
 
   lsu dut(
     .i_op(op),
+    .i_addr(i_addr),
     .i_wdata(i_wdata),
-    .i_rdata(i_rdata),
+    .i_rdata_dmem(i_rdata),
+    .o_addr(o_addr),
     .o_wdata(o_wdata),
     .o_rdata(o_rdata),
     .o_wstrb(wstrb)
@@ -41,6 +45,7 @@ module tb_lsu;
   end
 
   initial begin
+    i_addr = DATA_MEM_START + '0;
     i_wdata = '0;
     i_rdata = '0;
     op = LSU_NONE;

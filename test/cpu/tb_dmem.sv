@@ -17,7 +17,7 @@ module tb_dmem;
   logic [DATA_BYTE_COUNT-1:0] wstrb;
   wire [XLEN-1:0] rdata;
 
-  dmem #(
+  data_mem #(
     .MEM_SIZE(MEM_SIZE)
   ) dut(
     .i_clk(clk),
