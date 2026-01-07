@@ -8,13 +8,9 @@ IVERILOG_OUT_DIR = ./out/iverilog
 IVERILOG_OUT = sim
 
 AS_DIR = ./as
-AS_OUT_DIR = ./out/as
-LD_OUT_DIR = ./out/as
-OBJCOPY_OUT_DIR = ./out/as
-AS_OUT = prog.o
-LD_OUT = prog.elf
-OBJCOPY_OUT_BIN = prog.bin
-OBJCOPY_OUT_VERILOG = prog.verilog
+AS_OUT_DIR = ./out
+LD_OUT_DIR = ./out
+OBJCOPY_OUT_DIR = ./out
 
 IVERILOG = iverilog
 IVERILOG_FLAGS = -g2012
@@ -47,14 +43,14 @@ sim: compile
 
 # Assembly
 obj:
-	@$(AS) $(AS_FLAGS) -o $(AS_OUT_DIR)/$(AS_OUT) $(RUN_ARGS)
+	@$(AS) $(AS_FLAGS) -o $(AS_OUT_DIR)/$(RUN_ARGS:.s=.o) $(RUN_ARGS)
 link: obj
-	@$(LD) $(LD_FLAGS) -T $(RUN_ARGS:.s=.ld) -o $(LD_OUT_DIR)/$(LD_OUT) $(AS_OUT_DIR)/$(AS_OUT)
+	@$(LD) $(LD_FLAGS) -T $(RUN_ARGS:.s=.ld) -o $(LD_OUT_DIR)/$(RUN_ARGS:.s=.elf) $(AS_OUT_DIR)/$(RUN_ARGS:.s=.o)
 asbin: link
-	@$(OBJCOPY) $(OBJCOPY_FLAGS_BIN) $(LD_OUT_DIR)/$(LD_OUT) $(OBJCOPY_OUT_DIR)/$(OBJCOPY_OUT_BIN)
-	@$(OBJCOPY) $(OBJCOPY_FLAGS_VERILOG) $(LD_OUT_DIR)/$(LD_OUT) $(OBJCOPY_OUT_DIR)/$(OBJCOPY_OUT_VERILOG)
+	@$(OBJCOPY) $(OBJCOPY_FLAGS_BIN) $(LD_OUT_DIR)/$(RUN_ARGS:.s=.elf) $(OBJCOPY_OUT_DIR)/$(RUN_ARGS:.s=.bin)
+	@$(OBJCOPY) $(OBJCOPY_FLAGS_VERILOG) $(LD_OUT_DIR)/$(RUN_ARGS:.s=.elf) $(OBJCOPY_OUT_DIR)/$(RUN_ARGS:.s=.verilog)
 asdump: link
-	@$(OBJDUMP) -d $(LD_OUT_DIR)/$(LD_OUT)
+	@$(OBJDUMP) -d $(LD_OUT_DIR)/$(RUN_ARGS:.s=.elf)
 
 clean:
 	@rm -f $(IVERILOG_OUT_DIR)/* $(AS_OUT_DIR)/* $(LD_OUT_DIR)/* $(OBJCOPY_OUT_DIR)/*

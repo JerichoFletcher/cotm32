@@ -14,6 +14,11 @@ parameter PC_RESET_VECTOR = '0;
 parameter INST_MEM_SIZE = 1024;
 parameter DATA_MEM_SIZE = 4096;
 
+parameter INST_MEM_START  = 32'h0000_0000;
+parameter INST_MEM_END    = 32'(INST_MEM_START + INST_MEM_SIZE - 1);
+parameter DATA_MEM_START  = 32'h1000_0000;
+parameter DATA_MEM_END    = 32'(DATA_MEM_START + DATA_MEM_SIZE - 1);
+
 // ALU operation selector
 typedef enum logic [$clog2(10)-1:0] {
   ALU_ADD,

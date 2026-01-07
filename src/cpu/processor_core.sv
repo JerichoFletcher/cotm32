@@ -136,7 +136,7 @@ module processor_core (
   inst_mem #(
     .MEM_SIZE(INST_MEM_SIZE)
   ) im(
-    .i_addr(pc),
+    .i_inst_addr(pc),
     .o_inst(inst)
   );
 
