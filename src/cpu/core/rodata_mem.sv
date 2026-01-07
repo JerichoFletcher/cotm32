@@ -1,4 +1,4 @@
-import cotm32_pkg::*;
+import cotm32_pkg::XLEN;
 
 // Read-only memory
 module rodata_mem #(
@@ -7,6 +7,8 @@ module rodata_mem #(
   input logic [XLEN-1:0] i_addr,
   output logic [DATA_WIDTH-1:0] o_rdata
 );
+
+  import cotm32_pkg::*;
 
   localparam ROM_BYTE_COUNT = DATA_WIDTH/BYTE_WIDTH;
   localparam ROM_COUNT = ROM_MEM_SIZE/ROM_BYTE_COUNT;
@@ -28,4 +30,4 @@ module rodata_mem #(
     $readmemh(ROM_MEM_SRC_PATH, mem_bytes, ROM_MEM_START, ROM_MEM_END);
   end
 
-endmodule;
+endmodule

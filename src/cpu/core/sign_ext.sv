@@ -1,4 +1,6 @@
-import cotm32_pkg::*;
+import cotm32_pkg::XLEN;
+import cotm32_pkg::INST_WIDTH;
+import cotm32_pkg::imm_t;
 
 // Immediate sign extender
 module sign_ext (
@@ -6,6 +8,8 @@ module sign_ext (
   input imm_t i_sel,
   output logic [XLEN-1:0] o_imm
 );
+
+  import cotm32_pkg::*;
 
   always_comb begin
     unique case (i_sel)

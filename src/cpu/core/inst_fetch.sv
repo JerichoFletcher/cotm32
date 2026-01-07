@@ -1,5 +1,5 @@
-import cotm32_pkg::*;
-import cotm32_priv_pkg::*;
+import cotm32_pkg::XLEN;
+import cotm32_priv_pkg::MXLEN;
 
 // Instruction fetch unit
 module inst_fetch #(
@@ -19,6 +19,9 @@ module inst_fetch #(
   output logic [XLEN-1:0] o_addr_4,
   output logic o_t_inst_addr_misaligned
 );
+
+  import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
 
   ifu_pc_sel_t pc_sel;
   wire [XLEN-1:0] pc_mux_vals [0:IFU_PC_VALCOUNT-1];

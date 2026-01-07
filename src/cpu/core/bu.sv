@@ -1,4 +1,5 @@
-import cotm32_pkg::*;
+import cotm32_pkg::XLEN;
+import cotm32_pkg::bu_op_t;
 
 // Branch unit
 module bu (
@@ -8,6 +9,8 @@ module bu (
   input bu_op_t i_op,
   output logic o_take
 );
+
+  import cotm32_pkg::*;
 
   always_comb begin
     if (i_be) begin

@@ -1,4 +1,5 @@
-import cotm32_pkg::*;
+import cotm32_pkg::XLEN;
+import cotm32_pkg::alu_op_t;
 
 // Arithmetic-logic unit
 module alu (
@@ -7,6 +8,8 @@ module alu (
   input alu_op_t i_op,
   output logic [XLEN-1:0] o
 );
+
+  import cotm32_pkg::*;
 
   always_comb begin
     unique case (i_op)

@@ -1,7 +1,5 @@
 # Build outputs
 out/
 gtkw/
+obj_dir/
 *.vcd
-
-# Dependencies
-xpacks/

@@ -1,5 +1,16 @@
-import cotm32_pkg::*;
-import cotm32_priv_pkg::*;
+import cotm32_pkg::INST_WIDTH;
+import cotm32_pkg::NUM_REGS;
+import cotm32_pkg::alu_op_t;
+import cotm32_pkg::alu_a_sel_t;
+import cotm32_pkg::alu_b_sel_t;
+import cotm32_pkg::bu_op_t;
+import cotm32_pkg::imm_t;
+import cotm32_pkg::lsu_ls_t;
+import cotm32_pkg::reg_wb_sel_t;
+import cotm32_priv_pkg::MXLEN;
+import cotm32_priv_pkg::zicsr_data_sel_t;
+import cotm32_priv_pkg::zicsr_csr_addr_t;
+import cotm32_priv_pkg::zicsr_csr_op_t;
 
 // Control unit
 module cu (
@@ -30,6 +41,9 @@ module cu (
   output logic o_t_ebreak,
   output logic o_trap_mret
 );
+
+  import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
 
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 

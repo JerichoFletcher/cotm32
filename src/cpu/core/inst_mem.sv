@@ -1,10 +1,13 @@
-import cotm32_pkg::*;
+import cotm32_pkg::XLEN;
+import cotm32_pkg::INST_WIDTH;
 
 // Instruction memory
 module inst_mem (
   input logic [XLEN-1:0] i_addr,
   output logic [INST_WIDTH-1:0] o_inst
 );
+
+  import cotm32_pkg::*;
 
   localparam INST_BYTE_COUNT = INST_WIDTH/BYTE_WIDTH;
   localparam INST_COUNT = INST_MEM_SIZE/INST_BYTE_COUNT;
@@ -26,4 +29,4 @@ module inst_mem (
     $readmemh(INST_MEM_SRC_PATH, mem_bytes, INST_MEM_START, INST_MEM_END);
   end
 
-endmodule;
+endmodule

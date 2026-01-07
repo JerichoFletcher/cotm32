@@ -1,10 +1,10 @@
-import cotm32_pkg::*;
-import cotm32_priv_pkg::*;
-
 module processor_core (
   input logic i_clk,
   input logic i_rst
 );
+
+  import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
 
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 

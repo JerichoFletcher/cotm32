@@ -1,4 +1,4 @@
-import cotm32_pkg::*;
+import cotm32_pkg::XLEN;
 
 // N-bit multiplexer
 module mux #(
@@ -9,6 +9,8 @@ module mux #(
   input logic [DATA_WIDTH-1:0] i_val [0:N_OPTIONS-1],
   output logic [DATA_WIDTH-1:0] o_val
 );
+
+  import cotm32_pkg::*;
   
   genvar i;
   generate

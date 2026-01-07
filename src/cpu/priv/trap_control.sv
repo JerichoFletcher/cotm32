@@ -1,5 +1,3 @@
-import cotm32_pkg::*;
-
 // Trap control unit
 module trap_control (
   input logic i_clk,
@@ -9,6 +7,8 @@ module trap_control (
 
   output logic o_trap_mode
 );
+
+  import cotm32_pkg::*;
 
   initial begin
     o_trap_mode = '0;

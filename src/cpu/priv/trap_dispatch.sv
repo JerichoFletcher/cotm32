@@ -1,5 +1,6 @@
-import cotm32_pkg::*;
-import cotm32_priv_pkg::*;
+import cotm32_pkg::XLEN;
+import cotm32_priv_pkg::MXLEN;
+import cotm32_priv_pkg::trap_cause_t;
 
 // Trap dispatch
 module trap_dispatch (
@@ -18,6 +19,9 @@ module trap_dispatch (
   output trap_cause_t o_trap_cause,
   output logic [MXLEN-1:0] o_trap_tval
 );
+
+  import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
 
   always_comb begin
     o_trap_req = '0;

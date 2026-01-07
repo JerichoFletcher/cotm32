@@ -1,5 +1,7 @@
-import cotm32_pkg::*;
-import cotm32_priv_pkg::*;
+import cotm32_priv_pkg::MXLEN;
+import cotm32_priv_pkg::zicsr_csr_op_t;
+import cotm32_priv_pkg::zicsr_csr_addr_t;
+import cotm32_priv_pkg::trap_cause_t;
 
 module csr_file #(
   parameter CSR_REG_WIDTH = MXLEN
@@ -22,6 +24,9 @@ module csr_file #(
 
   output logic o_t_illegal_inst
 );
+
+  import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
 
   localparam CSR_N = 4;
   localparam CSR_MTVEC_IDX  = 0;

@@ -1,4 +1,6 @@
-import cotm32_pkg::*;
+import cotm32_pkg::BYTE_WIDTH;
+import cotm32_pkg::XLEN;
+import cotm32_pkg::lsu_ls_t;
 
 // Load-store unit
 module lsu (
@@ -19,6 +21,8 @@ module lsu (
   output logic o_t_load_addr_misaligned,
   output logic o_t_store_addr_misaligned
 );
+
+  import cotm32_pkg::*;
 
   lsu_mem_src_t mem_src;
   logic [XLEN-1:0] mem_rdata;
