@@ -1,4 +1,5 @@
 import cotm32_pkg::*;
+import cotm32_priv_pkg::*;
 
 // Control unit
 module cu (
@@ -17,6 +18,12 @@ module cu (
   output lsu_ls_t o_lsu_ls,
   output reg_wb_sel_t o_reg_wb_sel,
 
+  output logic o_csr_we,
+  output zicsr_data_sel_t o_csr_data_sel,
+  output zicsr_csr_addr_t o_csr_addr,
+  output zicsr_csr_op_t o_csr_op,
+  output logic [MXLEN-1:0] o_csr_zimm,
+
   output logic o_t_illegal_inst,
   output logic o_t_ecall_m,
   output logic o_t_ebreak
@@ -30,123 +37,157 @@ module cu (
   wire [REG_ADDR_WIDTH-1:0] rs2 = i_inst[20+:REG_ADDR_WIDTH];
   wire [6:0] funct7 = i_inst[25+:7];
   wire [2:0] funct3 = i_inst[12+:3];
-  
+
   inst_t inst_type;
+
+  assign o_csr_addr = zicsr_csr_addr_t'(i_inst[20+:ZICSR_CSR_ADDR_WIDTH]);
+  assign o_csr_zimm = {27'b0, i_inst[19:15]};
 
   always_comb begin
     o_bu_be = '0;
     o_regfile_we = '0;
     o_lsu_ls = LSU_NONE;
+    o_csr_we = '0;
+
     o_t_illegal_inst = '0;
     o_t_ecall_m = '0;
     o_t_ebreak = '0;
 
     unique case (opcode)
       OP_ALU    : begin
+        // Read from RS1, RS2; write to RD
         o_rd_addr = rd;
         o_rs1_addr = rs1;
         o_rs2_addr = rs2;
 
+        // ALU A = RS1, B = RS2
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_RS2;
-
         o_alu_op = f7f3_to_alu_op(funct7, funct3);
+
+        // Write back from ALU to register
         o_reg_wb_sel = REG_WB_ALU;
         o_regfile_we = '1;
       end
       OP_ALUI   : begin
+        // Read from RS1; write to RD
         o_rd_addr = rd;
         o_rs1_addr = rs1;
 
+        // ALU A = RS1, B = imm
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_I;
-
         o_alu_op = f7f3_to_alui_op(funct7, funct3);
+
+        // Write back from ALU to register
         o_reg_wb_sel = REG_WB_ALU;
         o_regfile_we = '1;
       end
       OP_JALR   : begin
+        // Read from RS1; write to RD
         o_rd_addr = rd;
         o_rs1_addr = rs1;
 
+        // ALU A = RS1, B = imm
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_I;
-
         o_alu_op = ALU_ADD;
+
+        // Write back from PC+4 to register
         o_reg_wb_sel = REG_WB_PC4;
         o_regfile_we = '1;
       end
       OP_LOAD   : begin
+        // Read from RS1; write to RD
         o_rd_addr = rd;
         o_rs1_addr = rs1;
 
+        // ALU A = RS1, B = imm
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_I;
-
         o_alu_op = ALU_ADD;
+
+        // Write back from LSU to register
         o_lsu_ls = f3_to_lsu_l(funct3);
         o_reg_wb_sel = REG_WB_LSU;
         o_regfile_we = '1;
       end
       OP_STORE  : begin
+        // Read from RS1, RS2
         o_rs1_addr = rs1;
         o_rs2_addr = rs2;
 
+        // ALU A = RS1, B = imm
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_S;
-
         o_alu_op = ALU_ADD;
+
+        // Write from RS2 to LSU
         o_lsu_ls = f3_to_lsu_s(funct3);
       end
       OP_BRANCH : begin
+        // Read from RS1, RS2
         o_rs1_addr = rs1;
         o_rs2_addr = rs2;
 
+        // ALU A = PC, B = imm
         o_alu_a_sel = ALU_A_PC;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_B;
-
         o_alu_op = ALU_ADD;
+
+        // Enable branching
         o_bu_op = f3_to_bu_op(funct3);
         o_bu_be = '1;
       end
       OP_LUI    : begin
+        // Read from zero; write to RD
         o_rd_addr = rd;
         o_rs1_addr = '0;
 
+        // ALU A = zero, B = imm
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_U;
-
         o_alu_op = ALU_ADD;
+
+        // Write back from ALU to register
         o_reg_wb_sel = REG_WB_ALU;
         o_regfile_we = '1;
       end
       OP_AUIPC  : begin
+        // Write to RD
         o_rd_addr = rd;
 
+        // ALU A = PC, B = imm
         o_alu_a_sel = ALU_A_PC;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_U;
-
         o_alu_op = ALU_ADD;
+
+        // Write back from ALU to register
         o_reg_wb_sel = REG_WB_ALU;
         o_regfile_we = '1;
       end
       OP_JAL    : begin
+        // Write to RD
         o_rd_addr = rd;
+
+        // ALU A = PC, B = imm
         o_alu_a_sel = ALU_A_PC;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_J;
-
         o_alu_op = ALU_ADD;
+
+        // Always take branch
         o_bu_op = BU_ALWAYS;
         o_bu_be = '1;
 
+        // Write back from PC+4 to register
         o_reg_wb_sel = REG_WB_PC4;
         o_regfile_we = '1;
       end
@@ -156,13 +197,61 @@ module cu (
       OP_SYSTEM : begin
         unique case (i_inst)
           INST_EXACT_ECALL: begin
+            // Dispatch an ecall trap request
             o_t_ecall_m = '1;
           end
           INST_EXACT_EBREAK: begin
+            // Dispatch an ebreak trap request
             o_t_ebreak = '1;
           end
           default: begin
-            o_t_illegal_inst = '1;
+            // Write to RD
+            o_rd_addr = rd;
+
+            // Write back from CSR to register
+            o_reg_wb_sel = REG_WB_CSR;
+            o_regfile_we = '1;
+
+            unique case (funct3)
+              ZICSR_F3_CSRRW  : begin
+                o_rs1_addr = rs1;
+                o_csr_we = '1;
+                o_csr_op = ZICSR_CSR_OP_RW;
+                o_csr_data_sel = ZICSR_DATA_RS1;
+              end
+              ZICSR_F3_CSRRS  : begin
+                o_rs1_addr = rs1;
+                o_csr_we = rs1 != '0;
+                o_csr_op = ZICSR_CSR_OP_RS;
+                o_csr_data_sel = ZICSR_DATA_RS1;
+              end
+              ZICSR_F3_CSRRC  : begin
+                o_rs1_addr = rs1;
+                o_csr_we = rs1 != '0;
+                o_csr_op = ZICSR_CSR_OP_RC;
+                o_csr_data_sel = ZICSR_DATA_RS1;
+              end
+              ZICSR_F3_CSRRWI : begin
+                o_csr_we = '1;
+                o_csr_op = ZICSR_CSR_OP_RW;
+                o_csr_data_sel = ZICSR_DATA_IMM;
+              end
+              ZICSR_F3_CSRRSI : begin
+                o_csr_we = o_csr_zimm != '0;
+                o_csr_op = ZICSR_CSR_OP_RS;
+                o_csr_data_sel = ZICSR_DATA_IMM;
+              end
+              ZICSR_F3_CSRRCI : begin
+                o_csr_we = o_csr_zimm != '0;
+                o_csr_op = ZICSR_CSR_OP_RC;
+                o_csr_data_sel = ZICSR_DATA_IMM;
+              end
+              default: begin
+                o_csr_we = '0;
+                o_regfile_we = '0;
+                o_t_illegal_inst = '1;
+              end
+            endcase
           end
         endcase
       end

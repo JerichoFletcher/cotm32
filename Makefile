@@ -1,8 +1,9 @@
 SRC_FILES = \
-	test/*.sv \
-	src/*.sv \
-	src/**/*.sv \
-	src/**/**/*.sv
+	./src/cotm32_pkg.sv \
+	./src/cotm32_priv_pkg.sv \
+	./test/cotm32_test_pkg.sv \
+	$(shell find ./src/comp/ -name "*.sv") \
+	$(shell find ./src/cpu/ -name "*.sv")
 IVERILOG_OUT_DIR = ./out/iverilog
 IVERILOG_OUT = sim
 
@@ -28,7 +29,7 @@ GTKWAVE_FLAGS =
 
 XPACKS_BIN_DIR = ./xpacks/.bin
 AS = "$(XPACKS_BIN_DIR)/riscv-none-elf-as"
-AS_FLAGS = -march=rv32i -mabi=ilp32
+AS_FLAGS = -march=rv32i_zicsr -mabi=ilp32
 LD = "$(XPACKS_BIN_DIR)/riscv-none-elf-ld"
 LD_FLAGS = 
 OBJCOPY = "$(XPACKS_BIN_DIR)/riscv-none-elf-objcopy"
@@ -41,7 +42,7 @@ $(eval $(RUN_ARGS):;@:)
 
 # HDL
 compile:
-	@$(IVERILOG) $(IVERILOG_FLAGS) -o $(IVERILOG_OUT_DIR)/$(IVERILOG_OUT) $(SRC_FILES) $(RUN_ARGS)
+	$(IVERILOG) $(IVERILOG_FLAGS) -o $(IVERILOG_OUT_DIR)/$(IVERILOG_OUT) $(SRC_FILES) $(RUN_ARGS)
 sim: compile
 	@$(VVP) $(VVP_FLAGS) $(IVERILOG_OUT_DIR)/$(IVERILOG_OUT)
 	@$(GTKWAVE) $(GTKWAVE_FLAGS) ./*.vcd

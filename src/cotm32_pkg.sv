@@ -15,7 +15,7 @@ parameter INST_MEM_SIZE = 1024;
 parameter DATA_MEM_SIZE = 4096;
 
 // ALU operation selector
-typedef enum logic [3:0] {
+typedef enum logic [$clog2(10)-1:0] {
   ALU_ADD,
   ALU_SUB,
   ALU_OR,
@@ -29,7 +29,7 @@ typedef enum logic [3:0] {
 } alu_op_t;
 
 // BU operation selector
-typedef enum logic [2:0] {
+typedef enum logic [$clog2(8)-1:0] {
   BU_ALWAYS,
   BU_NEVER,
   BU_EQ,
@@ -41,7 +41,7 @@ typedef enum logic [2:0] {
 } bu_op_t;
 
 // Instruction type
-typedef enum logic [2:0] {
+typedef enum logic [$clog2(6)-1:0] {
   INST_I,
   INST_S,
   INST_B,
@@ -51,7 +51,7 @@ typedef enum logic [2:0] {
 } inst_t;
 
 // Immediate type
-typedef enum logic [2:0] {
+typedef enum logic [$clog2(5)-1:0] {
   IMM_I,
   IMM_S,
   IMM_B,
@@ -81,7 +81,7 @@ typedef enum logic [$clog2(IFU_PC_VALCOUNT)-1:0] {
 } ifu_pc_sel_t;
 
 // LSU load-store selectors
-typedef enum logic [3:0] {
+typedef enum logic [$clog2(9)-1:0] {
   LSU_NONE,
   LSU_LOAD_B,
   LSU_LOAD_H,
@@ -94,11 +94,13 @@ typedef enum logic [3:0] {
 } lsu_ls_t;
 
 // Register writeback selectors
-typedef enum logic [1:0] {
+parameter REG_WB_VALCOUNT = 5;
+typedef enum logic [$clog2(REG_WB_VALCOUNT)-1:0] {
   REG_WB_ZERO,
   REG_WB_ALU,
   REG_WB_PC4,
-  REG_WB_LSU
+  REG_WB_LSU,
+  REG_WB_CSR
 } reg_wb_sel_t;
 
 // Opcodes

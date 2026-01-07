@@ -48,10 +48,9 @@ module processor_core (
   logic [XLEN-1:0] lsu_rdata;
 
   reg_wb_sel_t reg_wb_sel;
-  logic [XLEN-1:0] pc_wb;
-  logic [XLEN-1:0] reg_wb;
+  wire [XLEN-1:0] reg_wb;
 
-  logic [XLEN-1:0] reg_wb_vals [0:3];
+  logic [XLEN-1:0] reg_wb_vals [0:REG_WB_VALCOUNT-1];
   wire [XLEN-1:0] pc_4;
 
   always_comb begin
@@ -74,6 +73,7 @@ module processor_core (
     reg_wb_vals[REG_WB_ALU] = alu_out;
     reg_wb_vals[REG_WB_PC4] = pc_4;
     reg_wb_vals[REG_WB_LSU] = lsu_rdata;
+    reg_wb_vals[REG_WB_CSR] = '0;
   end
 
   // Trap signals
@@ -90,6 +90,25 @@ module processor_core (
 
   wire trap_mode;
 
+  // CSR wires
+  wire csr_we;
+  zicsr_data_sel_t csr_data_sel;
+  zicsr_csr_addr_t csr_addr;
+  zicsr_csr_op_t csr_op;
+  logic [MXLEN-1:0] csr_zimm;
+  logic [MXLEN-1:0] csr_wdata;
+
+  logic [MXLEN-1:0] csr_wdata_vals [0:ZICSR_DATA_VALCOUNT-1];
+
+  logic [MXLEN-1:0] csr_rdata;
+  wire [MXLEN-1:0] csr_mtvec;
+  wire [MXLEN-1:0] csr_mepc;
+
+  always_comb begin
+    csr_wdata_vals[ZICSR_DATA_RS1] = rs1;
+    csr_wdata_vals[ZICSR_DATA_IMM] = csr_zimm;
+  end
+
   // Instruction fetch unit
   inst_fetch #(
     .RESET_VECTOR(PC_RESET_VECTOR)
@@ -99,7 +118,7 @@ module processor_core (
     .i_take_branch(take_branch),
     .i_new_addr(alu_out),
     .i_trap_req(trap_req),
-    .i_mtvec('0),
+    .i_mtvec(32'b0),
     .o_addr(pc),
     .o_addr_4(pc_4),
     .o_t_inst_addr_misaligned(t_inst_addr_misaligned)
@@ -187,6 +206,13 @@ module processor_core (
     .o_imm_sel(imm_sel),
     .o_lsu_ls(lsu_ls_op),
     .o_reg_wb_sel(reg_wb_sel),
+
+    .o_csr_we(csr_we),
+    .o_csr_data_sel(csr_data_sel),
+    .o_csr_addr(csr_addr),
+    .o_csr_op(csr_op),
+    .o_csr_zimm(csr_zimm),
+
     .o_t_illegal_inst(t_illegal_inst),
     .o_t_ecall_m(t_ecall_m),
     .o_t_ebreak(t_ebreak)
@@ -222,7 +248,7 @@ module processor_core (
 
   // Register writeback mux
   mux #(
-    .N_OPTIONS(4),
+    .N_OPTIONS(REG_WB_VALCOUNT),
     .DATA_WIDTH(XLEN)
   ) mux_wb(
     .i_sel(reg_wb_sel),
@@ -253,6 +279,37 @@ module processor_core (
     .i_trap_req(trap_req),
     .i_mret('0),
     .o_trap_mode(trap_mode)
+  );
+
+  // CSR write data mux
+  mux #(
+    .N_OPTIONS(ZICSR_DATA_VALCOUNT),
+    .DATA_WIDTH(MXLEN)
+  ) mux_csr(
+    .i_sel(csr_data_sel),
+    .i_val(csr_wdata_vals),
+    .o_val(csr_wdata)
+  );
+
+  // CSR
+  csr #(
+    .CSR_REG_WIDTH(MXLEN)
+  ) csr(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_we(csr_we),
+    .i_op(csr_op),
+    .i_addr(csr_addr),
+    .i_wdata(csr_wdata),
+    .i_pc(pc),
+
+    .i_trap_req(trap_req),
+    .i_trap_cause(trap_cause),
+    .i_trap_tval(trap_tval),
+
+    .o_rdata(csr_rdata),
+    .o_mtvec(csr_mtvec),
+    .o_mepc(csr_mepc)
   );
 
 endmodule

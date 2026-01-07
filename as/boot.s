@@ -3,7 +3,8 @@
 
 _start:
   la t0, trap_entry
-  addi zero, t0, 0
+  andi t0, t0, -4
+  csrw mtvec, t0
   ecall
   
 trap_entry:
