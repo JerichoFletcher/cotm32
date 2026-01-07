@@ -23,7 +23,7 @@ module inst_mem (
     for (int i = 0; i < INST_MEM_SIZE; i++) begin
       mem_bytes[i] = '0;
     end
-    $readmemh("./out/boot-text.verilog", mem_bytes, INST_MEM_START, INST_MEM_END);
+    $readmemh(INST_MEM_SRC_PATH, mem_bytes, INST_MEM_START, INST_MEM_END);
   end
 
 endmodule;

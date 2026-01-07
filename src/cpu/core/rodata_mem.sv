@@ -25,7 +25,7 @@ module rodata_mem #(
     for (int i = 0; i < ROM_MEM_SIZE; i++) begin
       mem_bytes[i] = '0;
     end
-    $readmemh("./out/boot-rodata.verilog", mem_bytes, ROM_MEM_START, ROM_MEM_END);
+    $readmemh(ROM_MEM_SRC_PATH, mem_bytes, ROM_MEM_START, ROM_MEM_END);
   end
 
 endmodule;
