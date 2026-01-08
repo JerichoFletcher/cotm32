@@ -4,9 +4,8 @@
 #include <cstdio>
 #include <fstream>
 #include <vector>
-#include "vtop_adapter.hpp"
 
-void load_elf(const char* path, VtopAdapter &adapter) {
+void load_elf(const char* path, VerilatedContainer &v) {
   std::ifstream f(path, std::ios::binary);
   if (!f) {
     throw std::runtime_error("Failed to open ELF");
@@ -37,7 +36,7 @@ void load_elf(const char* path, VtopAdapter &adapter) {
     std::printf("Reading segment [%08x:%08x]\n", ph.p_vaddr, ph.p_vaddr + ph.p_memsz - 1);
 
     for (size_t j = 0; j < buf.size(); j++) {
-      adapter.write_byte(addr + j, buf[j]);
+      v.write_byte(addr + j, buf[j]);
     }
   }
 }

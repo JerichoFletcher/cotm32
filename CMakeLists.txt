@@ -43,8 +43,10 @@ add_custom_target(bootloader ALL
 # Verilator model
 set(CXX_SOURCES
   sim/src/main.cpp
-  sim/src/vtop_adapter.cpp
+  sim/src/verilated_container.cpp
   sim/src/load_elf.cpp
+  sim/src/sdl_window.cpp
+  sim/src/imgui_layer.cpp
 )
 
 set(RTL_SOURCES

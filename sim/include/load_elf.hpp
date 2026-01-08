@@ -1,4 +1,5 @@
 #pragma once
-#include "vtop_adapter.hpp"
 
-void load_elf(const char* path, VtopAdapter &adapter);
+#include "verilated_container.hpp"
+
+void load_elf(const char* path, VerilatedContainer& v);
