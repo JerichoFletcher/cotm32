@@ -28,15 +28,18 @@ void TimeDrawer::draw() {
       1.0f,
       50'000'000.0f,
       "%.0f",
-      ImGuiSliderFlags_Logarithmic
+      ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp
     );
     this->m_tick_period = 1.0 / (double)this->m_clk_hz;
     ImGui::Text("Tick : %.9f s", this->m_tick_period);
   
     ImGui::Separator();
+    ImGui::ProgressBar(this->tick_cap_frac(), ImVec2(-FLT_MIN, 0), "Tick cap");
+    ImGui::ProgressBar(this->tick_debt_frac(), ImVec2(-FLT_MIN, 0), "Tick debt");
+
     ImGui::Checkbox("Auto", &this->m_auto);
     ImGui::SameLine();
-    if (ImGui::Button("Advance")) {
+    if (ImGui::Button("Step")) {
       this->m_auto = false;
       this->m_step_req = true;
     }
@@ -55,11 +58,15 @@ void TimeDrawer::update() {
   if (this->m_rst_req) {
     this->m_v.reset();
     this->m_rst_req = false;
+    this->m_accumulator = 0.0;
+    this->m_executed_step_count = 0;
     return;
   }
 
-  if (!this->m_auto && !this->m_step_req) {
+  if (!this->m_auto && (!this->m_step_req || this->m_prev_auto)) {
     this->m_prev_auto = this->m_auto;
+    this->m_accumulator = 0.0;
+    this->m_executed_step_count = 0;
     return;
   }
 
@@ -80,18 +87,13 @@ void TimeDrawer::update() {
   }
 
   this->m_accumulator += delta.count();
-  int steps = 0;
+  this->m_executed_step_count = 0;
   while (
     this->m_accumulator >= this->m_tick_period
-    && steps < TimeDrawer::MAX_STEPS_PER_FRAME
+    && this->m_executed_step_count < TimeDrawer::MAX_STEPS_PER_FRAME
   ) {
     this->m_v.tick();
     this->m_accumulator -= this->m_tick_period;
-    steps++;
-  }
-
-  // Reset accumulator if max step count is reached
-  if (steps >= TimeDrawer::MAX_STEPS_PER_FRAME) {
-    this->m_accumulator = 0.0;
+    this->m_executed_step_count++;
   }
 }
