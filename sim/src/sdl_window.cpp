@@ -14,7 +14,7 @@ SdlWindow::SdlWindow():
     SDL_WINDOWPOS_CENTERED,
     SDL_WINDOWPOS_CENTERED,
     1280, 720,
-    SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+    SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED
   );
   this->m_gl = SDL_GL_CreateContext(this->m_window);
   SDL_GL_MakeCurrent(this->m_window, this->m_gl);

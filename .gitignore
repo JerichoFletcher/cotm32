@@ -5,4 +5,4 @@ build/
 *.vcd
 
 # Local settings
-.vscode/settings.json
+.vscode/

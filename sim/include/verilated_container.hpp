@@ -3,20 +3,24 @@
 #include <memory>
 #include "verilated.h"
 #include "verilated_vcd_c.h"
-
 #include "Vtop.h"
+#include "Vtop_cotm32.h"
+#include "Vtop_processor_core.h"
 
 class VerilatedContainer {
   public:
     VerilatedContainer(int argc, char** argv);
     ~VerilatedContainer();
 
+    inline std::unique_ptr<Vtop>& top() { return this->m_top; }
+    
     inline int time() const { return this->m_time; }
+    inline const IData pc() const { return this->m_top->cotm32->core->pc; }
+    inline const IData inst() const { return this->m_top->cotm32->core->inst; }
     inline const std::unique_ptr<Vtop>& top() const { return this->m_top; }
 
-    inline std::unique_ptr<Vtop>& top() { return this->m_top; }
-
     void start();
+    void reset();
     void tick();
     void finish();
 

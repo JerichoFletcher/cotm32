@@ -47,6 +47,9 @@ set(CXX_SOURCES
   sim/src/load_elf.cpp
   sim/src/sdl_window.cpp
   sim/src/imgui_layer.cpp
+  sim/src/views/reg_view.cpp
+  sim/src/drawers/time_drawer.cpp
+  sim/src/drawers/reg_drawer.cpp
 )
 
 set(RTL_SOURCES

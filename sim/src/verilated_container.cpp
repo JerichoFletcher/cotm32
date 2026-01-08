@@ -38,7 +38,10 @@ void VerilatedContainer::start() {
   }
 
   this->m_started = true;
+  this->reset();
+}
 
+void VerilatedContainer::reset() {
   this->m_top->i_rst = 1;
   this->tick();
   this->m_top->i_rst = 0;

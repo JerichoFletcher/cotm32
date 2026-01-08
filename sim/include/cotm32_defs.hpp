@@ -1,5 +1,7 @@
 #pragma once
 
+#define NUM_REGS        32
+
 #define INST_MEM_SIZE   1024
 #define ROM_MEM_SIZE    1024
 #define DATA_MEM_SIZE   4096
