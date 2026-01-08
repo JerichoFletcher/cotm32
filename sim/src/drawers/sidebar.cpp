@@ -16,7 +16,7 @@ void Sidebar::draw() {
   );
   ImGui::SetNextWindowSize(ImVec2(270, ws.y));
   ImGui::SetNextWindowSizeConstraints(
-    ImVec2(270, ws.y),
+    ImVec2(300, ws.y),
     ImVec2(FLT_MAX, ws.y)
   );
   if (ImGui::Begin("Sidebar", nullptr,
@@ -26,16 +26,16 @@ void Sidebar::draw() {
     ImGuiWindowFlags_NoTitleBar
   )) {
     if (ImGui::BeginTabBar("sidebar_tabs")) {
-      if (ImGui::BeginTabItem("Registers")) {
+      if (ImGui::BeginTabItem("Memory")) {
         this->m_reg_drawer.draw();
         this->m_csr_drawer.draw();
-        ImGui::EndTabItem();
-      }
-      
-      if (ImGui::BeginTabItem("Memory")) {
         this->m_mem_drawer.draw();
         ImGui::EndTabItem();
       }
+      if (ImGui::BeginTabItem("Traps")) {
+        ImGui::EndTabItem();
+      }
+
       ImGui::EndTabBar();
     }
   }

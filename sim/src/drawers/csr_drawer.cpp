@@ -13,11 +13,11 @@ void CsrDrawer::draw() {
     ImVec2(ImGui::GetContentRegionAvail().x, 0),
     ImGuiChildFlags_AutoResizeY
   )) {
-    if (ImGui::CollapsingHeader("CSR View")) {
+    if (ImGui::CollapsingHeader("CSR View", ImGuiTreeNodeFlags_DefaultOpen)) {
       if (ImGui::BeginTable("table_csr", 3,
-        ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg
+        ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_RowBg
       )) {
-        ImGui::TableSetupColumn("CSR");
+        ImGui::TableSetupColumn("CSR", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("Dec");
         ImGui::TableSetupColumn("Hex");
         ImGui::TableHeadersRow();
@@ -25,7 +25,7 @@ void CsrDrawer::draw() {
         for (int i = 0; i < NUM_CSR; i++) {
           ImGui::TableNextRow();
           ImGui::TableNextColumn();
-          ImGui::Text("%-10s", reg_names[i]);
+          ImGui::Text("%s", reg_names[i]);
     
           ImGui::TableNextColumn();
           ImGui::Text("%11d", (int32_t)this->m_csr[i]);

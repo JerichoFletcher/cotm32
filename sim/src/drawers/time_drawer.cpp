@@ -11,7 +11,7 @@ TimeDrawer::TimeDrawer(VerilatedContainer& v):
 
 void TimeDrawer::draw() {
   ImGui::SetNextWindowPos(
-    ImVec2(280, 10),
+    ImVec2(310, 10),
     ImGuiCond_Once,
     ImVec2(0, 0)
   );

@@ -16,4 +16,5 @@ class MemDrawer : public ImGuiDrawer {
 
     int m_mem_sec_curr;
     int m_mem_offset;
+    int m_mem_disp_w;
 };

@@ -20,11 +20,11 @@ void RegDrawer::draw() {
     ImVec2(ImGui::GetContentRegionAvail().x, 0),
     ImGuiChildFlags_AutoResizeY
   )) {
-    if (ImGui::CollapsingHeader("Register View")) {
+    if (ImGui::CollapsingHeader("Register View", ImGuiTreeNodeFlags_DefaultOpen)) {
       if (ImGui::BeginTable("table_reg", 3,
-        ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg
+        ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_RowBg
       )) {
-        ImGui::TableSetupColumn("Reg");
+        ImGui::TableSetupColumn("Reg", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("Dec");
         ImGui::TableSetupColumn("Hex");
         ImGui::TableHeadersRow();
@@ -32,7 +32,7 @@ void RegDrawer::draw() {
         for (int i = 0; i < NUM_REGS; i++) {
           ImGui::TableNextRow();
           ImGui::TableNextColumn();
-          ImGui::Text("%-10s", reg_names[i]);
+          ImGui::Text("%s", reg_names[i]);
     
           ImGui::TableNextColumn();
           ImGui::Text("%11d", (int32_t)this->m_reg[i]);
