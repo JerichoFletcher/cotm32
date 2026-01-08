@@ -24,6 +24,7 @@ class VerilatedContainer {
     void tick();
     void finish();
 
+    bool read_byte(uint32_t addr, uint8_t* out) const;
     void write_byte(uint32_t addr, uint8_t val);
 
   private:

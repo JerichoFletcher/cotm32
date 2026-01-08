@@ -5,6 +5,7 @@
 
 #include "drawers/reg_drawer.hpp"
 #include "drawers/csr_drawer.hpp"
+#include "drawers/mem_drawer.hpp"
 
 class Sidebar : public ImGuiDrawer {
   public:
@@ -14,4 +15,5 @@ class Sidebar : public ImGuiDrawer {
     const VerilatedContainer& m_v;
     RegDrawer m_reg_drawer;
     CsrDrawer m_csr_drawer;
+    MemDrawer m_mem_drawer;
 };

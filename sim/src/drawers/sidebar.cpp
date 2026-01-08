@@ -3,7 +3,8 @@
 Sidebar::Sidebar(const VerilatedContainer& v):
   m_v(v),
   m_reg_drawer(v),
-  m_csr_drawer(v) {}
+  m_csr_drawer(v),
+  m_mem_drawer(v) {}
 
 void Sidebar::draw() {
   auto ws = ImGui::GetMainViewport()->WorkSize;
@@ -24,8 +25,19 @@ void Sidebar::draw() {
     ImGuiWindowFlags_NoCollapse |
     ImGuiWindowFlags_NoTitleBar
   )) {
-    this->m_reg_drawer.draw();
-    this->m_csr_drawer.draw();
+    if (ImGui::BeginTabBar("sidebar_tabs")) {
+      if (ImGui::BeginTabItem("Registers")) {
+        this->m_reg_drawer.draw();
+        this->m_csr_drawer.draw();
+        ImGui::EndTabItem();
+      }
+      
+      if (ImGui::BeginTabItem("Memory")) {
+        this->m_mem_drawer.draw();
+        ImGui::EndTabItem();
+      }
+      ImGui::EndTabBar();
+    }
   }
   ImGui::End();
 }

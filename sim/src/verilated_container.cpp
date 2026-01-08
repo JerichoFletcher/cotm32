@@ -77,11 +77,28 @@ void VerilatedContainer::finish() {
   this->m_finished = true;
 }
 
+bool VerilatedContainer::read_byte(uint32_t addr, uint8_t* out) const {
+  if (INST_MEM_START <= addr && addr <= INST_MEM_END) {
+    *out = this->m_top->cotm32->core->im__DOT__mem_bytes[addr - INST_MEM_START];
+    return true;
+  } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
+    *out = this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START];
+    return true;
+  } else if (DATA_MEM_START <= addr && addr <= DATA_MEM_END) {
+    *out = this->m_top->cotm32->core->mem__DOT__mem_bytes[addr - DATA_MEM_START];
+    return true;
+  } else {
+    return false;
+  }
+}
+
 void VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
   if (INST_MEM_START <= addr && addr <= INST_MEM_END) {
-    this->m_top->cotm32->core->im__DOT__mem_bytes.m_storage[addr - INST_MEM_START] = val;
+    this->m_top->cotm32->core->im__DOT__mem_bytes[addr - INST_MEM_START] = val;
   } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
-    this->m_top->cotm32->core->rom__DOT__mem_bytes.m_storage[addr - ROM_MEM_START] = val;
+    this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START] = val;
+  } else if (DATA_MEM_START <= addr && addr <= DATA_MEM_END) {
+    this->m_top->cotm32->core->mem__DOT__mem_bytes[addr - DATA_MEM_START] = val;
   } else {
     throw std::runtime_error("Error writing byte: address out of valid range");
   }

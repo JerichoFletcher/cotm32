@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 # Dependencies
 find_package(SDL2 REQUIRED)
 find_package(VERILATOR REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
 find_program(RISCV_OBJCOPY  riscv64-unknown-elf-objcopy REQUIRED)
@@ -53,6 +54,7 @@ set(CXX_SOURCES
   sim/src/drawers/sidebar.cpp
   sim/src/drawers/reg_drawer.cpp
   sim/src/drawers/csr_drawer.cpp
+  sim/src/drawers/mem_drawer.cpp
 )
 
 set(RTL_SOURCES
@@ -124,6 +126,7 @@ target_include_directories(cotm32 PRIVATE
 )
 
 target_link_libraries(cotm32 PRIVATE
+  fmt::fmt
   ${SDL2_LIBRARIES}
   GL
 )
