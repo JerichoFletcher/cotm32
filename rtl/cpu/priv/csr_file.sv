@@ -34,7 +34,7 @@ module csr_file #(
   localparam CSR_MCAUSE_IDX = 2;
   localparam CSR_MTVAL_IDX  = 3;
 
-  logic [MXLEN-1:0] mem [0:CSR_N-1];
+  logic [MXLEN-1:0] mem [0:CSR_N-1] /* verilator public */;
   logic [$clog2(CSR_N)-1:0] csr_idx;
 
   assign o_rdata = mem[csr_idx];

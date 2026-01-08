@@ -10,7 +10,7 @@ class TimeDrawer : public ImGuiDrawer {
     TimeDrawer(VerilatedContainer& v);
     void draw() override;
   private:
-    static constexpr int MAX_STEPS_PER_FRAME = 50'000;
+    static constexpr int MAX_STEPS_PER_FRAME = 300'000;
     using clock = std::chrono::steady_clock;
   
     VerilatedContainer& m_v;

@@ -13,4 +13,4 @@
 #define DATA_MEM_START  0x10000000
 #define DATA_MEM_END    (DATA_MEM_START + DATA_MEM_SIZE - 1)
 
-
+#define NUM_CSR         4

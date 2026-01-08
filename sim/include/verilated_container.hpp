@@ -28,7 +28,7 @@ class VerilatedContainer {
 
   private:
     std::unique_ptr<VerilatedContext> m_contextp;
-    std::unique_ptr<VerilatedVcdC> m_tfp;
+    // std::unique_ptr<VerilatedVcdC> m_tfp;
     std::unique_ptr<Vtop> m_top;
 
     int m_time;

@@ -13,20 +13,20 @@ VerilatedContainer::VerilatedContainer(int argc, char** argv):
   this->m_contextp = std::make_unique<VerilatedContext>();
   this->m_contextp->commandArgs(argc, argv);
 
-  Verilated::traceEverOn(true);
-  this->m_tfp = std::make_unique<VerilatedVcdC>();
-  this->m_tfp->set_time_unit("ns");
-  this->m_tfp->set_time_resolution("ns");
+  // Verilated::traceEverOn(true);
+  // this->m_tfp = std::make_unique<VerilatedVcdC>();
+  // this->m_tfp->set_time_unit("ns");
+  // this->m_tfp->set_time_resolution("ns");
 
   this->m_top = std::make_unique<Vtop>(this->m_contextp.get());
-  this->m_top->trace(this->m_tfp.get(), 99);
-  this->m_tfp->open("trace.vcd");
+  // this->m_top->trace(this->m_tfp.get(), 99);
+  // this->m_tfp->open("trace.vcd");
 }
 
 VerilatedContainer::~VerilatedContainer() {
-  if (this->m_tfp) {
-    this->m_tfp->close();
-  }
+  // if (this->m_tfp) {
+  //   this->m_tfp->close();
+  // }
 }
 
 void VerilatedContainer::start() {
@@ -57,11 +57,12 @@ void VerilatedContainer::tick() {
 
   this->m_top->i_clk = 0;
   this->m_top->eval();
-  this->m_tfp->dump(this->m_time++);
+  // this->m_tfp->dump(this->m_time++);
 
   this->m_top->i_clk = 1;
   this->m_top->eval();
-  this->m_tfp->dump(this->m_time++);
+  // this->m_tfp->dump(this->m_time++);
+  this->m_time++;
 }
 
 void VerilatedContainer::finish() {

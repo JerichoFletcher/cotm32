@@ -14,6 +14,7 @@ void load_elf(const char* path, VerilatedContainer &v) {
   Elf32_Ehdr eh;
   f.read(reinterpret_cast<char*>(&eh), sizeof(eh));
   if (eh.e_ident[EI_MAG0] != ELFMAG0 || eh.e_ident[EI_CLASS] != ELFCLASS32) {
+    f.close();
     throw std::runtime_error("File is not ELF32");
   }
 

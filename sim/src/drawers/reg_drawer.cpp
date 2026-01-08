@@ -16,30 +16,32 @@ static const char* reg_names[NUM_REGS] = {
 RegDrawer::RegDrawer(const VerilatedContainer& v): m_v(v), m_reg(v) {}
 
 void RegDrawer::draw() {
-  ImGui::Begin("Register View", nullptr,
-    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize
-  );
-  ImGui::BeginTable("regs", 3,
-    ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg
-  );
-  
-  ImGui::TableSetupColumn("Reg");
-  ImGui::TableSetupColumn("Dec");
-  ImGui::TableSetupColumn("Hex");
-  ImGui::TableHeadersRow();
+  if (ImGui::Begin("Register View", nullptr,
+    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
+  )) {
+    ImGui::BeginTable("regs", 3,
+      ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg
+    );
+    
+    ImGui::TableSetupColumn("Reg");
+    ImGui::TableSetupColumn("Dec");
+    ImGui::TableSetupColumn("Hex");
+    ImGui::TableHeadersRow();
 
-  for (int i = 0; i < NUM_REGS; i++) {
-    ImGui::TableNextRow();
-    ImGui::TableNextColumn();
-    ImGui::Text("%s", reg_names[i]);
+    for (int i = 0; i < NUM_REGS; i++) {
+      ImGui::TableNextRow();
+      ImGui::TableNextColumn();
+      ImGui::Text("%s", reg_names[i]);
 
-    ImGui::TableNextColumn();
-    ImGui::Text("%d", (int32_t)this->m_reg[i]);
+      ImGui::TableNextColumn();
+      ImGui::Text("%11d", (int32_t)this->m_reg[i]);
 
-    ImGui::TableNextColumn();
-    ImGui::Text("0x%08x", this->m_reg[i]);
+      ImGui::TableNextColumn();
+      ImGui::Text("0x%08x", this->m_reg[i]);
+    }
+
+    ImGui::EndTable();
   }
 
-  ImGui::EndTable();
   ImGui::End();
 }
