@@ -10,6 +10,11 @@ TimeDrawer::TimeDrawer(VerilatedContainer& v):
   m_rst_req(false) {}
 
 void TimeDrawer::draw() {
+  ImGui::SetNextWindowPos(
+    ImVec2(280, 10),
+    ImGuiCond_Once,
+    ImVec2(0, 0)
+  );
   if (ImGui::Begin("Time", nullptr,
     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
   )) {

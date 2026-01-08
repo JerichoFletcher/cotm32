@@ -9,32 +9,34 @@ static const char* reg_names[NUM_CSR] = {
 CsrDrawer::CsrDrawer(const VerilatedContainer& v): m_v(v), m_csr(v) {}
 
 void CsrDrawer::draw() {
-  if (ImGui::Begin("CSR View", nullptr,
-    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
+  if (ImGui::BeginChild("csr",
+    ImVec2(ImGui::GetContentRegionAvail().x, 0),
+    ImGuiChildFlags_AutoResizeY
   )) {
-    ImGui::BeginTable("csrs", 3,
-      ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg
-    );
+    if (ImGui::CollapsingHeader("CSR View")) {
+      if (ImGui::BeginTable("table_csr", 3,
+        ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg
+      )) {
+        ImGui::TableSetupColumn("CSR");
+        ImGui::TableSetupColumn("Dec");
+        ImGui::TableSetupColumn("Hex");
+        ImGui::TableHeadersRow();
     
-    ImGui::TableSetupColumn("CSR");
-    ImGui::TableSetupColumn("Dec");
-    ImGui::TableSetupColumn("Hex");
-    ImGui::TableHeadersRow();
+        for (int i = 0; i < NUM_CSR; i++) {
+          ImGui::TableNextRow();
+          ImGui::TableNextColumn();
+          ImGui::Text("%-10s", reg_names[i]);
+    
+          ImGui::TableNextColumn();
+          ImGui::Text("%11d", (int32_t)this->m_csr[i]);
+    
+          ImGui::TableNextColumn();
+          ImGui::Text("0x%08x", this->m_csr[i]);
+        }
 
-    for (int i = 0; i < NUM_CSR; i++) {
-      ImGui::TableNextRow();
-      ImGui::TableNextColumn();
-      ImGui::Text("%s", reg_names[i]);
-
-      ImGui::TableNextColumn();
-      ImGui::Text("%11d", (int32_t)this->m_csr[i]);
-
-      ImGui::TableNextColumn();
-      ImGui::Text("0x%08x", this->m_csr[i]);
+        ImGui::EndTable();
+      }
     }
-
-    ImGui::EndTable();
   }
-
-  ImGui::End();
+  ImGui::EndChild();
 }

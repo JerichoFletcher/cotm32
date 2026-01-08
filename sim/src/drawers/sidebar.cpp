@@ -1,0 +1,31 @@
+#include "drawers/sidebar.hpp"
+
+Sidebar::Sidebar(const VerilatedContainer& v):
+  m_v(v),
+  m_reg_drawer(v),
+  m_csr_drawer(v) {}
+
+void Sidebar::draw() {
+  auto ws = ImGui::GetMainViewport()->WorkSize;
+
+  ImGui::SetNextWindowPos(
+    ImVec2(0, 0),
+    ImGuiCond_Once,
+    ImVec2(0, 0)
+  );
+  ImGui::SetNextWindowSize(ImVec2(270, ws.y));
+  ImGui::SetNextWindowSizeConstraints(
+    ImVec2(270, ws.y),
+    ImVec2(FLT_MAX, ws.y)
+  );
+  if (ImGui::Begin("Sidebar", nullptr,
+    ImGuiWindowFlags_NoResize |
+    ImGuiWindowFlags_NoMove |
+    ImGuiWindowFlags_NoCollapse |
+    ImGuiWindowFlags_NoTitleBar
+  )) {
+    this->m_reg_drawer.draw();
+    this->m_csr_drawer.draw();
+  }
+  ImGui::End();
+}

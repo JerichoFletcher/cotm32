@@ -50,6 +50,7 @@ set(CXX_SOURCES
   sim/src/views/reg_view.cpp
   sim/src/views/csr_view.cpp
   sim/src/drawers/time_drawer.cpp
+  sim/src/drawers/sidebar.cpp
   sim/src/drawers/reg_drawer.cpp
   sim/src/drawers/csr_drawer.cpp
 )
