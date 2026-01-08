@@ -8,6 +8,7 @@ class RegDrawer : public ImGuiDrawer {
   public:
     RegDrawer(const VerilatedContainer& v);
     void draw() override;
+  
   private:
     const VerilatedContainer& m_v;
     const RegView m_reg;

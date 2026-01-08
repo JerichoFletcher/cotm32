@@ -8,6 +8,7 @@ class CsrDrawer : public ImGuiDrawer {
   public:
     CsrDrawer(const VerilatedContainer& v);
     void draw() override;
+  
   private:
     const VerilatedContainer& m_v;
     const CsrView m_csr;

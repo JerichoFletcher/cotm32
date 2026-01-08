@@ -6,14 +6,17 @@
 #include "drawers/reg_drawer.hpp"
 #include "drawers/csr_drawer.hpp"
 #include "drawers/mem_drawer.hpp"
+#include "drawers/trap_drawer.hpp"
 
 class Sidebar : public ImGuiDrawer {
   public:
     Sidebar(const VerilatedContainer& v);
     void draw() override;
+  
   private:
     const VerilatedContainer& m_v;
     RegDrawer m_reg_drawer;
     CsrDrawer m_csr_drawer;
     MemDrawer m_mem_drawer;
+    TrapDrawer m_trap_drawer;
 };

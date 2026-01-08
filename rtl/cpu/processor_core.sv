@@ -80,8 +80,8 @@ module processor_core (
   end
 
   // Trap signals
-  wire trap_mret;
-  wire trap_req;
+  wire trap_mret /* verilator public */;
+  wire trap_req /* verilator public */;
   trap_cause_t trap_cause;
   wire [MXLEN-1:0] trap_tval;
 
@@ -95,7 +95,7 @@ module processor_core (
   wire t_load_addr_misaligned;
   wire t_store_addr_misaligned;
 
-  wire trap_mode;
+  wire trap_mode /* verilator public */;
 
   // CSR wires
   wire csr_we;

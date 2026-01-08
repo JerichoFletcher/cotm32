@@ -4,7 +4,8 @@ Sidebar::Sidebar(const VerilatedContainer& v):
   m_v(v),
   m_reg_drawer(v),
   m_csr_drawer(v),
-  m_mem_drawer(v) {}
+  m_mem_drawer(v),
+  m_trap_drawer(v) {}
 
 void Sidebar::draw() {
   auto ws = ImGui::GetMainViewport()->WorkSize;
@@ -14,11 +15,7 @@ void Sidebar::draw() {
     ImGuiCond_Once,
     ImVec2(0, 0)
   );
-  ImGui::SetNextWindowSize(ImVec2(270, ws.y));
-  ImGui::SetNextWindowSizeConstraints(
-    ImVec2(300, ws.y),
-    ImVec2(FLT_MAX, ws.y)
-  );
+  ImGui::SetNextWindowSize(ImVec2(350, ws.y));
   if (ImGui::Begin("Sidebar", nullptr,
     ImGuiWindowFlags_NoResize |
     ImGuiWindowFlags_NoMove |
@@ -32,7 +29,9 @@ void Sidebar::draw() {
         this->m_mem_drawer.draw();
         ImGui::EndTabItem();
       }
-      if (ImGui::BeginTabItem("Traps")) {
+      if (ImGui::BeginTabItem("Privilege")) {
+        this->m_trap_drawer.draw();
+        this->m_csr_drawer.draw();
         ImGui::EndTabItem();
       }
 
