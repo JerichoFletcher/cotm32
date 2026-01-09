@@ -9,8 +9,12 @@ module processor_core (
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 
   // Signals
-  logic [XLEN-1:0] pc /* verilator public */;
-  logic [INST_WIDTH-1:0] inst /* verilator public */;
+  logic [INST_WIDTH-1:0] if_inst /* verilator public */;
+  logic [INST_WIDTH-1:0] id_inst /* verilator public */;
+  logic [XLEN-1:0] if_pc /* verilator public */;
+  logic [XLEN-1:0] id_pc /* verilator public */;
+  wire [XLEN-1:0] if_pc_4 /* verilator public */;
+  wire [XLEN-1:0] id_pc_4 /* verilator public */;
 
   imm_t imm_sel /* verilator public */;
   logic [XLEN-1:0] imm /* verilator public */;
@@ -54,7 +58,6 @@ module processor_core (
   wire [XLEN-1:0] reg_wb;
 
   logic [XLEN-1:0] reg_wb_vals [0:REG_WB_VALCOUNT-1];
-  wire [XLEN-1:0] pc_4;
 
   always_comb begin
     rs_addr[0] = rs1_addr;
@@ -63,7 +66,7 @@ module processor_core (
 
   always_comb begin
     alu_a_vals[ALU_A_RS1] = rs1;
-    alu_a_vals[ALU_A_PC] = pc;
+    alu_a_vals[ALU_A_PC] = id_pc;
   end
 
   always_comb begin
@@ -74,7 +77,7 @@ module processor_core (
   always_comb begin
     reg_wb_vals[REG_WB_ZERO] = '0;
     reg_wb_vals[REG_WB_ALU] = alu_out;
-    reg_wb_vals[REG_WB_PC4] = pc_4;
+    reg_wb_vals[REG_WB_PC4] = if_pc_4;
     reg_wb_vals[REG_WB_LSU] = lsu_rdata;
     reg_wb_vals[REG_WB_CSR] = csr_rdata;
   end
@@ -119,6 +122,12 @@ module processor_core (
     csr_wdata_vals[ZICSR_DATA_IMM] = csr_zimm;
   end
 
+  // Pipeline wires
+  wire ifid_stall /* verilator public */;
+  wire ifid_flush /* verilator public */;
+  wire ifid_valid /* verilator public */;
+
+  /////////////// IF      ///////////////
   // Instruction fetch unit
   inst_fetch #(
     .RESET_VECTOR(PC_RESET_VECTOR)
@@ -133,21 +142,67 @@ module processor_core (
     .i_mtvec(csr_mtvec),
     .i_mepc(csr_mepc),
 
-    .o_addr(pc),
-    .o_addr_4(pc_4),
+    .o_addr(if_pc),
+    .o_addr_4(if_pc_4),
     .o_t_inst_addr_misaligned(t_inst_addr_misaligned),
     .o_t_inst_access_fault(t_inst_access_fault)
   );
 
   // IMEM
   inst_mem im(
-    .i_addr(pc),
-    .o_inst(inst)
+    .i_addr(if_pc),
+    .o_inst(if_inst)
   );
 
+  /////////////// IF/ID   ///////////////
+  ifid_reg ifid(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_stall(ifid_stall),
+    .i_flush(ifid_flush),
+    .i_pc(if_pc),
+    .i_pc_4(if_pc_4),
+    .i_inst(if_inst),
+    .o_pc(id_pc),
+    .o_pc_4(id_pc_4),
+    .o_inst(id_inst),
+    .o_valid(ifid_valid)
+  );
+
+  /////////////// ID      ///////////////
   // Immediate sign extender
+  // CU
+  cu cu(
+    .i_inst(id_inst),
+    .i_trap_mode(trap_mode),
+
+    .o_alu_op(alu_op),
+    .o_alu_a_sel(alu_a_sel),
+    .o_alu_b_sel(alu_b_sel),
+    .o_bu_be(bu_be),
+    .o_bu_op(bu_op),
+    .o_regfile_we(regfile_we),
+    .o_rd_addr(rd_addr),
+    .o_rs1_addr(rs1_addr),
+    .o_rs2_addr(rs2_addr),
+    .o_imm_sel(imm_sel),
+    .o_lsu_ls(lsu_ls_op),
+    .o_reg_wb_sel(reg_wb_sel),
+
+    .o_csr_we(csr_we),
+    .o_csr_data_sel(csr_data_sel),
+    .o_csr_addr(csr_addr),
+    .o_csr_op(csr_op),
+    .o_csr_zimm(csr_zimm),
+
+    .o_t_illegal_inst(cu_t_illegal_inst),
+    .o_t_ecall_m(t_ecall_m),
+    .o_t_ebreak(t_ebreak),
+    .o_trap_mret(trap_mret)
+  );
+
   sign_ext sext(
-    .i_inst(inst),
+    .i_inst(id_inst),
     .i_sel(imm_sel),
     .o_imm(imm)
   );
@@ -167,6 +222,7 @@ module processor_core (
     .o_rdata(rs)
   );
 
+  /////////////// EX      ///////////////
   // ALU port A mux
   mux #(
     .N_OPTIONS(2),
@@ -204,36 +260,7 @@ module processor_core (
     .o_take(take_branch)
   );
 
-  // CU
-  cu cu(
-    .i_inst(inst),
-    .i_trap_mode(trap_mode),
-
-    .o_alu_op(alu_op),
-    .o_alu_a_sel(alu_a_sel),
-    .o_alu_b_sel(alu_b_sel),
-    .o_bu_be(bu_be),
-    .o_bu_op(bu_op),
-    .o_regfile_we(regfile_we),
-    .o_rd_addr(rd_addr),
-    .o_rs1_addr(rs1_addr),
-    .o_rs2_addr(rs2_addr),
-    .o_imm_sel(imm_sel),
-    .o_lsu_ls(lsu_ls_op),
-    .o_reg_wb_sel(reg_wb_sel),
-
-    .o_csr_we(csr_we),
-    .o_csr_data_sel(csr_data_sel),
-    .o_csr_addr(csr_addr),
-    .o_csr_op(csr_op),
-    .o_csr_zimm(csr_zimm),
-
-    .o_t_illegal_inst(cu_t_illegal_inst),
-    .o_t_ecall_m(t_ecall_m),
-    .o_t_ebreak(t_ebreak),
-    .o_trap_mret(trap_mret)
-  );
-
+  /////////////// MEM     ///////////////
   // DMEM
   data_mem #(
     .MEM_SIZE(DATA_MEM_SIZE),
@@ -274,6 +301,7 @@ module processor_core (
     .o_t_store_access_fault(t_store_access_fault)
   );
 
+  /////////////// WB      ///////////////
   // Register writeback mux
   mux #(
     .N_OPTIONS(REG_WB_VALCOUNT),
@@ -286,8 +314,8 @@ module processor_core (
 
   // Trap dispatch
   trap_dispatch td(
-    .i_pc(pc),
-    .i_inst(inst),
+    .i_pc(id_pc),
+    .i_inst(id_inst),
     .i_ls_addr(alu_out),
     .i_inst_addr_misaligned(t_inst_addr_misaligned),
     .i_inst_access_fault(t_inst_access_fault),
@@ -330,7 +358,7 @@ module processor_core (
     .i_op(csr_op),
     .i_addr(csr_addr),
     .i_wdata(csr_wdata),
-    .i_pc(pc),
+    .i_pc(id_pc),
 
     .i_trap_req(trap_req),
     .i_trap_cause(trap_cause),

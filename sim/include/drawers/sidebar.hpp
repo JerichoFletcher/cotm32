@@ -2,6 +2,7 @@
 
 #include "drawers/csr_drawer.hpp"
 #include "drawers/mem_drawer.hpp"
+#include "drawers/pipeline_regs_drawer.hpp"
 #include "drawers/reg_drawer.hpp"
 #include "drawers/trap_drawer.hpp"
 #include "simulator.hpp"
@@ -16,4 +17,5 @@ private:
     CsrDrawer m_csr_drawer;
     MemDrawer m_mem_drawer;
     TrapDrawer m_trap_drawer;
+    PipelineRegsDrawer m_pipeline_regs_drawer;
 };
