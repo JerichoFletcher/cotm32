@@ -37,21 +37,21 @@ void MemDrawer::render(const Simulator& sim) {
           mem_src_size = INST_MEM_SIZE;
           mem_src_start = INST_MEM_START;
           mem_src_end = INST_MEM_END;
-          offset_max = INST_MEM_SIZE - MemDrawer::DISPLAY_WINDOW_W * MemDrawer::DISPLAY_WINDOW_H;
+          offset_max = INST_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
           break;
         case 1:
           window_start = ROM_MEM_START;
           mem_src_size = ROM_MEM_SIZE;
           mem_src_start = ROM_MEM_START;
           mem_src_end = ROM_MEM_END;
-          offset_max = ROM_MEM_SIZE - MemDrawer::DISPLAY_WINDOW_W * MemDrawer::DISPLAY_WINDOW_H;
+          offset_max = ROM_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
           break;
         case 2: 
           window_start = DATA_MEM_START;
           mem_src_size = DATA_MEM_SIZE;
           mem_src_start = DATA_MEM_START;
           mem_src_end = DATA_MEM_END;
-          offset_max = DATA_MEM_SIZE - MemDrawer::DISPLAY_WINDOW_W * MemDrawer::DISPLAY_WINDOW_H;
+          offset_max = DATA_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
           break;
       }
       this->m_mem_offset = this->m_mem_offset > offset_max ? offset_max : this->m_mem_offset;
@@ -71,28 +71,28 @@ void MemDrawer::render(const Simulator& sim) {
       if (ImGui::SliderInt("Offset", &this->m_mem_offset, 0, offset_max, "%08x",
         ImGuiSliderFlags_AlwaysClamp
       )) {
-        this->m_mem_offset &= -MemDrawer::DISPLAY_WINDOW_W;
+        this->m_mem_offset &= -DISPLAY_WINDOW_W;
       }
 
-      if (ImGui::BeginTable("table_mem", MemDrawer::DISPLAY_WINDOW_W / disp_w + 1,
+      if (ImGui::BeginTable("table_mem", DISPLAY_WINDOW_W / disp_w + 1,
         ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_RowBg
       )) {
         ImGui::TableSetupColumn("ADDR");
 
-        for (int i = 0; i < MemDrawer::DISPLAY_WINDOW_W; i += disp_w) {
+        for (int i = 0; i < DISPLAY_WINDOW_W; i += disp_w) {
           ImGui::TableSetupColumn(fmt::format("{:02x}", i).c_str(), ImGuiTableColumnFlags_WidthStretch);
         }
         ImGui::TableHeadersRow();
 
-        for (int r = 0; r < MemDrawer::DISPLAY_WINDOW_H; r++) {
+        for (int r = 0; r < DISPLAY_WINDOW_H; r++) {
           ImGui::TableNextRow();
           ImGui::TableNextColumn();
-          ImGui::Text("0x%08x", mem_src_start + this->m_mem_offset + r * MemDrawer::DISPLAY_WINDOW_W);
+          ImGui::Text("0x%08x", mem_src_start + this->m_mem_offset + r * DISPLAY_WINDOW_W);
 
-          for (int c = 0; c < MemDrawer::DISPLAY_WINDOW_W; c += disp_w) {
+          for (int c = 0; c < DISPLAY_WINDOW_W; c += disp_w) {
             ImGui::TableNextColumn();
             
-            uint32_t addr_base = mem_src_start + this->m_mem_offset + r * MemDrawer::DISPLAY_WINDOW_W + c;
+            uint32_t addr_base = mem_src_start + this->m_mem_offset + r * DISPLAY_WINDOW_W + c;
             uint8_t val8_0, val8_1, val8_2, val8_3;
             switch (this->m_mem_disp_w) {
               case 0:
