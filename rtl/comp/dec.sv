@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 // N-bit decoder
 module dec #(
   parameter N_SEL_BITS = 1

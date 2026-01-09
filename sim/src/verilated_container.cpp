@@ -10,14 +10,7 @@ VerilatedContainer::VerilatedContainer(int argc, char** argv)
     this->m_contextp = std::make_unique<VerilatedContext>();
     this->m_contextp->commandArgs(argc, argv);
 
-    this->m_contextp->timeunit(-9);
-    this->m_contextp->timeprecision(-9);
-
-    Verilated::traceEverOn(true);
     this->m_tfp = std::make_unique<VerilatedVcdC>();
-    this->m_tfp->set_time_unit("ns");
-    this->m_tfp->set_time_resolution("ns");
-
     this->m_top = std::make_unique<Vtop>(this->m_contextp.get());
     this->m_top->trace(this->m_tfp.get(), 99);
 }
@@ -79,12 +72,19 @@ void VerilatedContainer::finish() {
 
 void VerilatedContainer::start_trace_dump(const std::string& filename, int dump_length) {
     if (this->is_dumping()) return;
+
+    Verilated::traceEverOn(true);
+    this->m_tfp->set_time_unit(this->m_contextp->timeunitString());
+    this->m_tfp->set_time_resolution(this->m_contextp->timeprecisionString());
+
     this->m_tfp->open(filename.c_str());
-    this->m_dump_remaining_steps = dump_length;
+    this->m_d_proc_steps = 0;
+    this->m_d_remn_steps = dump_length;
 }
 
 void VerilatedContainer::stop_trace_dump() {
     if (!this->is_dumping()) return;
+
     this->m_tfp->close();
 }
 
@@ -117,9 +117,10 @@ bool VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
 void VerilatedContainer::dump_step() {
     if (!this->is_dumping()) return;
 
-    std::printf("Dumping T=%ld (remaining %d)\n", this->time(), this->m_dump_remaining_steps);
     this->m_tfp->dump(this->time());
-    if (--this->m_dump_remaining_steps <= 0) {
+    this->m_d_proc_steps++;
+    this->m_d_remn_steps--;
+    if (this->m_d_remn_steps <= 0) {
         this->stop_trace_dump();
     }
 }

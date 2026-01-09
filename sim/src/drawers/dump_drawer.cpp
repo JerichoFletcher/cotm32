@@ -40,6 +40,14 @@ void DumpDrawer::render(const Simulator& sim) {
             ImGuiSliderFlags_AlwaysClamp
         );
 
+        if (this->m_c_dump.is_dumping()) {
+            ImGui::Text(
+                "Dumping %d/%d", sim.v().dump_processed_steps(), sim.v().dump_total_steps()
+            );
+        } else {
+            ImGui::TextUnformatted("Not dumping");
+        }
+
         if (ImGui::Button("Start dump")) {
             this->m_c_dump.request_dump(this->m_dump_name, this->m_length);
         }

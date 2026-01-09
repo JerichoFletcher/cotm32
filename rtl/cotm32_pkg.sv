@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 package cotm32_pkg;
 
 // Sizes

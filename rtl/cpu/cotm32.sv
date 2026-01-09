@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 // Top module
 module cotm32 (
   input logic i_clk,

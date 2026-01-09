@@ -1,3 +1,5 @@
+`timescale 1ns/1ns
+
 import cotm32_pkg::XLEN;
 
 // N-bit multiplexer

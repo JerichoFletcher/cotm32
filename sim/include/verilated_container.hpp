@@ -19,7 +19,11 @@ public:
     inline uint64_t time() const { return this->m_contextp->time(); }
     inline IData pc() const { return this->m_top->cotm32->core->pc; }
     inline IData inst() const { return this->m_top->cotm32->core->inst; }
+
     inline bool is_dumping() const { return this->m_tfp->isOpen(); }
+    inline int dump_processed_steps() const { return this->m_d_proc_steps; }
+    inline int dump_remaining_steps() const { return this->m_d_remn_steps; }
+    inline int dump_total_steps() const { return this->m_d_proc_steps + this->m_d_remn_steps; }
 
     inline const std::unique_ptr<VerilatedContext>& context() const { return this->m_contextp; }
     inline const std::unique_ptr<Vtop>& top() const { return this->m_top; }
@@ -43,7 +47,8 @@ private:
     bool m_started;
     bool m_finished;
 
-    int m_dump_remaining_steps;
+    int m_d_proc_steps;
+    int m_d_remn_steps;
 
     void dump_step();
 };

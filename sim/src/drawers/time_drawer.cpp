@@ -9,13 +9,13 @@ void TimeDrawer::render(const Simulator& sim) {
     if (ImGui::Begin(
             "Time", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
         )) {
-        ImGui::Text("Time  : %ld", sim.v().time());
+        ImGui::Text("Time    : %ld", sim.v().time());
         ImGui::Text(
-            "T-Scl : %s/%s",
+            "T-Scale : %s/%s",
             sim.v().context()->timeunitString(),
             sim.v().context()->timeprecisionString()
         );
-        ImGui::Text("PC    : 0x%08x", sim.v().pc());
+        ImGui::Text("PC      : 0x%08x", sim.v().pc());
 
         ImGui::Separator();
         ImGui::SliderFloat(
@@ -26,7 +26,7 @@ void TimeDrawer::render(const Simulator& sim) {
             "%.0f",
             ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp
         );
-        ImGui::Text("P    : %.9f s", this->m_ctrl.clk_period());
+        ImGui::Text("Period  : %.9f s", this->m_ctrl.clk_period());
 
         ImGui::Separator();
         ImGui::ProgressBar(this->m_ctrl.tick_cap_frac(), ImVec2(-FLT_MIN, 0), "Tick cap");

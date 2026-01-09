@@ -2,7 +2,10 @@
 out/
 gtkw/
 build/
-*.vcd
 
 # Local settings
 .vscode/
+
+# Runtime-generated files
+*.vcd
+imgui.ini
