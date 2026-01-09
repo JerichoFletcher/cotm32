@@ -40,7 +40,7 @@ void SdlWindow::run() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
       for (auto* l : this->m_listeners) {
-        l->handle(e);
+        l->handle_event(e);
       }
 
       if (e.type == SDL_QUIT) {

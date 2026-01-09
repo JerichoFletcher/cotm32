@@ -6,7 +6,7 @@
 #include <SDL2/SDL_opengl.h>
 
 struct SdlWindowEventListener {
-  virtual void handle(const SDL_Event& e) = 0;
+  virtual void handle_event(const SDL_Event& e) = 0;
   virtual ~SdlWindowEventListener() = default;
 };
 

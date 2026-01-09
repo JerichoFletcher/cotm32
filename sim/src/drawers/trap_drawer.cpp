@@ -34,7 +34,7 @@ void TrapDrawer::draw() {
 
       if (trap_req) {
         ImGui::TextUnformatted("Entering trap mode next tick");
-        ImGui::Dummy(ImVec2(0, ImGui::GetTextLineHeight() + ImGui::GetTextLineHeightWithSpacing()));
+        ImGui::Dummy(ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + ImGui::GetTextLineHeight()));
       } else if (trap_mode) {
         if (trap_mret) {
           ImGui::Text("In trap: %d (exiting)", trap_cause);
@@ -79,7 +79,7 @@ void TrapDrawer::draw() {
         ImGui::TextUnformatted(desc ? desc : "No description");
       } else {
         ImGui::TextUnformatted("Not in trap");
-        ImGui::Dummy(ImVec2(0, ImGui::GetTextLineHeight() + ImGui::GetTextLineHeightWithSpacing()));
+        ImGui::Dummy(ImVec2(0, ImGui::GetTextLineHeightWithSpacing() + ImGui::GetTextLineHeight()));
       }
       ImGui::Separator();
 

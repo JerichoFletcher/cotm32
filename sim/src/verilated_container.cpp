@@ -1,5 +1,6 @@
 #include "verilated_container.hpp"
 
+#include <cstdio>
 #include <stdexcept>
 #include "Vtop_cotm32.h"
 #include "Vtop_processor_core.h"
@@ -7,11 +8,13 @@
 #include "cotm32_defs.hpp"
 
 VerilatedContainer::VerilatedContainer(int argc, char** argv):
-  m_time(0),
   m_started(false),
   m_finished(false) {
   this->m_contextp = std::make_unique<VerilatedContext>();
   this->m_contextp->commandArgs(argc, argv);
+
+  this->m_contextp->timeunit(-9);
+  this->m_contextp->timeprecision(-9);
 
   // Verilated::traceEverOn(true);
   // this->m_tfp = std::make_unique<VerilatedVcdC>();
@@ -57,12 +60,13 @@ void VerilatedContainer::tick() {
 
   this->m_top->i_clk = 0;
   this->m_top->eval();
+  this->m_contextp->timeInc(1UL);
   // this->m_tfp->dump(this->m_time++);
 
   this->m_top->i_clk = 1;
   this->m_top->eval();
+  this->m_contextp->timeInc(1UL);
   // this->m_tfp->dump(this->m_time++);
-  this->m_time++;
 }
 
 void VerilatedContainer::finish() {
@@ -80,19 +84,17 @@ void VerilatedContainer::finish() {
 bool VerilatedContainer::read_byte(uint32_t addr, uint8_t* out) const {
   if (INST_MEM_START <= addr && addr <= INST_MEM_END) {
     *out = this->m_top->cotm32->core->im__DOT__mem_bytes[addr - INST_MEM_START];
-    return true;
   } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
     *out = this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START];
-    return true;
   } else if (DATA_MEM_START <= addr && addr <= DATA_MEM_END) {
     *out = this->m_top->cotm32->core->mem__DOT__mem_bytes[addr - DATA_MEM_START];
-    return true;
   } else {
     return false;
   }
+  return true;
 }
 
-void VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
+bool VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
   if (INST_MEM_START <= addr && addr <= INST_MEM_END) {
     this->m_top->cotm32->core->im__DOT__mem_bytes[addr - INST_MEM_START] = val;
   } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
@@ -100,6 +102,7 @@ void VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
   } else if (DATA_MEM_START <= addr && addr <= DATA_MEM_END) {
     this->m_top->cotm32->core->mem__DOT__mem_bytes[addr - DATA_MEM_START] = val;
   } else {
-    throw std::runtime_error("Error writing byte: address out of valid range");
+    return false;
   }
+  return true;
 }

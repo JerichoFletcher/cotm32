@@ -24,7 +24,7 @@ class ImGuiLayer : public SdlWindowEventListener, public SdlWindowFrameCallback 
     void add_drawer(ImGuiDrawer* drawer);
     
     void frame_callback() override;
-    void handle(const SDL_Event& e) override;
+    void handle_event(const SDL_Event& e) override;
 
   private:
     SDL_Window* m_window;

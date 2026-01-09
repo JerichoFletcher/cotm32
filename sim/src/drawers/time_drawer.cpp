@@ -18,8 +18,9 @@ void TimeDrawer::draw() {
   if (ImGui::Begin("Time", nullptr,
     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
   )) {
-    ImGui::Text("Time : %d", this->m_v.time());
-    ImGui::Text("PC   : 0x%08x", this->m_v.pc());
+    ImGui::Text("Time  : %ld", this->m_v.time());
+    ImGui::Text("T-Scl : %s/%s", this->m_v.context()->timeunitString(), this->m_v.context()->timeprecisionString());
+    ImGui::Text("PC    : 0x%08x", this->m_v.pc());
   
     ImGui::Separator();
     ImGui::SliderFloat(

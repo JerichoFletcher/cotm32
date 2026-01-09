@@ -50,6 +50,6 @@ void ImGuiLayer::add_drawer(ImGuiDrawer* drawer) {
   this->m_drawers.push_back(drawer);
 }
 
-void ImGuiLayer::handle(const SDL_Event& e) {
+void ImGuiLayer::handle_event(const SDL_Event& e) {
   ImGui_ImplSDL2_ProcessEvent(&e);
 }
