@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "controllers/dump_controller.hpp"
 #include "controllers/time_controller.hpp"
 #include "drawers/dump_drawer.hpp"
@@ -37,12 +39,16 @@ int main(int argc, char** argv) {
     sim.add_render_listener(&d_dump);
 
     // Run simulation
+    try {
 #ifdef BOOT_ROM_PATH
-    load_elf(BOOT_ROM_PATH, v);
+        load_elf(BOOT_ROM_PATH, v);
 #endif
-    v.start();
-    window.run();
-    v.finish();
+        v.start();
+        window.run();
+        v.finish();
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
+    }
 
     return 0;
 }

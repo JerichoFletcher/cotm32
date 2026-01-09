@@ -2,9 +2,11 @@
 
 #include <elf.h>
 
-#include <cstdio>
 #include <fstream>
+#include <iostream>
 #include <vector>
+
+#include "fmt/core.h"
 
 void load_elf(const char* path, VerilatedContainer& v) {
     std::ifstream f(path, std::ios::binary);
@@ -19,7 +21,10 @@ void load_elf(const char* path, VerilatedContainer& v) {
         throw std::runtime_error("File is not ELF32");
     }
 
-    std::printf("Loaded ELF at %s\n", path);
+    std::cout << "Loaded ELF at " << path << '\n';
+    std::cout << "Program header count: " << eh.e_phnum << '\n';
+    std::cout << "Section header count: " << eh.e_shnum << std::endl;
+
     f.seekg(eh.e_phoff);
 
     for (int i = 0; i < eh.e_phnum; i++) {
@@ -35,7 +40,10 @@ void load_elf(const char* path, VerilatedContainer& v) {
         f.seekg(pos);
 
         uint32_t addr = ph.p_vaddr;
-        std::printf("Reading segment [%08x:%08x]\n", ph.p_vaddr, ph.p_vaddr + ph.p_memsz - 1);
+        std::cout << fmt::format(
+                         "Read segment [{:08x}:{:08x}]", ph.p_vaddr, ph.p_vaddr + ph.p_memsz - 1
+                     )
+                  << std::endl;
 
         for (size_t j = 0; j < buf.size(); j++) {
             v.write_byte(addr + j, buf[j]);
