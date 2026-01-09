@@ -3,5 +3,5 @@
 #include "simulator.hpp"
 
 struct TrapDrawer : public SimulatorRenderListener {
-  void render(const Simulator& sim) override;
+    void render(const Simulator& sim) override;
 };

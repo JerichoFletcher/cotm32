@@ -1,43 +1,42 @@
-#include "sdl_window.hpp"
-#include "imgui_renderer.hpp"
-#include "verilated_container.hpp"
-#include "simulator.hpp"
-#include "load_elf.hpp"
-
 #include "controllers/time_controller.hpp"
-#include "drawers/time_drawer.hpp"
 #include "drawers/sidebar.hpp"
+#include "drawers/time_drawer.hpp"
+#include "imgui_renderer.hpp"
+#include "load_elf.hpp"
+#include "sdl_window.hpp"
+#include "simulator.hpp"
+#include "verilated_container.hpp"
 
 int main(int argc, char** argv) {
-  // Set up window
-  SdlWindow window;
-  ImGuiRenderer imgui(window.sdl_win(), window.gl());
-  window.add_event_listener(&imgui);
-  window.add_render_listener(&imgui);
-  
-  // Set up simulator and link to renderer
-  VerilatedContainer v(argc, argv);
-  Simulator sim(v);
-  window.add_update_litener(&sim);
-  imgui.add_drawer(&sim);
+    // Set up window
+    SdlWindow window;
+    ImGuiRenderer imgui(window.sdl_win(), window.gl());
+    window.add_event_listener(&imgui);
+    window.add_render_listener(&imgui);
 
-  // Create controllers
-  TimeController c_time;
-  sim.add_update_listener(&c_time);
+    // Set up simulator and link to renderer
+    VerilatedContainer v(argc, argv);
+    Simulator sim(v);
+    window.add_update_litener(&sim);
+    imgui.add_drawer(&sim);
 
-  // Create drawers
-  TimeDrawer d_time(c_time);
-  Sidebar d_sidebar;
-  sim.add_render_listener(&d_time);
-  sim.add_render_listener(&d_sidebar);
+    // Create controllers
+    TimeController c_time;
+    sim.add_update_listener(&c_time);
 
-  // Run simulation
-  #ifdef BOOT_ROM_PATH
-  load_elf(BOOT_ROM_PATH, v);
-  #endif
-  v.start();
-  window.run();
-  v.finish();
+    // Create drawers
+    TimeDrawer d_time(c_time);
+    Sidebar d_sidebar;
+    sim.add_render_listener(&d_time);
+    sim.add_render_listener(&d_sidebar);
 
-  return 0;
+// Run simulation
+#ifdef BOOT_ROM_PATH
+    load_elf(BOOT_ROM_PATH, v);
+#endif
+    v.start();
+    window.run();
+    v.finish();
+
+    return 0;
 }

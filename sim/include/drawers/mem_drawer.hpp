@@ -3,11 +3,11 @@
 #include "simulator.hpp"
 
 class MemDrawer : public SimulatorRenderListener {
-  public:
+public:
     MemDrawer();
     void render(const Simulator& sim) override;
-  
-  private:
+
+private:
     static constexpr int DISPLAY_WINDOW_W = 8;
     static constexpr int DISPLAY_WINDOW_H = 32;
 

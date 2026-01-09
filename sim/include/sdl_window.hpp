@@ -1,27 +1,28 @@
 #pragma once
 
-#include <memory>
-#include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
+#include <memory>
+#include <vector>
+
 struct SdlWindowEventListener {
-  virtual void handle_event(const SDL_Event& e) = 0;
-  virtual ~SdlWindowEventListener() = default;
+    virtual void handle_event(const SDL_Event& e) = 0;
+    virtual ~SdlWindowEventListener() = default;
 };
 
 struct SdlWindowUpdateListener {
-  virtual void update() = 0;
-  virtual ~SdlWindowUpdateListener() = default;
+    virtual void update() = 0;
+    virtual ~SdlWindowUpdateListener() = default;
 };
 
 struct SdlWindowRenderListener {
-  virtual void render() = 0;
-  virtual ~SdlWindowRenderListener() = default;
+    virtual void render() = 0;
+    virtual ~SdlWindowRenderListener() = default;
 };
 
 class SdlWindow {
-  public:
+public:
     SdlWindow();
     ~SdlWindow();
 
@@ -33,7 +34,7 @@ class SdlWindow {
     void add_render_listener(SdlWindowRenderListener* listener);
     void run();
 
-  private:
+private:
     SDL_Window* m_window;
     SDL_GLContext m_gl;
     std::vector<SdlWindowEventListener*> m_l_evt;

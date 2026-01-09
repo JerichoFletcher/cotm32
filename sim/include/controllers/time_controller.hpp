@@ -5,7 +5,7 @@
 #include "simulator.hpp"
 
 class TimeController : public SimulatorUpdateListener {
-  public:
+public:
     TimeController();
     void update(Simulator& sim) override;
 
@@ -14,11 +14,9 @@ class TimeController : public SimulatorUpdateListener {
     inline float clk_hz() const { return this->m_clk_hz; }
     inline double clk_period() const { return 1.0 / this->m_clk_hz; }
 
-    inline float tick_cap_frac() const {
-      return (float)this->m_executed_step_count / MAX_STEPS_PER_FRAME;
-    }
+    inline float tick_cap_frac() const { return (float)this->m_exec_step / MAX_STEPS_PER_FRAME; }
     inline float tick_debt_frac() const {
-      return this->m_accumulator / (this->clk_period() * MAX_STEPS_PER_FRAME);
+        return this->m_accumulator / (this->clk_period() * MAX_STEPS_PER_FRAME);
     }
 
     inline bool& is_auto() { return this->m_is_auto; }
@@ -27,9 +25,10 @@ class TimeController : public SimulatorUpdateListener {
 
     inline void request_step() { this->m_step_req = true; }
     inline void request_reset() { this->m_rst_req = true; }
-  
-  private:
+
+private:
     static constexpr int MAX_STEPS_PER_FRAME = 200'000;
+
     using clock = std::chrono::steady_clock;
 
     bool m_is_auto;
@@ -41,5 +40,5 @@ class TimeController : public SimulatorUpdateListener {
 
     clock::time_point m_prev_time;
     double m_accumulator;
-    int m_executed_step_count;
+    int m_exec_step;
 };

@@ -1,19 +1,20 @@
 #pragma once
 
-#include <vector>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <imgui.h>
 
+#include <vector>
+
 #include "sdl_window.hpp"
 
 struct ImGuiDrawer {
-  virtual void draw() = 0;
-  virtual ~ImGuiDrawer() = default;
+    virtual void draw() = 0;
+    virtual ~ImGuiDrawer() = default;
 };
 
 class ImGuiRenderer : public SdlWindowEventListener, public SdlWindowRenderListener {
-  public:
+public:
     ImGuiRenderer(SDL_Window* window, SDL_GLContext gl);
     ~ImGuiRenderer();
 
@@ -22,11 +23,11 @@ class ImGuiRenderer : public SdlWindowEventListener, public SdlWindowRenderListe
     void begin_frame();
     void end_frame();
     void add_drawer(ImGuiDrawer* drawer);
-    
+
     void render() override;
     void handle_event(const SDL_Event& e) override;
 
-  private:
+private:
     SDL_Window* m_window;
     std::vector<ImGuiDrawer*> m_drawers;
 };
