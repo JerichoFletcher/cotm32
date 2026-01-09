@@ -26,11 +26,14 @@ int main(int argc, char** argv) {
   window.add_update_litener(&sim);
   imgui.add_drawer(&sim);
 
-  // Add drawers
-  TimeDrawer d_time;
-  Sidebar d_sidebar;
+  // Create controllers
+  TimeController c_time;
 
-  sim.add_update_listener(&d_time);
+  sim.add_update_listener(&c_time);
+
+  // Create drawers
+  TimeDrawer d_time(c_time);
+  Sidebar d_sidebar;
 
   sim.add_render_listener(&d_time);
   sim.add_render_listener(&d_sidebar);

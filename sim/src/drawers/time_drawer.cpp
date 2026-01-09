@@ -1,12 +1,6 @@
 #include "drawers/time_drawer.hpp"
 
-TimeDrawer::TimeDrawer():
-  m_auto(false),
-  m_prev_auto(false),
-  m_clk_hz(50.0f),
-  m_tick_period(0.1),
-  m_step_req(false),
-  m_rst_req(false) {}
+TimeDrawer::TimeDrawer(TimeController& ctrl): m_ctrl(ctrl) {}
 
 void TimeDrawer::render(const Simulator& sim) {
   ImGui::SetNextWindowPos(
@@ -24,75 +18,30 @@ void TimeDrawer::render(const Simulator& sim) {
     ImGui::Separator();
     ImGui::SliderFloat(
       "Clock (Hz)",
-      &this->m_clk_hz,
+      &this->m_ctrl.clk_hz(),
       1.0f,
       50'000'000.0f,
       "%.0f",
       ImGuiSliderFlags_Logarithmic | ImGuiSliderFlags_AlwaysClamp
     );
-    this->m_tick_period = 1.0 / (double)this->m_clk_hz;
-    ImGui::Text("Tick : %.9f s", this->m_tick_period);
+    ImGui::Text("P    : %.9f s", this->m_ctrl.clk_period());
   
     ImGui::Separator();
-    ImGui::ProgressBar(this->tick_cap_frac(), ImVec2(-FLT_MIN, 0), "Tick cap");
-    ImGui::ProgressBar(this->tick_debt_frac(), ImVec2(-FLT_MIN, 0), "Tick debt");
+    ImGui::ProgressBar(this->m_ctrl.tick_cap_frac(), ImVec2(-FLT_MIN, 0), "Tick cap");
+    ImGui::ProgressBar(this->m_ctrl.tick_debt_frac(), ImVec2(-FLT_MIN, 0), "Tick debt");
 
-    ImGui::Checkbox("Auto", &this->m_auto);
+    ImGui::Checkbox("Auto", &this->m_ctrl.is_auto());
     ImGui::SameLine();
     if (ImGui::Button("Step")) {
-      this->m_auto = false;
-      this->m_step_req = true;
+      this->m_ctrl.is_auto() = false;
+      this->m_ctrl.request_step();
     }
     ImGui::SameLine();
     if (ImGui::Button("Reset")) {
-      this->m_auto = false;
-      this->m_rst_req = true;
+      this->m_ctrl.is_auto() = false;
+      this->m_ctrl.request_reset();
     }
   }
 
   ImGui::End();
-}
-
-void TimeDrawer::update(Simulator& sim) {
-  if (this->m_rst_req) {
-    sim.v().reset();
-    this->m_rst_req = false;
-    this->m_accumulator = 0.0;
-    this->m_executed_step_count = 0;
-    return;
-  }
-
-  if (!this->m_auto && (!this->m_step_req || this->m_prev_auto)) {
-    this->m_prev_auto = this->m_auto;
-    this->m_accumulator = 0.0;
-    this->m_executed_step_count = 0;
-    return;
-  }
-
-  if (this->m_auto && !this->m_prev_auto) {
-    this->m_prev_time = clock::now();
-    this->m_prev_auto = this->m_auto;
-  }
-
-  auto now = clock::now();
-  std::chrono::duration<double> delta = now - this->m_prev_time;
-  this->m_prev_time = now;
-
-  if (!this->m_auto && this->m_step_req) {
-    sim.v().update();
-    this->m_step_req = false;
-    this->m_accumulator = 0.0;
-    return;
-  }
-
-  this->m_accumulator += delta.count();
-  this->m_executed_step_count = 0;
-  while (
-    this->m_accumulator >= this->m_tick_period
-    && this->m_executed_step_count < TimeDrawer::MAX_STEPS_PER_FRAME
-  ) {
-    sim.v().update();
-    this->m_accumulator -= this->m_tick_period;
-    this->m_executed_step_count++;
-  }
 }

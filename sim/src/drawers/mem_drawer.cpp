@@ -56,22 +56,22 @@ void MemDrawer::render(const Simulator& sim) {
       }
       this->m_mem_offset = this->m_mem_offset > offset_max ? offset_max : this->m_mem_offset;
 
-      if (ImGui::SliderInt("Offset", &this->m_mem_offset, 0, offset_max, "%08x",
-        ImGuiSliderFlags_AlwaysClamp
-      )) {
-        this->m_mem_offset &= -MemDrawer::DISPLAY_WINDOW_W;
-      }
-
       ImGui::Separator();
       ImGui::Text("Size     : %d B", mem_src_size);
       ImGui::Text("Address  : %08x:%08x", mem_src_start, mem_src_end);
-
+      
       ImGui::Combo("Width", &this->m_mem_disp_w, mem_disp_w_options, IM_COUNTOF(mem_disp_w_options));
       int disp_w;
       switch (this->m_mem_disp_w) {
         case 0: disp_w = 1; break;
         case 1: disp_w = 2; break;
         case 2: disp_w = 4; break;
+      }
+      
+      if (ImGui::SliderInt("Offset", &this->m_mem_offset, 0, offset_max, "%08x",
+        ImGuiSliderFlags_AlwaysClamp
+      )) {
+        this->m_mem_offset &= -MemDrawer::DISPLAY_WINDOW_W;
       }
 
       if (ImGui::BeginTable("table_mem", MemDrawer::DISPLAY_WINDOW_W / disp_w + 1,
@@ -105,7 +105,9 @@ void MemDrawer::render(const Simulator& sim) {
                   sim.v().read_byte(addr_base, &val8_0) &&
                   sim.v().read_byte(addr_base + 1, &val8_1)
                 ) {
-                  uint16_t val16 = (((uint16_t)val8_1 & 0xff) << 8) | ((uint16_t)val8_0 & 0xff);
+                  uint16_t val16 =
+                    (((uint16_t)val8_1 & 0xff) << 8) |
+                    ((uint16_t)val8_0 & 0xff);
                   ImGui::Text("%04x", val16);
                 }
                 break;

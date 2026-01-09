@@ -57,6 +57,7 @@ set(CXX_SOURCES
   sim/src/drawers/csr_drawer.cpp
   sim/src/drawers/mem_drawer.cpp
   sim/src/drawers/trap_drawer.cpp
+  sim/src/controllers/time_controller.cpp
 )
 
 set(RTL_SOURCES
