@@ -17,7 +17,9 @@ module inst_fetch #(
 
   output logic [XLEN-1:0] o_addr,
   output logic [XLEN-1:0] o_addr_4,
-  output logic o_t_inst_addr_misaligned
+
+  output logic o_t_inst_addr_misaligned,
+  output logic o_t_inst_access_fault
 );
 
   import cotm32_pkg::*;
@@ -70,6 +72,13 @@ module inst_fetch #(
     o_t_inst_addr_misaligned = '0;
     if (o_addr[1:0] != '0) begin
       o_t_inst_addr_misaligned = '1;
+    end
+  end
+
+  always_comb begin
+    o_t_inst_access_fault = '0;
+    if ((INST_MEM_START > 0 && o_addr < INST_MEM_START) || o_addr > INST_MEM_END) begin
+      o_t_inst_access_fault = '1;
     end
   end
 

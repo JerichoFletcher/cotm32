@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 #include "Vtop_cotm32.h"
-#include "Vtop_csr_file__C20.h"
+#include "Vtop_csr_file.h"
 #include "Vtop_processor_core.h"
 #include "cotm32_defs.hpp"
 

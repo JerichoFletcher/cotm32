@@ -10,14 +10,10 @@ _start: # _start at PC reset vector (0x0)
   j     main
 
 main:
-  # Test ecall (should see 0xdeadbeef in a0)
-  li    a7, 0xdeadbeef
-  ecall
-  j     stall
+  j stall
 
 stall:
-  mv    zero, a0
-  j     stall
+  j stall
 
 trap_entry:
   # Establish stack frame and store registers
@@ -47,6 +43,9 @@ trap_ret:
 trap_handle_inst_addr_misaligned:
   j trap_handle_inst_addr_misaligned
 
+trap_handle_inst_access_fault:
+  j trap_handle_inst_access_fault
+
 trap_handle_illegal_inst:
   j trap_handle_illegal_inst
 
@@ -56,8 +55,14 @@ trap_handle_breakpoint:
 trap_handle_load_addr_misaligned:
   j trap_handle_load_addr_misaligned
 
+trap_handle_load_access_fault:
+  j trap_handle_load_access_fault
+
 trap_handle_store_addr_misaligned:
   j trap_handle_store_addr_misaligned
+
+trap_handle_store_access_fault:
+  j trap_handle_store_access_fault
 
 trap_handle_ecall_m:
   # TODO: Inspect a7 and handle
@@ -75,13 +80,13 @@ trap_handle_reserved:
 .section .rodata
 trap_table:
   .word trap_handle_inst_addr_misaligned
-  .word trap_handle_reserved
+  .word trap_handle_inst_access_fault
   .word trap_handle_illegal_inst
   .word trap_handle_breakpoint
   .word trap_handle_load_addr_misaligned
-  .word trap_handle_reserved
+  .word trap_handle_load_access_fault
   .word trap_handle_store_addr_misaligned
-  .word trap_handle_reserved
+  .word trap_handle_store_access_fault
   .word trap_handle_reserved
   .word trap_handle_reserved
   .word trap_handle_reserved

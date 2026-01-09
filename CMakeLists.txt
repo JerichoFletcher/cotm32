@@ -51,6 +51,7 @@ set(CXX_SOURCES
   sim/src/simulator.cpp
   sim/src/views/reg_view.cpp
   sim/src/views/csr_view.cpp
+  sim/src/views/trap_view.cpp
   sim/src/drawers/time_drawer.cpp
   sim/src/drawers/sidebar.cpp
   sim/src/drawers/reg_drawer.cpp
@@ -102,10 +103,8 @@ verilate(cotm32
   TOP_MODULE cotm32
   PREFIX Vtop
   VERILATOR_ARGS
-    "-Wno-LATCH"
-    "-Wno-CASEINCOMPLETE"
-    "-Wno-MULTIDRIVEN"
-    "-Wno-WIDTHEXPAND"
+    "-Wall"
+    "-Wno-UNUSEDSIGNAL"
 )
 
 add_dependencies(cotm32 bootloader)

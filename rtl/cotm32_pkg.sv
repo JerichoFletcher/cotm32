@@ -1,9 +1,5 @@
 package cotm32_pkg;
 
-// Paths
-parameter INST_MEM_SRC_PATH = "./out/elf/boot-text.verilog";
-parameter ROM_MEM_SRC_PATH = "./out/elf/boot-rodata.verilog";
-
 // Sizes
 parameter BYTE_WIDTH = 8;
 parameter INST_WIDTH = 32;

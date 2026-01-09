@@ -19,7 +19,9 @@ module lsu (
   output logic o_we_dmem,
 
   output logic o_t_load_addr_misaligned,
-  output logic o_t_store_addr_misaligned
+  output logic o_t_load_access_fault,
+  output logic o_t_store_addr_misaligned,
+  output logic o_t_store_access_fault
 );
 
   import cotm32_pkg::*;
@@ -27,33 +29,8 @@ module lsu (
   lsu_mem_src_t mem_src;
   logic [XLEN-1:0] mem_rdata;
 
-  always_comb begin
-    o_t_load_addr_misaligned = '0;
-    o_t_store_addr_misaligned = '0;
-
-    case (i_op)
-      LSU_LOAD_H, LSU_LOAD_HU: begin
-        if (i_addr[0] != '0) begin
-          o_t_load_addr_misaligned = '1;
-        end
-      end
-      LSU_LOAD_W: begin
-        if (i_addr[1:0] != '0) begin
-          o_t_load_addr_misaligned = '1;
-        end
-      end
-      LSU_STORE_H: begin
-        if (i_addr[0] != '0) begin
-          o_t_store_addr_misaligned = '1;
-        end
-      end
-      LSU_STORE_W: begin
-        if (i_addr[1:0] != '0) begin
-          o_t_store_addr_misaligned = '1;
-        end
-      end
-    endcase
-  end
+  lsu_mem_src_t valid_load_src[2] = '{LSU_MEM_SRC_ROM, LSU_MEM_SRC_DMEM};
+  lsu_mem_src_t valid_store_src[1] = '{LSU_MEM_SRC_DMEM};
 
   always_comb begin
     if (ROM_MEM_START <= i_addr && i_addr <= ROM_MEM_END) begin
@@ -64,6 +41,7 @@ module lsu (
       o_addr = i_addr - DATA_MEM_START;
     end else begin
       mem_src = LSU_MEM_SRC_UNKNOWN;
+      o_addr = '0;
     end
   end
 
@@ -77,8 +55,8 @@ module lsu (
 
   always_comb begin
     unique case (i_op)
-      LSU_LOAD_B  : o_rdata = $signed(mem_rdata[XLEN/4-1:0]);
-      LSU_LOAD_H  : o_rdata = $signed(mem_rdata[XLEN/2-1:0]);
+      LSU_LOAD_B  : o_rdata = {{(3*XLEN/4){mem_rdata[XLEN/4-1]}}, mem_rdata[XLEN/4-1:0]};
+      LSU_LOAD_H  : o_rdata = {{(XLEN/2){mem_rdata[XLEN/2-1]}}, mem_rdata[XLEN/2-1:0]};
       LSU_LOAD_W  : o_rdata = mem_rdata[XLEN-1:0];
       LSU_LOAD_BU : o_rdata = {{(3*XLEN/4){1'b0}}, mem_rdata[XLEN/4-1:0]};
       LSU_LOAD_HU : o_rdata = {{(XLEN/2){1'b0}}, mem_rdata[XLEN/2-1:0]};
@@ -108,6 +86,54 @@ module lsu (
         o_wstrb = 4'b0000;
         o_we_dmem = '0;
       end
+    endcase
+  end
+
+  always_comb begin
+    o_t_load_addr_misaligned = '0;
+    o_t_store_addr_misaligned = '0;
+
+    case (i_op)
+      LSU_LOAD_H, LSU_LOAD_HU: begin
+        if (i_addr[0] != '0) begin
+          o_t_load_addr_misaligned = '1;
+        end
+      end
+      LSU_LOAD_W: begin
+        if (i_addr[1:0] != '0) begin
+          o_t_load_addr_misaligned = '1;
+        end
+      end
+      LSU_STORE_H: begin
+        if (i_addr[0] != '0) begin
+          o_t_store_addr_misaligned = '1;
+        end
+      end
+      LSU_STORE_W: begin
+        if (i_addr[1:0] != '0) begin
+          o_t_store_addr_misaligned = '1;
+        end
+      end
+      default: begin /* NOP */ end
+    endcase
+  end
+
+  always_comb begin
+    o_t_load_access_fault = '0;
+    o_t_store_access_fault = '0;
+
+    unique case (i_op)
+      LSU_LOAD_B, LSU_LOAD_BU, LSU_LOAD_H, LSU_LOAD_HU, LSU_LOAD_W: begin
+        if (!(mem_src inside {valid_load_src})) begin
+          o_t_load_access_fault = '1;
+        end
+      end
+      LSU_STORE_B, LSU_STORE_H, LSU_STORE_W: begin
+        if (!(mem_src inside {valid_store_src})) begin
+          o_t_store_access_fault = '1;
+        end
+      end
+      default: begin /* NOP */ end
     endcase
   end
 

@@ -3,9 +3,7 @@ import cotm32_priv_pkg::zicsr_csr_op_t;
 import cotm32_priv_pkg::zicsr_csr_addr_t;
 import cotm32_priv_pkg::trap_cause_t;
 
-module csr_file #(
-  parameter CSR_REG_WIDTH = MXLEN
-) (
+module csr_file (
   input logic i_clk,
   input logic i_rst,
   input logic i_we,
@@ -70,6 +68,7 @@ module csr_file #(
         ZICSR_CSR_OP_RW: mem[csr_idx] <= i_wdata;
         ZICSR_CSR_OP_RS: mem[csr_idx] <= mem[csr_idx] | i_wdata;
         ZICSR_CSR_OP_RC: mem[csr_idx] <= mem[csr_idx] & ~i_wdata;
+        default: begin /* NOP */ end
       endcase
     end
   end

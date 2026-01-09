@@ -18,7 +18,6 @@ module data_mem #(
   import cotm32_pkg::*;
 
   localparam DATA_BYTE_COUNT = DATA_WIDTH/BYTE_WIDTH;
-  localparam MEM_COUNT = MEM_SIZE/DATA_BYTE_COUNT;
   logic [BYTE_WIDTH-1:0] mem_bytes [0:MEM_SIZE-1] /* verilator public_flat_rw */;
 
   initial begin

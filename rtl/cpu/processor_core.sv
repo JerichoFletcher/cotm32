@@ -88,12 +88,15 @@ module processor_core (
   wire cu_t_illegal_inst;
   wire csr_t_illegal_inst;
 
-  wire t_illegal_inst = cu_t_illegal_inst | csr_t_illegal_inst;
   wire t_inst_addr_misaligned;
-  wire t_ecall_m;
+  wire t_inst_access_fault;
+  wire t_illegal_inst = cu_t_illegal_inst | csr_t_illegal_inst;
   wire t_ebreak;
   wire t_load_addr_misaligned;
+  wire t_load_access_fault;
   wire t_store_addr_misaligned;
+  wire t_store_access_fault;
+  wire t_ecall_m;
 
   wire trap_mode /* verilator public */;
 
@@ -132,7 +135,8 @@ module processor_core (
 
     .o_addr(pc),
     .o_addr_4(pc_4),
-    .o_t_inst_addr_misaligned(t_inst_addr_misaligned)
+    .o_t_inst_addr_misaligned(t_inst_addr_misaligned),
+    .o_t_inst_access_fault(t_inst_access_fault)
   );
 
   // IMEM
@@ -265,7 +269,9 @@ module processor_core (
     .o_wstrb(dmem_wstrb),
     .o_we_dmem(dmem_we),
     .o_t_load_addr_misaligned(t_load_addr_misaligned),
-    .o_t_store_addr_misaligned(t_store_addr_misaligned)
+    .o_t_load_access_fault(t_load_access_fault),
+    .o_t_store_addr_misaligned(t_store_addr_misaligned),
+    .o_t_store_access_fault(t_store_access_fault)
   );
 
   // Register writeback mux
@@ -283,12 +289,15 @@ module processor_core (
     .i_pc(pc),
     .i_inst(inst),
     .i_ls_addr(alu_out),
-    .i_illegal_inst(t_illegal_inst),
     .i_inst_addr_misaligned(t_inst_addr_misaligned),
-    .i_ecall_m(t_ecall_m),
+    .i_inst_access_fault(t_inst_access_fault),
+    .i_illegal_inst(t_illegal_inst),
     .i_ebreak(t_ebreak),
     .i_load_addr_misaligned(t_load_addr_misaligned),
+    .i_load_access_fault(t_load_access_fault),
     .i_store_addr_misaligned(t_store_addr_misaligned),
+    .i_store_access_fault(t_store_access_fault),
+    .i_ecall_m(t_ecall_m),
     .o_trap_req(trap_req),
     .o_trap_cause(trap_cause),
     .o_trap_tval(trap_tval)
@@ -314,9 +323,7 @@ module processor_core (
   );
 
   // CSR file
-  csr_file #(
-    .CSR_REG_WIDTH(MXLEN)
-  ) csr(
+  csr_file csr(
     .i_clk(i_clk),
     .i_rst(i_rst),
     .i_we(csr_we),
