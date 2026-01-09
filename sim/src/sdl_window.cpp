@@ -1,8 +1,6 @@
 #include "sdl_window.hpp"
 
-SdlWindow::SdlWindow():
-  m_listeners(std::vector<SdlWindowEventListener*>()),
-  m_fc(std::vector<SdlWindowFrameCallback*>()) {
+SdlWindow::SdlWindow() {
   SDL_Init(SDL_INIT_VIDEO);
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -26,12 +24,16 @@ SdlWindow::~SdlWindow() {
   SDL_Quit();
 }
 
-void SdlWindow::add_listener(SdlWindowEventListener* listener) {
-  this->m_listeners.push_back(listener);
+void SdlWindow::add_event_listener(SdlWindowEventListener* listener) {
+  this->m_l_evt.push_back(listener);
 }
 
-void SdlWindow::add_frame_callback(SdlWindowFrameCallback* fc) {
-  this->m_fc.push_back(fc);
+void SdlWindow::add_update_litener(SdlWindowUpdateListener* listener) {
+  this->m_l_update.push_back(listener);
+}
+
+void SdlWindow::add_render_listener(SdlWindowRenderListener* listener) {
+  this->m_l_render.push_back(listener);
 }
 
 void SdlWindow::run() {
@@ -39,7 +41,7 @@ void SdlWindow::run() {
   while (running) {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
-      for (auto* l : this->m_listeners) {
+      for (auto* l : this->m_l_evt) {
         l->handle_event(e);
       }
 
@@ -48,8 +50,11 @@ void SdlWindow::run() {
       }
     }
 
-    for (auto* fc : this->m_fc) {
-      fc->frame_callback();
+    for (auto* l : this->m_l_update) {
+      l->update();
+    }
+    for (auto* l : this->m_l_render) {
+      l->render();
     }
     SDL_GL_SwapWindow(this->m_window);
   }

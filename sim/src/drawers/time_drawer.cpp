@@ -1,7 +1,6 @@
 #include "drawers/time_drawer.hpp"
 
-TimeDrawer::TimeDrawer(VerilatedContainer& v):
-  m_v(v),
+TimeDrawer::TimeDrawer():
   m_auto(false),
   m_prev_auto(false),
   m_clk_hz(50.0f),
@@ -9,7 +8,7 @@ TimeDrawer::TimeDrawer(VerilatedContainer& v):
   m_step_req(false),
   m_rst_req(false) {}
 
-void TimeDrawer::draw() {
+void TimeDrawer::render(const Simulator& sim) {
   ImGui::SetNextWindowPos(
     ImVec2(355, 5),
     ImGuiCond_Once,
@@ -18,9 +17,9 @@ void TimeDrawer::draw() {
   if (ImGui::Begin("Time", nullptr,
     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
   )) {
-    ImGui::Text("Time  : %ld", this->m_v.time());
-    ImGui::Text("T-Scl : %s/%s", this->m_v.context()->timeunitString(), this->m_v.context()->timeprecisionString());
-    ImGui::Text("PC    : 0x%08x", this->m_v.pc());
+    ImGui::Text("Time  : %ld", sim.v().time());
+    ImGui::Text("T-Scl : %s/%s", sim.v().context()->timeunitString(), sim.v().context()->timeprecisionString());
+    ImGui::Text("PC    : 0x%08x", sim.v().pc());
   
     ImGui::Separator();
     ImGui::SliderFloat(
@@ -52,12 +51,11 @@ void TimeDrawer::draw() {
   }
 
   ImGui::End();
-  this->update();
 }
 
-void TimeDrawer::update() {
+void TimeDrawer::update(Simulator& sim) {
   if (this->m_rst_req) {
-    this->m_v.reset();
+    sim.v().reset();
     this->m_rst_req = false;
     this->m_accumulator = 0.0;
     this->m_executed_step_count = 0;
@@ -81,7 +79,7 @@ void TimeDrawer::update() {
   this->m_prev_time = now;
 
   if (!this->m_auto && this->m_step_req) {
-    this->m_v.tick();
+    sim.v().update();
     this->m_step_req = false;
     this->m_accumulator = 0.0;
     return;
@@ -93,7 +91,7 @@ void TimeDrawer::update() {
     this->m_accumulator >= this->m_tick_period
     && this->m_executed_step_count < TimeDrawer::MAX_STEPS_PER_FRAME
   ) {
-    this->m_v.tick();
+    sim.v().update();
     this->m_accumulator -= this->m_tick_period;
     this->m_executed_step_count++;
   }

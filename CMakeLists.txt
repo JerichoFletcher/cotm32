@@ -47,7 +47,8 @@ set(CXX_SOURCES
   sim/src/verilated_container.cpp
   sim/src/load_elf.cpp
   sim/src/sdl_window.cpp
-  sim/src/imgui_layer.cpp
+  sim/src/imgui_renderer.cpp
+  sim/src/simulator.cpp
   sim/src/views/reg_view.cpp
   sim/src/views/csr_view.cpp
   sim/src/drawers/time_drawer.cpp
@@ -104,7 +105,6 @@ verilate(cotm32
     "-Wno-CASEINCOMPLETE"
     "-Wno-MULTIDRIVEN"
     "-Wno-WIDTHEXPAND"
-  TRACE
 )
 
 add_dependencies(cotm32 bootloader)

@@ -2,18 +2,17 @@
 
 #include <chrono>
 
-#include "imgui_layer.hpp"
-#include "verilated_container.hpp"
+#include "simulator.hpp"
 
-class TimeDrawer : public ImGuiDrawer {
+class TimeDrawer : public SimulatorUpdateListener, public SimulatorRenderListener {
   public:
-    TimeDrawer(VerilatedContainer& v);
-    void draw() override;
+    TimeDrawer();
+    void update(Simulator& sim) override;
+    void render(const Simulator& sim) override;
+
   private:
     static constexpr int MAX_STEPS_PER_FRAME = 200'000;
     using clock = std::chrono::steady_clock;
-  
-    VerilatedContainer& m_v;
     
     bool m_auto;
     bool m_prev_auto;
@@ -26,8 +25,6 @@ class TimeDrawer : public ImGuiDrawer {
     clock::time_point m_prev_time;
     double m_accumulator;
     int m_executed_step_count;
-
-    void update();
 
     inline float tick_cap_frac() const {
       return (float)this->m_executed_step_count / MAX_STEPS_PER_FRAME;

@@ -1,13 +1,12 @@
 #include "drawers/sidebar.hpp"
 
-Sidebar::Sidebar(const VerilatedContainer& v):
-  m_v(v),
-  m_reg_drawer(v),
-  m_csr_drawer(v),
-  m_mem_drawer(v),
-  m_trap_drawer(v) {}
+Sidebar::Sidebar():
+  m_reg_drawer(),
+  m_csr_drawer(),
+  m_mem_drawer(),
+  m_trap_drawer() {}
 
-void Sidebar::draw() {
+void Sidebar::render(const Simulator& sim) {
   auto ws = ImGui::GetMainViewport()->WorkSize;
 
   ImGui::SetNextWindowPos(
@@ -24,14 +23,14 @@ void Sidebar::draw() {
   )) {
     if (ImGui::BeginTabBar("sidebar_tabs")) {
       if (ImGui::BeginTabItem("Memory")) {
-        this->m_reg_drawer.draw();
-        this->m_csr_drawer.draw();
-        this->m_mem_drawer.draw();
+        this->m_reg_drawer.render(sim);
+        this->m_csr_drawer.render(sim);
+        this->m_mem_drawer.render(sim);
         ImGui::EndTabItem();
       }
       if (ImGui::BeginTabItem("Privilege")) {
-        this->m_trap_drawer.draw();
-        this->m_csr_drawer.draw();
+        this->m_trap_drawer.render(sim);
+        this->m_csr_drawer.render(sim);
         ImGui::EndTabItem();
       }
 

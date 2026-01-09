@@ -12,10 +12,10 @@ struct ImGuiDrawer {
   virtual ~ImGuiDrawer() = default;
 };
 
-class ImGuiLayer : public SdlWindowEventListener, public SdlWindowFrameCallback {
+class ImGuiRenderer : public SdlWindowEventListener, public SdlWindowRenderListener {
   public:
-    ImGuiLayer(SDL_Window* window, SDL_GLContext gl);
-    ~ImGuiLayer();
+    ImGuiRenderer(SDL_Window* window, SDL_GLContext gl);
+    ~ImGuiRenderer();
 
     inline ImGuiIO& io() const { return ImGui::GetIO(); }
 
@@ -23,7 +23,7 @@ class ImGuiLayer : public SdlWindowEventListener, public SdlWindowFrameCallback 
     void end_frame();
     void add_drawer(ImGuiDrawer* drawer);
     
-    void frame_callback() override;
+    void render() override;
     void handle_event(const SDL_Event& e) override;
 
   private:

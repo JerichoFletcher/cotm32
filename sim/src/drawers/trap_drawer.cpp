@@ -2,6 +2,9 @@
 
 #include <fmt/core.h>
 
+#include "views/reg_view.hpp"
+#include "views/csr_view.hpp"
+
 static const int REG_A7_IDX = 17;
 static const int MCAUSE_IDX = 2;
 static const int MTVAL_IDX = 3;
@@ -15,22 +18,34 @@ static const int TRAP_CAUSE_ECALL_M               = 11;
 
 static const float SIG_RADIUS = 6.0f;
 
-TrapDrawer::TrapDrawer(const VerilatedContainer& v):
-  m_v(v),
-  m_reg(v),
-  m_csr(v) {}
+void draw_signal(const char* label, bool on, ImU32 on_color, ImU32 off_color) {
+  auto* draw_list = ImGui::GetWindowDrawList();
+  auto pos = ImGui::GetCursorScreenPos();
+  auto col = on ? on_color : off_color;
 
-void TrapDrawer::draw() {
+  draw_list->AddCircleFilled(
+    ImVec2(pos.x + SIG_RADIUS, pos.y + SIG_RADIUS),
+    SIG_RADIUS, col
+  );
+  ImGui::Dummy(ImVec2(SIG_RADIUS * 2, SIG_RADIUS * 2));
+  ImGui::SameLine();
+  ImGui::TextUnformatted(label);
+}
+
+void TrapDrawer::render(const Simulator& sim) {
   if (ImGui::BeginChild("trap",
     ImVec2(ImGui::GetContentRegionAvail().x, 0),
     ImGuiChildFlags_AutoResizeY
   )) {
     if (ImGui::CollapsingHeader("Trap View", ImGuiTreeNodeFlags_DefaultOpen)) {
-      int trap_cause = this->m_csr[MCAUSE_IDX];
-      int trap_val = this->m_csr[MTVAL_IDX];
-      bool trap_mode = this->m_v.top()->cotm32->core->trap_mode;
-      bool trap_req = this->m_v.top()->cotm32->core->trap_req;
-      bool trap_mret = this->m_v.top()->cotm32->core->trap_mret;
+      RegView reg(sim.v());
+      CsrView csr(sim.v());
+
+      int trap_cause = csr[MCAUSE_IDX];
+      int trap_val = csr[MTVAL_IDX];
+      bool trap_mode = sim.v().top()->cotm32->core->trap_mode;
+      bool trap_req = sim.v().top()->cotm32->core->trap_req;
+      bool trap_mret = sim.v().top()->cotm32->core->trap_mret;
 
       if (trap_req) {
         ImGui::TextUnformatted("Entering trap mode next tick");
@@ -68,7 +83,7 @@ void TrapDrawer::draw() {
             break;
           case TRAP_CAUSE_ECALL_M:
             msg = "M-mode environment call";
-            desc = fmt::format("a7 = 0x{:08x}", this->m_reg[REG_A7_IDX]).c_str();
+            desc = fmt::format("a7 = 0x{:08x}", reg[REG_A7_IDX]).c_str();
             break;
           default:
             msg = "Unknown trap cause";
@@ -83,30 +98,16 @@ void TrapDrawer::draw() {
       }
       ImGui::Separator();
 
-      this->draw_signal("Trap mode", trap_mode,
+      draw_signal("Trap mode", trap_mode,
         IM_COL32(255, 40, 40, 255), IM_COL32(40, 40, 40, 255)
       );
-      this->draw_signal("Trap request", trap_req,
+      draw_signal("Trap request", trap_req,
         IM_COL32(255, 255, 40, 255), IM_COL32(40, 40, 40, 255)
       );
-      this->draw_signal("Trap return", trap_mret,
+      draw_signal("Trap return", trap_mret,
         IM_COL32(40, 255, 40, 255), IM_COL32(40, 40, 40, 255)
       );
     }
   }
   ImGui::EndChild();
-}
-
-void TrapDrawer::draw_signal(const char* label, bool on, ImU32 on_color, ImU32 off_color) {
-  auto* draw_list = ImGui::GetWindowDrawList();
-  auto pos = ImGui::GetCursorScreenPos();
-  auto col = on ? on_color : off_color;
-
-  draw_list->AddCircleFilled(
-    ImVec2(pos.x + SIG_RADIUS, pos.y + SIG_RADIUS),
-    SIG_RADIUS, col
-  );
-  ImGui::Dummy(ImVec2(SIG_RADIUS * 2, SIG_RADIUS * 2));
-  ImGui::SameLine();
-  ImGui::TextUnformatted(label);
 }

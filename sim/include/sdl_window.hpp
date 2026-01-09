@@ -10,9 +10,14 @@ struct SdlWindowEventListener {
   virtual ~SdlWindowEventListener() = default;
 };
 
-struct SdlWindowFrameCallback {
-  virtual void frame_callback() = 0;
-  virtual ~SdlWindowFrameCallback() = default;
+struct SdlWindowUpdateListener {
+  virtual void update() = 0;
+  virtual ~SdlWindowUpdateListener() = default;
+};
+
+struct SdlWindowRenderListener {
+  virtual void render() = 0;
+  virtual ~SdlWindowRenderListener() = default;
 };
 
 class SdlWindow {
@@ -23,13 +28,15 @@ class SdlWindow {
     inline SDL_Window* sdl_win() const { return this->m_window; }
     inline SDL_GLContext gl() const { return this->m_gl; }
 
-    void add_listener(SdlWindowEventListener* listener);
-    void add_frame_callback(SdlWindowFrameCallback* fc);
+    void add_event_listener(SdlWindowEventListener* listener);
+    void add_update_litener(SdlWindowUpdateListener* listener);
+    void add_render_listener(SdlWindowRenderListener* listener);
     void run();
 
   private:
     SDL_Window* m_window;
     SDL_GLContext m_gl;
-    std::vector<SdlWindowEventListener*> m_listeners;
-    std::vector<SdlWindowFrameCallback*> m_fc;
+    std::vector<SdlWindowEventListener*> m_l_evt;
+    std::vector<SdlWindowUpdateListener*> m_l_update;
+    std::vector<SdlWindowRenderListener*> m_l_render;
 };

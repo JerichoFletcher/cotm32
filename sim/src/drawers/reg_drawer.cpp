@@ -1,6 +1,9 @@
 #include "drawers/reg_drawer.hpp"
 
+#include "imgui.h"
+
 #include "cotm32_defs.hpp"
+#include "views/reg_view.hpp"
 
 static const char* reg_names[NUM_REGS] = {
   "x0/zero",  "x1/ra",    "x2/sp",    "x3/gp",
@@ -13,9 +16,7 @@ static const char* reg_names[NUM_REGS] = {
   "x28/t3",   "x29/t4",   "x30/t5",   "x31/t6"
 };
 
-RegDrawer::RegDrawer(const VerilatedContainer& v): m_v(v), m_reg(v) {}
-
-void RegDrawer::draw() {
+void RegDrawer::render(const Simulator& sim) {
   if (ImGui::BeginChild("reg",
     ImVec2(ImGui::GetContentRegionAvail().x, 0),
     ImGuiChildFlags_AutoResizeY
@@ -28,6 +29,8 @@ void RegDrawer::draw() {
         ImGui::TableSetupColumn("Dec");
         ImGui::TableSetupColumn("Hex");
         ImGui::TableHeadersRow();
+
+        RegView reg(sim.v());
     
         for (int i = 0; i < NUM_REGS; i++) {
           ImGui::TableNextRow();
@@ -35,10 +38,10 @@ void RegDrawer::draw() {
           ImGui::Text("%s", reg_names[i]);
     
           ImGui::TableNextColumn();
-          ImGui::Text("%11d", (int32_t)this->m_reg[i]);
+          ImGui::Text("%11d", (int32_t)reg[i]);
     
           ImGui::TableNextColumn();
-          ImGui::Text("0x%08x", this->m_reg[i]);
+          ImGui::Text("0x%08x", reg[i]);
         }
     
         ImGui::EndTable();

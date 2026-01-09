@@ -46,11 +46,11 @@ void VerilatedContainer::start() {
 
 void VerilatedContainer::reset() {
   this->m_top->i_rst = 1;
-  this->tick();
+  this->update();
   this->m_top->i_rst = 0;
 }
 
-void VerilatedContainer::tick() {
+void VerilatedContainer::update() {
   if (!this->m_started) {
     throw std::runtime_error("Cannot tick, container not started");
   }

@@ -1,18 +1,15 @@
 #pragma once
 
-#include "verilated_container.hpp"
-#include "imgui_layer.hpp"
+#include "simulator.hpp"
 
-class MemDrawer : public ImGuiDrawer {
+class MemDrawer : public SimulatorRenderListener {
   public:
-    MemDrawer(const VerilatedContainer& v);
-    void draw() override;
+    MemDrawer();
+    void render(const Simulator& sim) override;
   
   private:
     static constexpr int DISPLAY_WINDOW_W = 8;
     static constexpr int DISPLAY_WINDOW_H = 32;
-
-    const VerilatedContainer& m_v;
 
     int m_mem_sec_curr;
     int m_mem_offset;

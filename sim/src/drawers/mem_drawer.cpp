@@ -1,6 +1,7 @@
 #include "drawers/mem_drawer.hpp"
 
 #include <fmt/core.h>
+#include "imgui.h"
 
 #include "cotm32_defs.hpp"
 
@@ -11,13 +12,12 @@ static const char* mem_disp_w_options[3] = {
   "Byte", "Half (2 bytes)", "Word (4 bytes)"
 };
 
-MemDrawer::MemDrawer(const VerilatedContainer& v):
-  m_v(v),
+MemDrawer::MemDrawer():
   m_mem_sec_curr(0),
   m_mem_offset(0),
   m_mem_disp_w(0) {}
 
-void MemDrawer::draw() {
+void MemDrawer::render(const Simulator& sim) {
   if (ImGui::BeginChild("mem",
     ImVec2(ImGui::GetContentRegionAvail().x, 0),
     ImGuiChildFlags_AutoResizeY
@@ -96,14 +96,14 @@ void MemDrawer::draw() {
             uint8_t val8_0, val8_1, val8_2, val8_3;
             switch (this->m_mem_disp_w) {
               case 0:
-                if (this->m_v.read_byte(addr_base, &val8_0)) {
+                if (sim.v().read_byte(addr_base, &val8_0)) {
                   ImGui::Text("%02x", val8_0);
                 }
                 break;
               case 1:
                 if (
-                  this->m_v.read_byte(addr_base, &val8_0) &&
-                  this->m_v.read_byte(addr_base + 1, &val8_1)
+                  sim.v().read_byte(addr_base, &val8_0) &&
+                  sim.v().read_byte(addr_base + 1, &val8_1)
                 ) {
                   uint16_t val16 = (((uint16_t)val8_1 & 0xff) << 8) | ((uint16_t)val8_0 & 0xff);
                   ImGui::Text("%04x", val16);
@@ -111,10 +111,10 @@ void MemDrawer::draw() {
                 break;
               case 2:
                 if (
-                  this->m_v.read_byte(addr_base, &val8_0) &&
-                  this->m_v.read_byte(addr_base + 1, &val8_1) &&
-                  this->m_v.read_byte(addr_base + 2, &val8_2) &&
-                  this->m_v.read_byte(addr_base + 3, &val8_3)
+                  sim.v().read_byte(addr_base, &val8_0) &&
+                  sim.v().read_byte(addr_base + 1, &val8_1) &&
+                  sim.v().read_byte(addr_base + 2, &val8_2) &&
+                  sim.v().read_byte(addr_base + 3, &val8_3)
                 ) {
                   uint32_t val32 =
                     (((uint16_t)val8_3 & 0xff) << 24) |

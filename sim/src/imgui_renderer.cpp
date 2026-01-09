@@ -1,9 +1,9 @@
-#include "imgui_layer.hpp"
+#include "imgui_renderer.hpp"
 
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 
-ImGuiLayer::ImGuiLayer(SDL_Window* window, SDL_GLContext gl):
+ImGuiRenderer::ImGuiRenderer(SDL_Window* window, SDL_GLContext gl):
   m_window(window),
   m_drawers(std::vector<ImGuiDrawer*>()) {
   ImGui::CreateContext();
@@ -15,19 +15,19 @@ ImGuiLayer::ImGuiLayer(SDL_Window* window, SDL_GLContext gl):
   ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-ImGuiLayer::~ImGuiLayer() {
+ImGuiRenderer::~ImGuiRenderer() {
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplSDL2_Shutdown();
   ImGui::DestroyContext();
 }
 
-void ImGuiLayer::begin_frame() {
+void ImGuiRenderer::begin_frame() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame();
   ImGui::NewFrame();
 }
 
-void ImGuiLayer::end_frame() {
+void ImGuiRenderer::end_frame() {
   ImGui::Render();
   
   auto& io = this->io();
@@ -38,7 +38,7 @@ void ImGuiLayer::end_frame() {
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void ImGuiLayer::frame_callback() {
+void ImGuiRenderer::render() {
   this->begin_frame();
   for (auto* p : this->m_drawers) {
     p->draw();
@@ -46,10 +46,10 @@ void ImGuiLayer::frame_callback() {
   this->end_frame();
 }
 
-void ImGuiLayer::add_drawer(ImGuiDrawer* drawer) {
+void ImGuiRenderer::add_drawer(ImGuiDrawer* drawer) {
   this->m_drawers.push_back(drawer);
 }
 
-void ImGuiLayer::handle_event(const SDL_Event& e) {
+void ImGuiRenderer::handle_event(const SDL_Event& e) {
   ImGui_ImplSDL2_ProcessEvent(&e);
 }
