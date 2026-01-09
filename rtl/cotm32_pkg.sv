@@ -40,8 +40,8 @@ typedef enum logic [$clog2(10)-1:0] {
 
 // BU operation selector
 typedef enum logic [$clog2(8)-1:0] {
-  BU_ALWAYS,
   BU_NEVER,
+  BU_ALWAYS,
   BU_EQ,
   BU_NE,
   BU_LT,

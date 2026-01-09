@@ -72,6 +72,7 @@ set(CXX_SOURCES
 set(RTL_SOURCES
   rtl/cotm32_pkg.sv
   rtl/cotm32_priv_pkg.sv
+  rtl/cotm32_pipeline_pkg.sv
 
   rtl/comp/dec.sv
   rtl/comp/mux.sv
@@ -98,6 +99,7 @@ set(RTL_SOURCES
   rtl/cpu/priv/trap_dispatch.sv
 
   rtl/cpu/pipeline/ifid_reg.sv
+  rtl/cpu/pipeline/idex_reg.sv
 )
 
 add_executable(cotm32

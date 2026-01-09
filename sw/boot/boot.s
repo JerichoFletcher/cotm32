@@ -7,9 +7,9 @@ _start: # _start at PC reset vector (0x0)
   la    t0, trap_entry
   andi  t0, t0, -4
   csrw  mtvec, t0
-  j     main
 
 main:
+  li    t0, 0xdeadbeef
   j stall
 
 stall:
