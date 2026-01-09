@@ -1,10 +1,7 @@
 #include "verilated_container.hpp"
 
-#include <cstdio>
 #include <stdexcept>
 
-#include "Vtop_cotm32.h"
-#include "Vtop_processor_core.h"
 #include "cotm32_defs.hpp"
 
 VerilatedContainer::VerilatedContainer(int argc, char** argv)
@@ -16,20 +13,19 @@ VerilatedContainer::VerilatedContainer(int argc, char** argv)
     this->m_contextp->timeunit(-9);
     this->m_contextp->timeprecision(-9);
 
-    // Verilated::traceEverOn(true);
-    // this->m_tfp = std::make_unique<VerilatedVcdC>();
-    // this->m_tfp->set_time_unit("ns");
-    // this->m_tfp->set_time_resolution("ns");
+    Verilated::traceEverOn(true);
+    this->m_tfp = std::make_unique<VerilatedVcdC>();
+    this->m_tfp->set_time_unit("ns");
+    this->m_tfp->set_time_resolution("ns");
 
     this->m_top = std::make_unique<Vtop>(this->m_contextp.get());
-    // this->m_top->trace(this->m_tfp.get(), 99);
-    // this->m_tfp->open("trace.vcd");
+    this->m_top->trace(this->m_tfp.get(), 99);
 }
 
 VerilatedContainer::~VerilatedContainer() {
-    // if (this->m_tfp) {
-    //   this->m_tfp->close();
-    // }
+    if (this->m_tfp && this->m_tfp->isOpen()) {
+        this->m_tfp->close();
+    }
 }
 
 void VerilatedContainer::start() {
@@ -61,12 +57,12 @@ void VerilatedContainer::update() {
     this->m_top->i_clk = 0;
     this->m_top->eval();
     this->m_contextp->timeInc(1UL);
-    // this->m_tfp->dump(this->m_time++);
+    this->dump_step();
 
     this->m_top->i_clk = 1;
     this->m_top->eval();
     this->m_contextp->timeInc(1UL);
-    // this->m_tfp->dump(this->m_time++);
+    this->dump_step();
 }
 
 void VerilatedContainer::finish() {
@@ -79,6 +75,17 @@ void VerilatedContainer::finish() {
 
     this->m_top->final();
     this->m_finished = true;
+}
+
+void VerilatedContainer::start_trace_dump(const std::string& filename, int dump_length) {
+    if (this->is_dumping()) return;
+    this->m_tfp->open(filename.c_str());
+    this->m_dump_remaining_steps = dump_length;
+}
+
+void VerilatedContainer::stop_trace_dump() {
+    if (!this->is_dumping()) return;
+    this->m_tfp->close();
 }
 
 bool VerilatedContainer::read_byte(uint32_t addr, uint8_t* out) const {
@@ -105,4 +112,14 @@ bool VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
         return false;
     }
     return true;
+}
+
+void VerilatedContainer::dump_step() {
+    if (!this->is_dumping()) return;
+
+    std::printf("Dumping T=%ld (remaining %d)\n", this->time(), this->m_dump_remaining_steps);
+    this->m_tfp->dump(this->time());
+    if (--this->m_dump_remaining_steps <= 0) {
+        this->stop_trace_dump();
+    }
 }

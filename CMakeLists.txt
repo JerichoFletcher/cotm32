@@ -52,13 +52,16 @@ set(CXX_SOURCES
   sim/src/views/reg_view.cpp
   sim/src/views/csr_view.cpp
   sim/src/views/trap_view.cpp
-  sim/src/drawers/time_drawer.cpp
+  sim/src/drawers/draw_utils.cpp
   sim/src/drawers/sidebar.cpp
+  sim/src/drawers/time_drawer.cpp
   sim/src/drawers/reg_drawer.cpp
   sim/src/drawers/csr_drawer.cpp
   sim/src/drawers/mem_drawer.cpp
   sim/src/drawers/trap_drawer.cpp
+  sim/src/drawers/dump_drawer.cpp
   sim/src/controllers/time_controller.cpp
+  sim/src/controllers/dump_controller.cpp
 )
 
 set(RTL_SOURCES
@@ -96,6 +99,8 @@ add_executable(cotm32
   
   sim/third_party/imgui/backends/imgui_impl_sdl2.cpp
   sim/third_party/imgui/backends/imgui_impl_opengl3.cpp
+
+  sim/third_party/imgui/misc/cpp/imgui_stdlib.cpp
 )
 
 verilate(cotm32
@@ -105,6 +110,7 @@ verilate(cotm32
   VERILATOR_ARGS
     "-Wall"
     "-Wno-UNUSEDSIGNAL"
+  TRACE
 )
 
 add_dependencies(cotm32 bootloader)
@@ -123,6 +129,7 @@ target_include_directories(cotm32 PRIVATE
   sim/include
   sim/third_party/imgui
   sim/third_party/imgui/backends
+  sim/third_party/imgui/misc/cpp
   ${SDL2_INCLUDE_DIRS}
 )
 

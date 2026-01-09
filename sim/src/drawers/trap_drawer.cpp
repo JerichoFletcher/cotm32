@@ -2,6 +2,8 @@
 
 #include <fmt/core.h>
 
+#include "drawers/draw_utils.hpp"
+#include "imgui.h"
 #include "views/trap_view.hpp"
 
 static constexpr inline int TRAP_CAUSE_INST_ADDR_MISALIGNED = 0;
@@ -13,19 +15,6 @@ static constexpr inline int TRAP_CAUSE_LOAD_ACCESS_FAULT = 5;
 static constexpr inline int TRAP_CAUSE_STORE_ADDR_MISALIGNED = 6;
 static constexpr inline int TRAP_CAUSE_STORE_ACCESS_FAULT = 7;
 static constexpr inline int TRAP_CAUSE_ECALL_M = 11;
-
-static const float SIG_RADIUS = 6.0f;
-
-void draw_signal(const char* label, bool on, ImU32 on_color, ImU32 off_color) {
-    auto* draw_list = ImGui::GetWindowDrawList();
-    auto pos = ImGui::GetCursorScreenPos();
-    auto col = on ? on_color : off_color;
-
-    draw_list->AddCircleFilled(ImVec2(pos.x + SIG_RADIUS, pos.y + SIG_RADIUS), SIG_RADIUS, col);
-    ImGui::Dummy(ImVec2(SIG_RADIUS * 2, SIG_RADIUS * 2));
-    ImGui::SameLine();
-    ImGui::TextUnformatted(label);
-}
 
 void TrapDrawer::render(const Simulator& sim) {
     if (ImGui::BeginChild(
@@ -108,13 +97,25 @@ void TrapDrawer::render(const Simulator& sim) {
             ImGui::Separator();
 
             draw_signal(
-                "Trap mode", trap_mode, IM_COL32(255, 40, 40, 255), IM_COL32(40, 40, 40, 255)
+                "In trap mode",
+                trap_mode,
+                IM_COL32(255, 40, 40, 255),
+                IM_COL32(40, 40, 40, 255),
+                false
             );
             draw_signal(
-                "Trap request", trap_req, IM_COL32(255, 255, 40, 255), IM_COL32(40, 40, 40, 255)
+                "Trap requested",
+                trap_req,
+                IM_COL32(255, 255, 40, 255),
+                IM_COL32(40, 40, 40, 255),
+                false
             );
             draw_signal(
-                "Trap return", trap_mret, IM_COL32(40, 255, 40, 255), IM_COL32(40, 40, 40, 255)
+                "Trap return",
+                trap_mret,
+                IM_COL32(40, 255, 40, 255),
+                IM_COL32(40, 40, 40, 255),
+                false
             );
         }
     }

@@ -1,5 +1,7 @@
 #include "drawers/time_drawer.hpp"
 
+#include "imgui.h"
+
 TimeDrawer::TimeDrawer(TimeController& ctrl) : m_ctrl(ctrl) {}
 
 void TimeDrawer::render(const Simulator& sim) {

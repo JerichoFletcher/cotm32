@@ -1,5 +1,7 @@
 #include "drawers/sidebar.hpp"
 
+#include "imgui.h"
+
 Sidebar::Sidebar() : m_reg_drawer(), m_csr_drawer(), m_mem_drawer(), m_trap_drawer() {}
 
 void Sidebar::render(const Simulator& sim) {

@@ -1,4 +1,6 @@
+#include "controllers/dump_controller.hpp"
 #include "controllers/time_controller.hpp"
+#include "drawers/dump_drawer.hpp"
 #include "drawers/sidebar.hpp"
 #include "drawers/time_drawer.hpp"
 #include "imgui_renderer.hpp"
@@ -22,15 +24,19 @@ int main(int argc, char** argv) {
 
     // Create controllers
     TimeController c_time;
+    DumpController c_dump(c_time);
     sim.add_update_listener(&c_time);
+    sim.add_update_listener(&c_dump);
 
     // Create drawers
-    TimeDrawer d_time(c_time);
     Sidebar d_sidebar;
-    sim.add_render_listener(&d_time);
+    TimeDrawer d_time(c_time);
+    DumpDrawer d_dump(c_dump);
     sim.add_render_listener(&d_sidebar);
+    sim.add_render_listener(&d_time);
+    sim.add_render_listener(&d_dump);
 
-// Run simulation
+    // Run simulation
 #ifdef BOOT_ROM_PATH
     load_elf(BOOT_ROM_PATH, v);
 #endif
