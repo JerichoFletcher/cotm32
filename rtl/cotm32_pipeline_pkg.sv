@@ -42,4 +42,23 @@ typedef struct packed {
   logic [XLEN-1:0] pc_4;
 } idex_data_t;
 
+typedef struct packed {
+  logic [XLEN-1:0] alu_out;
+  logic [XLEN-1:0] rs2;
+
+  logic regfile_we;
+  logic [$clog2(NUM_REGS)-1:0] rd_addr;
+  lsu_ls_t lsu_ls_op;
+  reg_wb_sel_t reg_wb_sel;
+
+  logic csr_we;
+  zicsr_data_sel_t csr_data_sel;
+  zicsr_csr_addr_t csr_addr;
+  zicsr_csr_op_t csr_op;
+  logic [MXLEN-1:0] csr_zimm;
+
+  logic [XLEN-1:0] pc;
+  logic [XLEN-1:0] pc_4;
+} exmem_data_t;
+
 endpackage : cotm32_pipeline_pkg

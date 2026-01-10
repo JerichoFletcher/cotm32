@@ -100,6 +100,7 @@ set(RTL_SOURCES
 
   rtl/cpu/pipeline/ifid_reg.sv
   rtl/cpu/pipeline/idex_reg.sv
+  rtl/cpu/pipeline/exmem_reg.sv
 )
 
 add_executable(cotm32

@@ -54,3 +54,31 @@ const IdExRegView PipelineRegsView::id_ex() const {
 
     return view;
 }
+
+const ExMemRegView PipelineRegsView::ex_mem() const {
+    ExMemRegView view;
+    auto* core = this->m_v.top()->cotm32->core;
+
+    view.valid = core->exmem_valid;
+    view.stall = core->exmem_stall;
+    view.flush = core->exmem_flush;
+
+    view.alu_out = core->mem_alu_out;
+    view.rs2 = core->mem_rs2;
+
+    view.regfile_we = core->mem_regfile_we;
+    view.rd_addr = core->mem_rd_addr;
+    view.lsu_ls_op = core->mem_lsu_ls_op;
+    view.reg_wb_sel = core->mem_reg_wb_sel;
+
+    view.csr_we = core->mem_csr_we;
+    view.csr_data_sel = core->mem_csr_data_sel;
+    view.csr_addr = core->mem_csr_addr;
+    view.csr_op = core->mem_csr_op;
+    view.csr_zimm = core->mem_csr_zimm;
+
+    view.pc = core->mem_pc;
+    view.pc_4 = core->mem_pc_4;
+
+    return view;
+}

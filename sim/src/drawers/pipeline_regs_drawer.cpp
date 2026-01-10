@@ -15,12 +15,13 @@ static const char* reg_names[NUM_REGS] = {
 static const char* alu_op_names[10] = {
     "ADD", "SUB", "OR", "AND", "XOR", "SLT", "SLTU", "SLL", "SRL", "SRA"
 };
+static const char* bu_op_names[6] = {"EQ", "NE", "LT", "GE", "LTU", "GEU"};
 static const char* alu_a_names[2] = {"RS1", "PC"};
 static const char* alu_b_names[2] = {"RS2", "IMM"};
 static const char* lsu_ls_names[9] = {
     "NONE", "LOAD B", "LOAD H", "LOAD W", "LOAD UB", "LOAD UH", "STORE B", "STORE H", "STORE W"
 };
-static const char* reg_wb_names[5] = {"ZERO", "ALU", "PC+4", "LSU", "CSR"};
+static const char* reg_wb_names[5] = {"ZERO", "ALU OUT", "PC+4", "LSU", "CSR"};
 
 void draw_sig_vsf(bool valid, bool stall, bool flush) {
     draw_signal("Valid", valid, IM_COL32(40, 255, 40, 255), IM_COL32(255, 40, 40, 255), false);
@@ -77,6 +78,20 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 }
 
                 ImGui::Separator();
+                draw_signal(
+                    "Branch Enable",
+                    idex.bu_be,
+                    IM_COL32(40, 255, 40, 255),
+                    IM_COL32(40, 40, 40, 255),
+                    false
+                );
+                if (0 <= idex.bu_op && idex.bu_op < IM_COUNTOF(bu_op_names)) {
+                    ImGui::Text("Register WB : %s", bu_op_names[idex.bu_op]);
+                } else {
+                    ImGui::Text("Register WB : ??? (%d)", idex.bu_op);
+                }
+
+                ImGui::Separator();
                 ImGui::Text("RS1 Address : %s", reg_names[idex.rs1_addr]);
                 ImGui::Text("  -> (Dec)  : %d", idex.rs1);
                 ImGui::Text("  -> (Hex)  : 0x%08x", idex.rs1);
@@ -86,13 +101,6 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 ImGui::TextUnformatted("Immediate");
                 ImGui::Text("  -> (Dec)  : %d", idex.imm);
                 ImGui::Text("  -> (Hex)  : 0x%08x", idex.imm);
-
-                ImGui::Separator();
-                if (0 <= idex.lsu_ls_op && idex.lsu_ls_op < IM_COUNTOF(lsu_ls_names)) {
-                    ImGui::Text("LSU L/S Op  : %s", lsu_ls_names[idex.lsu_ls_op]);
-                } else {
-                    ImGui::Text("LSU L/S Op  : ??? (%d)", idex.lsu_ls_op);
-                }
 
                 ImGui::Separator();
                 ImGui::TextUnformatted("RD Address  :");
@@ -108,6 +116,48 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                     ImGui::Text("Register WB : %s", reg_wb_names[idex.reg_wb_sel]);
                 } else {
                     ImGui::Text("Register WB : ??? (%d)", idex.reg_wb_sel);
+                }
+                if (0 <= idex.lsu_ls_op && idex.lsu_ls_op < IM_COUNTOF(lsu_ls_names)) {
+                    ImGui::Text("LSU L/S Op  : %s", lsu_ls_names[idex.lsu_ls_op]);
+                } else {
+                    ImGui::Text("LSU L/S Op  : ??? (%d)", idex.lsu_ls_op);
+                }
+            }
+
+            if (ImGui::CollapsingHeader("EX/MEM")) {
+                auto exmem = view.ex_mem();
+                draw_sig_vsf(exmem.valid, exmem.stall, exmem.flush);
+
+                ImGui::Text("PC          : 0x%08x", exmem.pc);
+                ImGui::Text("PC+4        : 0x%08x", exmem.pc_4);
+
+                ImGui::Separator();
+                ImGui::TextUnformatted("ALU Out");
+                ImGui::Text("  -> (Dec)  : %d", exmem.alu_out);
+                ImGui::Text("  -> (Hex)  : 0x%08x", exmem.alu_out);
+                ImGui::TextUnformatted("RS2");
+                ImGui::Text("  -> (Dec)  : %d", exmem.rs2);
+                ImGui::Text("  -> (Hex)  : 0x%08x", exmem.rs2);
+
+                ImGui::Separator();
+                ImGui::TextUnformatted("RD Address  :");
+                ImGui::SameLine();
+                draw_signal(
+                    reg_names[exmem.rd_addr],
+                    exmem.regfile_we,
+                    IM_COL32(40, 255, 40, 255),
+                    IM_COL32(40, 40, 40, 255),
+                    false
+                );
+                if (0 <= exmem.reg_wb_sel && exmem.reg_wb_sel < IM_COUNTOF(reg_wb_names)) {
+                    ImGui::Text("Register WB : %s", reg_wb_names[exmem.reg_wb_sel]);
+                } else {
+                    ImGui::Text("Register WB : ??? (%d)", exmem.reg_wb_sel);
+                }
+                if (0 <= exmem.lsu_ls_op && exmem.lsu_ls_op < IM_COUNTOF(lsu_ls_names)) {
+                    ImGui::Text("LSU L/S Op  : %s", lsu_ls_names[exmem.lsu_ls_op]);
+                } else {
+                    ImGui::Text("LSU L/S Op  : ??? (%d)", exmem.lsu_ls_op);
                 }
             }
         }

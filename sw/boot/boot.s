@@ -9,7 +9,7 @@ _start: # _start at PC reset vector (0x0)
   csrw  mtvec, t0
 
 main:
-  li    t0, 0xdeadbeef
+  addi  t0, zero, 0xab
   j stall
 
 stall:
