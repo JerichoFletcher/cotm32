@@ -28,11 +28,13 @@ static const std::array<std::string, 9> lsu_ls_names = {
 static const std::array<std::string, 5> reg_wb_names = {"ZERO", "ALU OUT", "PC+4", "LSU", "CSR"};
 
 static const std::map<CsrId, std::string> csr_indices = {
-    {CsrId::MTVEC,  "mtvec" },
-    {CsrId::MEPC,   "mepc"  },
-    {CsrId::MCAUSE, "mcause"},
-    {CsrId::MTVAL,  "mtval" },
+    {CsrId::CsrId_MTVEC,  "mtvec" },
+    {CsrId::CsrId_MEPC,   "mepc"  },
+    {CsrId::CsrId_MCAUSE, "mcause"},
+    {CsrId::CsrId_MTVAL,  "mtval" },
 };
+static const std::array<std::string, 2> csr_write_names = {"RS1", "IMM"};
+static const std::array<std::string, 4> csr_op_names = {"NONE", "RW", "RS", "RC"};
 
 template <typename T, std::size_t size>
 inline bool in_bounds(int i, std::array<T, size> arr) {
@@ -78,5 +80,15 @@ const std::string& reg_wb_name(RegWritebackSrc reg_wb_sel) {
 const std::string& csr_name(CsrId csr_id) {
     auto v = csr_indices.find(csr_id);
     return v != csr_indices.end() ? v->second : EMPTY;
+}
+
+const std::string& csr_write_name(CsrWriteSrc csr_write) {
+    if (!in_bounds(csr_write, csr_write_names)) return EMPTY;
+    return csr_write_names[csr_write];
+}
+
+const std::string& csr_op_name(CsrOp csr_op) {
+    if (!in_bounds(csr_op, csr_op_names)) return EMPTY;
+    return csr_op_names[csr_op];
 }
 }  // namespace cotm32::name_utils

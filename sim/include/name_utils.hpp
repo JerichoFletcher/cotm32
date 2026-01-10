@@ -14,4 +14,6 @@ const std::string& lsu_ls_op_name(LsuLoadStoreOp lsu_ls_op);
 const std::string& reg_wb_name(RegWritebackSrc reg_wb_sel);
 
 const std::string& csr_name(CsrId csr_id);
+const std::string& csr_write_name(CsrWriteSrc csr_write);
+const std::string& csr_op_name(CsrOp csr_op);
 }  // namespace cotm32::name_utils

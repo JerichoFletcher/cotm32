@@ -42,6 +42,7 @@ typedef struct packed {
   logic [XLEN-1:0] pc_4;
 } idex_data_t;
 
+// EX/MEM data
 typedef struct packed {
   logic [XLEN-1:0] alu_out;
   logic [XLEN-1:0] rs1;
@@ -62,6 +63,7 @@ typedef struct packed {
   logic [XLEN-1:0] pc_4;
 } exmem_data_t;
 
+// MEM/WB data
 typedef struct packed {
   logic [XLEN-1:0] lsu_rdata;
   logic [XLEN-1:0] alu_out;
@@ -74,5 +76,11 @@ typedef struct packed {
   logic [XLEN-1:0] pc;
   logic [XLEN-1:0] pc_4;
 } memwb_data_t;
+
+typedef enum logic [$clog2(3)-1:0] {
+  PIPE_FWD_SRC_NONE,
+  PIPE_FWD_SRC_EXMEM,
+  PIPE_FWD_SRC_MEMWB
+} forward_src_t;
 
 endpackage : cotm32_pipeline_pkg

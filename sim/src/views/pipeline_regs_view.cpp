@@ -40,9 +40,9 @@ const IdExRegView PipelineRegsView::id_ex() const {
     view.reg_wb_sel = static_cast<RegWritebackSrc>(core->ex_reg_wb_sel);
 
     view.csr_we = core->ex_csr_we;
-    view.csr_data_sel = core->ex_csr_data_sel;
+    view.csr_data_sel = static_cast<CsrWriteSrc>(core->ex_csr_data_sel);
     view.csr_addr = static_cast<CsrId>(core->ex_csr_addr);
-    view.csr_op = core->ex_csr_op;
+    view.csr_op = static_cast<CsrOp>(core->ex_csr_op);
     view.csr_zimm = core->ex_csr_zimm;
 
     view.rs1 = core->ex_rs1;
@@ -72,9 +72,9 @@ const ExMemRegView PipelineRegsView::ex_mem() const {
     view.reg_wb_sel = static_cast<RegWritebackSrc>(core->mem_reg_wb_sel);
 
     view.csr_we = core->mem_csr_we;
-    view.csr_data_sel = core->mem_csr_data_sel;
+    view.csr_data_sel = static_cast<CsrWriteSrc>(core->mem_csr_data_sel);
     view.csr_addr = static_cast<CsrId>(core->mem_csr_addr);
-    view.csr_op = core->mem_csr_op;
+    view.csr_op = static_cast<CsrOp>(core->mem_csr_op);
     view.csr_zimm = core->mem_csr_zimm;
 
     view.pc = core->mem_pc;

@@ -33,9 +33,9 @@ struct IdExRegView {
     RegWritebackSrc reg_wb_sel;
 
     bool csr_we;
-    CData csr_data_sel;
+    CsrWriteSrc csr_data_sel;
     CsrId csr_addr;
-    CData csr_op;
+    CsrOp csr_op;
     IData csr_zimm;
 
     IData rs1;
@@ -60,9 +60,9 @@ struct ExMemRegView {
     RegWritebackSrc reg_wb_sel;
 
     bool csr_we;
-    CData csr_data_sel;
+    CsrWriteSrc csr_data_sel;
     CsrId csr_addr;
-    CData csr_op;
+    CsrOp csr_op;
     IData csr_zimm;
 
     IData pc;

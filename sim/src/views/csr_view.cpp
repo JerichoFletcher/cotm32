@@ -8,10 +8,10 @@
 #include "cotm32_defs.hpp"
 
 static const std::map<CsrId, size_t> csr_indices = {
-    {CsrId::MTVEC,  0},
-    {CsrId::MEPC,   1},
-    {CsrId::MCAUSE, 2},
-    {CsrId::MTVAL,  3},
+    {CsrId::CsrId_MTVEC,  0},
+    {CsrId::CsrId_MEPC,   1},
+    {CsrId::CsrId_MCAUSE, 2},
+    {CsrId::CsrId_MTVAL,  3},
 };
 
 CsrView::CsrView(const VerilatedContainer& v) : m_v(v) {}

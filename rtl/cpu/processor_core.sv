@@ -91,12 +91,12 @@ module processor_core (
   logic [XLEN-1:0] wb_reg_wb_vals [0:REG_WB_VALCOUNT-1];
 
   always_comb begin
-    ex_alu_a_vals[ALU_A_RS1] = ex_rs1;
+    ex_alu_a_vals[ALU_A_RS1] = ex_rs1_fwd;
     ex_alu_a_vals[ALU_A_PC] = ex_pc;
   end
 
   always_comb begin
-    ex_alu_b_vals[ALU_B_RS2] = ex_rs2;
+    ex_alu_b_vals[ALU_B_RS2] = ex_rs2_fwd;
     ex_alu_b_vals[ALU_B_IMM] = ex_imm;
   end
 
@@ -175,6 +175,26 @@ module processor_core (
   wire memwb_valid /* verilator public */;
   wire memwb_stall /* verilator public */;
   wire memwb_flush /* verilator public */;
+
+  forward_src_t forward_a /* verilator public */;
+  forward_src_t forward_b /* verilator public */;
+  
+  logic [XLEN-1:0] forward_a_vals [0:2];
+  logic [XLEN-1:0] forward_b_vals [0:2];
+  wire [XLEN-1:0] ex_rs1_fwd;
+  wire [XLEN-1:0] ex_rs2_fwd;
+
+  always_comb begin
+    forward_a_vals[PIPE_FWD_SRC_NONE] = ex_rs1;
+    forward_a_vals[PIPE_FWD_SRC_EXMEM] = mem_alu_out;
+    forward_a_vals[PIPE_FWD_SRC_MEMWB] = wb_reg_wb;
+  end
+
+  always_comb begin
+    forward_b_vals[PIPE_FWD_SRC_NONE] = ex_rs2;
+    forward_b_vals[PIPE_FWD_SRC_EXMEM] = mem_alu_out;
+    forward_b_vals[PIPE_FWD_SRC_MEMWB] = wb_reg_wb;
+  end
 
   /////////////// IF      ///////////////
   // Instruction fetch unit
@@ -261,7 +281,7 @@ module processor_core (
     .i_rst(i_rst),
     .i_we(wb_regfile_we),
     .i_wdata(wb_reg_wb),
-    .i_waddr(id_rd_addr),
+    .i_waddr(wb_rd_addr),
     .i_raddr('{id_rs1_addr, id_rs2_addr}),
     .i_trap_req(trap_req),
     .o_rdata('{id_rs1, id_rs2})
@@ -324,6 +344,26 @@ module processor_core (
   );
 
   /////////////// EX      ///////////////
+  // RS1 forward mux
+  mux #(
+    .N_OPTIONS(3),
+    .DATA_WIDTH(XLEN)
+  ) mux_rs1_fwd(
+    .i_sel(forward_a),
+    .i_val(forward_a_vals),
+    .o_val(ex_rs1_fwd)
+  );
+
+  // RS2 forward mux
+  mux #(
+    .N_OPTIONS(3),
+    .DATA_WIDTH(XLEN)
+  ) mux_rs2_fwd(
+    .i_sel(forward_b),
+    .i_val(forward_b_vals),
+    .o_val(ex_rs2_fwd)
+  );
+
   // ALU port A mux
   mux #(
     .N_OPTIONS(2),
@@ -355,8 +395,8 @@ module processor_core (
   // BU
   bu bu(
     .i_be(ex_bu_be),
-    .i_a(ex_rs1),
-    .i_b(ex_rs2),
+    .i_a(ex_rs1_fwd),
+    .i_b(ex_rs2_fwd),
     .i_op(ex_bu_op),
     .o_take(ex_take_branch)
   );
@@ -369,8 +409,8 @@ module processor_core (
     .i_flush(exmem_flush),
     .i_data('{
       ex_alu_out,
-      ex_rs1,
-      ex_rs2,
+      ex_rs1_fwd,
+      ex_rs2_fwd,
       ex_regfile_we,
       ex_rd_addr,
       ex_lsu_ls_op,
@@ -514,6 +554,21 @@ module processor_core (
     .i_sel(wb_reg_wb_sel),
     .i_val(wb_reg_wb_vals),
     .o_val(wb_reg_wb)
+  );
+
+  /////////////// PIPE    ///////////////
+  // Forwarding unit
+  fwd_unit fu(
+    .i_idex_rs1_addr(ex_rs1_addr),
+    .i_idex_rs2_addr(ex_rs2_addr),
+    .i_exmem_rd_addr(mem_rd_addr),
+    .i_exmem_regfile_we(mem_regfile_we),
+    .i_exmem_valid(exmem_valid),
+    .i_memwb_rd_addr(wb_rd_addr),
+    .i_memwb_regfile_we(wb_regfile_we),
+    .i_memwb_valid(memwb_valid),
+    .o_forward_a(forward_a),
+    .o_forward_b(forward_b)
   );
 
   // Trap dispatch

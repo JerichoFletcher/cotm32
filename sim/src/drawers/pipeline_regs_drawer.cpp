@@ -93,6 +93,18 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 } else {
                     ImGui::Text("CSR         : ??? (%d)", phase.csr_addr);
                 }
+                auto& csr_op_name = cotm32::name_utils::csr_op_name(phase.csr_op);
+                if (!csr_op_name.empty()) {
+                    ImGui::Text("CSR Op      : %s", csr_op_name.c_str());
+                } else {
+                    ImGui::Text("CSR Op      : ??? (%d)", phase.csr_op);
+                }
+                auto& csr_write_name = cotm32::name_utils::csr_write_name(phase.csr_data_sel);
+                if (!csr_write_name.empty()) {
+                    ImGui::Text("CSR Data    : %s", csr_write_name.c_str());
+                } else {
+                    ImGui::Text("CSR Data    : ??? (%d)", phase.csr_data_sel);
+                }
 
                 ImGui::Separator();
                 ImGui::Text(
@@ -153,6 +165,18 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                     ImGui::Text("CSR         : %s", csr_name.c_str());
                 } else {
                     ImGui::Text("CSR         : ??? (%d)", phase.csr_addr);
+                }
+                auto& csr_op_name = cotm32::name_utils::csr_op_name(phase.csr_op);
+                if (!csr_op_name.empty()) {
+                    ImGui::Text("CSR Op      : %s", csr_op_name.c_str());
+                } else {
+                    ImGui::Text("CSR Op      : ??? (%d)", phase.csr_op);
+                }
+                auto& csr_write_name = cotm32::name_utils::csr_write_name(phase.csr_data_sel);
+                if (!csr_write_name.empty()) {
+                    ImGui::Text("CSR Data    : %s", csr_write_name.c_str());
+                } else {
+                    ImGui::Text("CSR Data    : ??? (%d)", phase.csr_data_sel);
                 }
 
                 ImGui::Separator();
