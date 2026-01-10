@@ -23,6 +23,8 @@ module idex_reg(
     if (i_rst || i_flush) begin
       o_valid <= '0;
       o_data <= '0;
+      o_data.lsu_ls_op <= LSU_NONE;
+      o_data.csr_op <= ZICSR_CSR_OP_NONE;
     end else if (!i_stall) begin
       o_valid <= i_valid;
       o_data <= i_data;
