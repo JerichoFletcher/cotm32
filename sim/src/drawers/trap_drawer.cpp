@@ -2,6 +2,7 @@
 
 #include <fmt/core.h>
 
+#include "colors.hpp"
 #include "drawers/draw_utils.hpp"
 #include "imgui.h"
 #include "views/trap_view.hpp"
@@ -96,27 +97,9 @@ void TrapDrawer::render(const Simulator& sim) {
             }
             ImGui::Separator();
 
-            draw_signal(
-                "In trap mode",
-                trap_mode,
-                IM_COL32(255, 40, 40, 255),
-                IM_COL32(40, 40, 40, 255),
-                false
-            );
-            draw_signal(
-                "Trap requested",
-                trap_req,
-                IM_COL32(255, 255, 40, 255),
-                IM_COL32(40, 40, 40, 255),
-                false
-            );
-            draw_signal(
-                "Trap return",
-                trap_mret,
-                IM_COL32(40, 255, 40, 255),
-                IM_COL32(40, 40, 40, 255),
-                false
-            );
+            draw_signal("Trap mode", trap_mode, cotm32::colors::RED, cotm32::colors::OFF, false);
+            draw_signal("Trap req", trap_req, cotm32::colors::YELLOW, cotm32::colors::OFF, false);
+            draw_signal("Trap ret", trap_mret, cotm32::colors::GREEN, cotm32::colors::OFF, false);
         }
     }
     ImGui::EndChild();

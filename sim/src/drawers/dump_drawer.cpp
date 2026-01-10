@@ -1,5 +1,6 @@
 #include "drawers/dump_drawer.hpp"
 
+#include "colors.hpp"
 #include "drawers/draw_utils.hpp"
 #include "imgui.h"
 #include "imgui_stdlib.h"
@@ -55,8 +56,8 @@ void DumpDrawer::render(const Simulator& sim) {
         draw_signal(
             "Dumping",
             this->m_c_dump.is_dumping(),
-            IM_COL32(255, 255, 40, 255),
-            IM_COL32(40, 40, 40, 255),
+            cotm32::colors::YELLOW,
+            cotm32::colors::OFF,
             true
         );
     }

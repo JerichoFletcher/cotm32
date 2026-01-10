@@ -18,6 +18,7 @@ module exmem_reg(
 );
 
   import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
 
   always_ff @(posedge i_clk) begin
     if (i_rst || i_flush) begin

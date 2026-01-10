@@ -1,5 +1,6 @@
 #include "drawers/pipeline_regs_drawer.hpp"
 
+#include "colors.hpp"
 #include "cotm32_defs.hpp"
 #include "drawers/draw_utils.hpp"
 #include "imgui.h"
@@ -7,11 +8,15 @@
 #include "views/pipeline_regs_view.hpp"
 
 void draw_sig_vsf(bool valid, bool stall, bool flush) {
-    draw_signal("Valid", valid, IM_COL32(40, 255, 40, 255), IM_COL32(255, 40, 40, 255), false);
+    auto c_off = cotm32::colors::OFF;
+    auto c_red = cotm32::colors::RED;
+    auto c_yellow = cotm32::colors::YELLOW;
+    auto c_green = cotm32::colors::GREEN;
+    draw_signal("Valid", valid, c_green, c_red, false);
     ImGui::SameLine();
-    draw_signal("Stall", stall, IM_COL32(255, 255, 40, 255), IM_COL32(40, 40, 40, 255), false);
+    draw_signal("Stall", stall, c_yellow, c_off, false);
     ImGui::SameLine();
-    draw_signal("Flush", flush, IM_COL32(255, 40, 40, 255), IM_COL32(40, 40, 40, 255), false);
+    draw_signal("Flush", flush, c_red, c_off, false);
 }
 
 void PipelineRegsDrawer::render(const Simulator& sim) {
@@ -65,11 +70,7 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
 
                 ImGui::Separator();
                 draw_signal(
-                    "Branch Enable",
-                    phase.bu_be,
-                    IM_COL32(40, 255, 40, 255),
-                    IM_COL32(40, 40, 40, 255),
-                    false
+                    "Branch Enable", phase.bu_be, cotm32::colors::GREEN, cotm32::colors::OFF, false
                 );
                 auto& bu_op = cotm32::name_utils::bu_op_name(phase.bu_op);
                 if (!bu_op.empty()) {
@@ -82,8 +83,8 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 draw_signal(
                     "CSR Write Enable",
                     phase.csr_we,
-                    IM_COL32(40, 255, 40, 255),
-                    IM_COL32(40, 40, 40, 255),
+                    cotm32::colors::GREEN,
+                    cotm32::colors::OFF,
                     false
                 );
                 auto& csr_name = cotm32::name_utils::csr_name(phase.csr_addr);
@@ -110,8 +111,8 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 draw_signal(
                     cotm32::name_utils::reg_name(phase.rd_addr),
                     phase.regfile_we,
-                    IM_COL32(40, 255, 40, 255),
-                    IM_COL32(40, 40, 40, 255),
+                    cotm32::colors::GREEN,
+                    cotm32::colors::OFF,
                     false
                 );
                 auto& reg_wb_name = cotm32::name_utils::reg_wb_name(phase.reg_wb_sel);
@@ -143,8 +144,8 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 draw_signal(
                     "CSR Write Enable",
                     phase.csr_we,
-                    IM_COL32(40, 255, 40, 255),
-                    IM_COL32(40, 40, 40, 255),
+                    cotm32::colors::GREEN,
+                    cotm32::colors::OFF,
                     false
                 );
                 auto& csr_name = cotm32::name_utils::csr_name(phase.csr_addr);
@@ -160,8 +161,8 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 draw_signal(
                     cotm32::name_utils::reg_name(phase.rd_addr),
                     phase.regfile_we,
-                    IM_COL32(40, 255, 40, 255),
-                    IM_COL32(40, 40, 40, 255),
+                    cotm32::colors::GREEN,
+                    cotm32::colors::OFF,
                     false
                 );
                 auto& reg_wb_name = cotm32::name_utils::reg_wb_name(phase.reg_wb_sel);
@@ -196,8 +197,8 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 draw_signal(
                     cotm32::name_utils::reg_name(phase.rd_addr),
                     phase.regfile_we,
-                    IM_COL32(40, 255, 40, 255),
-                    IM_COL32(40, 40, 40, 255),
+                    cotm32::colors::GREEN,
+                    cotm32::colors::OFF,
                     false
                 );
                 auto& reg_wb_name = cotm32::name_utils::reg_wb_name(phase.reg_wb_sel);
