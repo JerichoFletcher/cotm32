@@ -59,11 +59,11 @@ module hazard_unit (
     o_flush_idex = '0;
 
     // On load-use hazard: stall IF/ID
-    // Loaded value will be forwarded from MEM to EX on the next cycle
+    // Insert a bubble to prevent double execution
     if (hazard_lu) begin
       o_stall_if = '1;
       o_stall_ifid = '1;
-      // o_flush_idex = '1;
+      o_flush_idex = '1;
     end
 
     // On branch taken: flush invalidated inst in IF and ID
