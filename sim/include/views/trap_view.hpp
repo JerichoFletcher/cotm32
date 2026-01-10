@@ -8,8 +8,8 @@ class TrapView {
 public:
     TrapView(const VerilatedContainer& v);
 
-    inline IData cause() const { return this->m_csr[MCAUSE_IDX]; }
-    inline IData tvalue() const { return this->m_csr[MTVAL_IDX]; }
+    inline IData cause() const { return this->m_csr[CsrId::MCAUSE]; }
+    inline IData tvalue() const { return this->m_csr[CsrId::MTVAL]; }
     inline IData reg_a7() const { return this->m_reg[REG_A7_IDX]; }
 
     inline bool in_trap() const { return this->m_v.top()->cotm32->core->trap_mode; }
@@ -18,8 +18,6 @@ public:
 
 private:
     static constexpr inline int REG_A7_IDX = 17;
-    static constexpr inline int MCAUSE_IDX = 2;
-    static constexpr inline int MTVAL_IDX = 3;
 
     const VerilatedContainer& m_v;
     const RegView m_reg;

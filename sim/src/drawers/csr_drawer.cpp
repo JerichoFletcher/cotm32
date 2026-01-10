@@ -2,9 +2,8 @@
 
 #include "cotm32_defs.hpp"
 #include "imgui.h"
+#include "name_utils.hpp"
 #include "views/csr_view.hpp"
-
-static const char* reg_names[NUM_CSR] = {"mtvec", "mepc", "mcause", "mtval"};
 
 void CsrDrawer::render(const Simulator& sim) {
     if (ImGui::BeginChild(
@@ -22,15 +21,18 @@ void CsrDrawer::render(const Simulator& sim) {
                 CsrView csr(sim.v());
 
                 for (int i = 0; i < NUM_CSR; i++) {
+                    auto csr_id = CSR_IDS[i];
+
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    ImGui::Text("%s", reg_names[i]);
+                    auto csr_name = cotm32::name_utils::csr_name(csr_id);
+                    ImGui::Text("%s", !csr_name.empty() ? csr_name.c_str() : "???");
 
                     ImGui::TableNextColumn();
-                    ImGui::Text("%11d", (int32_t)csr[i]);
+                    ImGui::Text("%11d", (int32_t)csr[csr_id]);
 
                     ImGui::TableNextColumn();
-                    ImGui::Text("0x%08x", csr[i]);
+                    ImGui::Text("0x%08x", csr[csr_id]);
                 }
 
                 ImGui::EndTable();

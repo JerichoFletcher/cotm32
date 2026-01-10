@@ -3,25 +3,8 @@
 #include "cotm32_defs.hpp"
 #include "drawers/draw_utils.hpp"
 #include "imgui.h"
+#include "name_utils.hpp"
 #include "views/pipeline_regs_view.hpp"
-
-static const char* reg_names[NUM_REGS] = {
-    "x0/zero", "x1/ra",  "x2/sp",   "x3/gp",   "x4/tp",  "x5/t0",  "x6/t1",  "x7/t2",
-    "x8/s0",   "x9/s1",  "x10/a0",  "x11/a1",  "x12/a2", "x13/a3", "x14/a4", "x15/a5",
-    "x16/a6",  "x17/a7", "x18/s2",  "x19/s3",  "x20/s4", "x21/s5", "x22/s6", "x23/s7",
-    "x24/s8",  "x25/s9", "x26/s10", "x27/s11", "x28/t3", "x29/t4", "x30/t5", "x31/t6"
-};
-
-static const char* alu_op_names[10] = {
-    "ADD", "SUB", "OR", "AND", "XOR", "SLT", "SLTU", "SLL", "SRL", "SRA"
-};
-static const char* bu_op_names[6] = {"EQ", "NE", "LT", "GE", "LTU", "GEU"};
-static const char* alu_a_names[2] = {"RS1", "PC"};
-static const char* alu_b_names[2] = {"RS2", "IMM"};
-static const char* lsu_ls_names[9] = {
-    "NONE", "LOAD B", "LOAD H", "LOAD W", "LOAD UB", "LOAD UH", "STORE B", "STORE H", "STORE W"
-};
-static const char* reg_wb_names[5] = {"ZERO", "ALU OUT", "PC+4", "LSU", "CSR"};
 
 void draw_sig_vsf(bool valid, bool stall, bool flush) {
     draw_signal("Valid", valid, IM_COL32(40, 255, 40, 255), IM_COL32(255, 40, 40, 255), false);
@@ -41,123 +24,187 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
             PipelineRegsView view(sim.v());
 
             if (ImGui::CollapsingHeader("IF/ID")) {
-                auto ifid = view.if_id();
-                draw_sig_vsf(ifid.valid, ifid.stall, ifid.flush);
+                auto phase = view.if_id();
+                draw_sig_vsf(phase.valid, phase.stall, phase.flush);
 
-                ImGui::Text("PC          : 0x%08x", ifid.pc);
-                ImGui::Text("PC+4        : 0x%08x", ifid.pc_4);
+                ImGui::Text("PC          : 0x%08x", phase.pc);
+                ImGui::Text("PC+4        : 0x%08x", phase.pc_4);
 
                 ImGui::Separator();
-                ImGui::Text("Instruction : 0x%08x", ifid.inst);
+                ImGui::Text("Instruction : 0x%08x", phase.inst);
             }
 
             if (ImGui::CollapsingHeader("ID/EX")) {
-                auto idex = view.id_ex();
-                draw_sig_vsf(idex.valid, idex.stall, idex.flush);
+                auto phase = view.id_ex();
+                draw_sig_vsf(phase.valid, phase.stall, phase.flush);
 
-                ImGui::Text("PC          : 0x%08x", idex.pc);
-                ImGui::Text("PC+4        : 0x%08x", idex.pc_4);
+                ImGui::Text("PC          : 0x%08x", phase.pc);
+                ImGui::Text("PC+4        : 0x%08x", phase.pc_4);
 
                 ImGui::Separator();
-                if (0 <= idex.alu_op && idex.alu_op < IM_COUNTOF(alu_op_names)) {
-                    ImGui::Text("ALU Op      : %s", alu_op_names[idex.alu_op]);
+                auto& alu_op_name = cotm32::name_utils::alu_op_name(phase.alu_op);
+                if (!alu_op_name.empty()) {
+                    ImGui::Text("ALU Op      : %s", alu_op_name.c_str());
                 } else {
-                    ImGui::Text("ALU Op      : ??? (%d)", idex.alu_op);
+                    ImGui::Text("ALU Op      : ??? (%d)", phase.alu_op);
                 }
 
-                if (0 <= idex.alu_a_sel && idex.alu_a_sel < IM_COUNTOF(alu_a_names)) {
-                    ImGui::Text("ALU Port A  : %s", alu_a_names[idex.alu_a_sel]);
+                auto& alu_a_name = cotm32::name_utils::alu_a_name(phase.alu_a_sel);
+                if (!alu_a_name.empty()) {
+                    ImGui::Text("ALU Port A  : %s", alu_a_name.c_str());
                 } else {
-                    ImGui::Text("ALU Port A  : ??? (%d)", idex.alu_a_sel);
+                    ImGui::Text("ALU Port A  : ??? (%d)", phase.alu_a_sel);
                 }
 
-                if (0 <= idex.alu_b_sel && idex.alu_b_sel < IM_COUNTOF(alu_b_names)) {
-                    ImGui::Text("ALU Port B  : %s", alu_b_names[idex.alu_b_sel]);
+                auto& alu_b_name = cotm32::name_utils::alu_b_name(phase.alu_b_sel);
+                if (!alu_b_name.empty()) {
+                    ImGui::Text("ALU Port B  : %s", alu_b_name.c_str());
                 } else {
-                    ImGui::Text("ALU Port B  : ??? (%d)", idex.alu_b_sel);
+                    ImGui::Text("ALU Port B  : ??? (%d)", phase.alu_b_sel);
                 }
 
                 ImGui::Separator();
                 draw_signal(
                     "Branch Enable",
-                    idex.bu_be,
+                    phase.bu_be,
                     IM_COL32(40, 255, 40, 255),
                     IM_COL32(40, 40, 40, 255),
                     false
                 );
-                if (0 <= idex.bu_op && idex.bu_op < IM_COUNTOF(bu_op_names)) {
-                    ImGui::Text("Register WB : %s", bu_op_names[idex.bu_op]);
+                auto& bu_op = cotm32::name_utils::bu_op_name(phase.bu_op);
+                if (!bu_op.empty()) {
+                    ImGui::Text("BU Op       : %s", bu_op.c_str());
                 } else {
-                    ImGui::Text("Register WB : ??? (%d)", idex.bu_op);
+                    ImGui::Text("Bu Op       : ??? (%d)", phase.bu_op);
                 }
 
                 ImGui::Separator();
-                ImGui::Text("RS1 Address : %s", reg_names[idex.rs1_addr]);
-                ImGui::Text("  -> (Dec)  : %d", idex.rs1);
-                ImGui::Text("  -> (Hex)  : 0x%08x", idex.rs1);
-                ImGui::Text("RS2 Address : %s", reg_names[idex.rs2_addr]);
-                ImGui::Text("  -> (Dec)  : %d", idex.rs2);
-                ImGui::Text("  -> (Hex)  : 0x%08x", idex.rs2);
-                ImGui::TextUnformatted("Immediate");
-                ImGui::Text("  -> (Dec)  : %d", idex.imm);
-                ImGui::Text("  -> (Hex)  : 0x%08x", idex.imm);
+                draw_signal(
+                    "CSR Write Enable",
+                    phase.csr_we,
+                    IM_COL32(40, 255, 40, 255),
+                    IM_COL32(40, 40, 40, 255),
+                    false
+                );
+                auto& csr_name = cotm32::name_utils::csr_name(phase.csr_addr);
+                if (!csr_name.empty()) {
+                    ImGui::Text("CSR         : %s", csr_name.c_str());
+                } else {
+                    ImGui::Text("CSR         : ??? (%d)", phase.csr_addr);
+                }
+
+                ImGui::Separator();
+                ImGui::Text(
+                    "RS1 Address : %s", cotm32::name_utils::reg_name(phase.rs1_addr).c_str()
+                );
+                ImGui::Text("RS1         : 0x%08x (%d)", phase.rs1, phase.rs1);
+                ImGui::Text(
+                    "RS2 Address : %s", cotm32::name_utils::reg_name(phase.rs2_addr).c_str()
+                );
+                ImGui::Text("RS2         : 0x%08x (%d)", phase.rs2, phase.rs2);
+                ImGui::Text("Immediate   : 0x%08x (%d)", phase.imm, phase.imm);
 
                 ImGui::Separator();
                 ImGui::TextUnformatted("RD Address  :");
                 ImGui::SameLine();
                 draw_signal(
-                    reg_names[idex.rd_addr],
-                    idex.regfile_we,
+                    cotm32::name_utils::reg_name(phase.rd_addr),
+                    phase.regfile_we,
                     IM_COL32(40, 255, 40, 255),
                     IM_COL32(40, 40, 40, 255),
                     false
                 );
-                if (0 <= idex.reg_wb_sel && idex.reg_wb_sel < IM_COUNTOF(reg_wb_names)) {
-                    ImGui::Text("Register WB : %s", reg_wb_names[idex.reg_wb_sel]);
+                auto& reg_wb_name = cotm32::name_utils::reg_wb_name(phase.reg_wb_sel);
+                if (!reg_wb_name.empty()) {
+                    ImGui::Text("Register WB : %s", reg_wb_name.c_str());
                 } else {
-                    ImGui::Text("Register WB : ??? (%d)", idex.reg_wb_sel);
+                    ImGui::Text("Register WB : ??? (%d)", phase.reg_wb_sel);
                 }
-                if (0 <= idex.lsu_ls_op && idex.lsu_ls_op < IM_COUNTOF(lsu_ls_names)) {
-                    ImGui::Text("LSU L/S Op  : %s", lsu_ls_names[idex.lsu_ls_op]);
+                auto& lsu_ls_name = cotm32::name_utils::lsu_ls_op_name(phase.lsu_ls_op);
+                if (!lsu_ls_name.empty()) {
+                    ImGui::Text("LSU L/S Op  : %s", lsu_ls_name.c_str());
                 } else {
-                    ImGui::Text("LSU L/S Op  : ??? (%d)", idex.lsu_ls_op);
+                    ImGui::Text("LSU L/S Op  : ??? (%d)", phase.lsu_ls_op);
                 }
             }
 
             if (ImGui::CollapsingHeader("EX/MEM")) {
-                auto exmem = view.ex_mem();
-                draw_sig_vsf(exmem.valid, exmem.stall, exmem.flush);
+                auto phase = view.ex_mem();
+                draw_sig_vsf(phase.valid, phase.stall, phase.flush);
 
-                ImGui::Text("PC          : 0x%08x", exmem.pc);
-                ImGui::Text("PC+4        : 0x%08x", exmem.pc_4);
+                ImGui::Text("PC          : 0x%08x", phase.pc);
+                ImGui::Text("PC+4        : 0x%08x", phase.pc_4);
 
                 ImGui::Separator();
-                ImGui::TextUnformatted("ALU Out");
-                ImGui::Text("  -> (Dec)  : %d", exmem.alu_out);
-                ImGui::Text("  -> (Hex)  : 0x%08x", exmem.alu_out);
-                ImGui::TextUnformatted("RS2");
-                ImGui::Text("  -> (Dec)  : %d", exmem.rs2);
-                ImGui::Text("  -> (Hex)  : 0x%08x", exmem.rs2);
+                ImGui::Text("ALU Out     : 0x%08x (%d)", phase.alu_out, phase.alu_out);
+                ImGui::Text("RS2         : 0x%08x (%d)", phase.rs2, phase.rs2);
+
+                ImGui::Separator();
+                draw_signal(
+                    "CSR Write Enable",
+                    phase.csr_we,
+                    IM_COL32(40, 255, 40, 255),
+                    IM_COL32(40, 40, 40, 255),
+                    false
+                );
+                auto& csr_name = cotm32::name_utils::csr_name(phase.csr_addr);
+                if (!csr_name.empty()) {
+                    ImGui::Text("CSR         : %s", csr_name.c_str());
+                } else {
+                    ImGui::Text("CSR         : ??? (%d)", phase.csr_addr);
+                }
 
                 ImGui::Separator();
                 ImGui::TextUnformatted("RD Address  :");
                 ImGui::SameLine();
                 draw_signal(
-                    reg_names[exmem.rd_addr],
-                    exmem.regfile_we,
+                    cotm32::name_utils::reg_name(phase.rd_addr),
+                    phase.regfile_we,
                     IM_COL32(40, 255, 40, 255),
                     IM_COL32(40, 40, 40, 255),
                     false
                 );
-                if (0 <= exmem.reg_wb_sel && exmem.reg_wb_sel < IM_COUNTOF(reg_wb_names)) {
-                    ImGui::Text("Register WB : %s", reg_wb_names[exmem.reg_wb_sel]);
+                auto& reg_wb_name = cotm32::name_utils::reg_wb_name(phase.reg_wb_sel);
+                if (!reg_wb_name.empty()) {
+                    ImGui::Text("Register WB : %s", reg_wb_name.c_str());
                 } else {
-                    ImGui::Text("Register WB : ??? (%d)", exmem.reg_wb_sel);
+                    ImGui::Text("Register WB : ??? (%d)", phase.reg_wb_sel);
                 }
-                if (0 <= exmem.lsu_ls_op && exmem.lsu_ls_op < IM_COUNTOF(lsu_ls_names)) {
-                    ImGui::Text("LSU L/S Op  : %s", lsu_ls_names[exmem.lsu_ls_op]);
+                auto& lsu_ls_name = cotm32::name_utils::lsu_ls_op_name(phase.lsu_ls_op);
+                if (!lsu_ls_name.empty()) {
+                    ImGui::Text("LSU L/S Op  : %s", lsu_ls_name.c_str());
                 } else {
-                    ImGui::Text("LSU L/S Op  : ??? (%d)", exmem.lsu_ls_op);
+                    ImGui::Text("LSU L/S Op  : ??? (%d)", phase.lsu_ls_op);
+                }
+            }
+
+            if (ImGui::CollapsingHeader("MEM/WB")) {
+                auto phase = view.mem_wb();
+                draw_sig_vsf(phase.valid, phase.stall, phase.flush);
+
+                ImGui::Text("PC          : 0x%08x", phase.pc);
+                ImGui::Text("PC+4        : 0x%08x", phase.pc_4);
+
+                ImGui::Separator();
+                ImGui::Text("ALU Out     : 0x%08x (%d)", phase.alu_out, phase.alu_out);
+                ImGui::Text("LSU Read    : 0x%08x (%d)", phase.lsu_rdata, phase.lsu_rdata);
+                ImGui::Text("CSR Read    : 0x%08x (%d)", phase.csr_rdata, phase.csr_rdata);
+
+                ImGui::Separator();
+                ImGui::TextUnformatted("RD Address  :");
+                ImGui::SameLine();
+                draw_signal(
+                    cotm32::name_utils::reg_name(phase.rd_addr),
+                    phase.regfile_we,
+                    IM_COL32(40, 255, 40, 255),
+                    IM_COL32(40, 40, 40, 255),
+                    false
+                );
+                auto& reg_wb_name = cotm32::name_utils::reg_wb_name(phase.reg_wb_sel);
+                if (!reg_wb_name.empty()) {
+                    ImGui::Text("Register WB : %s", reg_wb_name.c_str());
+                } else {
+                    ImGui::Text("Register WB : ??? (%d)", phase.reg_wb_sel);
                 }
             }
         }

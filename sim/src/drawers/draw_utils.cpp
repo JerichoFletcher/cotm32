@@ -16,3 +16,9 @@ void draw_signal(
     ImGui::SameLine();
     ImGui::TextUnformatted(label);
 }
+
+void draw_signal(
+    const std::string& label, bool on, ImU32 on_color, ImU32 off_color, bool use_avail_region
+) {
+    draw_signal(label.c_str(), on, on_color, off_color, use_avail_region);
+}

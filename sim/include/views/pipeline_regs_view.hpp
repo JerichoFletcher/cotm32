@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cotm32_defs.hpp"
 #include "verilated_container.hpp"
 
 struct IfIdRegView {
@@ -17,23 +18,23 @@ struct IdExRegView {
     bool stall;
     bool flush;
 
-    CData alu_op;
-    CData alu_a_sel;
-    CData alu_b_sel;
+    AluOp alu_op;
+    AluPortA alu_a_sel;
+    AluPortB alu_b_sel;
 
     bool bu_be;
-    CData bu_op;
+    BuOp bu_op;
 
     bool regfile_we;
     CData rd_addr;
     CData rs1_addr;
     CData rs2_addr;
-    CData lsu_ls_op;
-    CData reg_wb_sel;
+    LsuLoadStoreOp lsu_ls_op;
+    RegWritebackSrc reg_wb_sel;
 
     bool csr_we;
     CData csr_data_sel;
-    SData csr_addr;
+    CsrId csr_addr;
     CData csr_op;
     IData csr_zimm;
 
@@ -55,14 +56,31 @@ struct ExMemRegView {
 
     bool regfile_we;
     CData rd_addr;
-    CData lsu_ls_op;
-    CData reg_wb_sel;
+    LsuLoadStoreOp lsu_ls_op;
+    RegWritebackSrc reg_wb_sel;
 
     bool csr_we;
     CData csr_data_sel;
-    SData csr_addr;
+    CsrId csr_addr;
     CData csr_op;
     IData csr_zimm;
+
+    IData pc;
+    IData pc_4;
+};
+
+struct MemWbRegView {
+    bool valid;
+    bool stall;
+    bool flush;
+
+    IData lsu_rdata;
+    IData alu_out;
+    IData csr_rdata;
+
+    bool regfile_we;
+    CData rd_addr;
+    RegWritebackSrc reg_wb_sel;
 
     IData pc;
     IData pc_4;
@@ -75,6 +93,7 @@ public:
     const IfIdRegView if_id() const;
     const IdExRegView id_ex() const;
     const ExMemRegView ex_mem() const;
+    const MemWbRegView mem_wb() const;
 
 private:
     const VerilatedContainer& m_v;

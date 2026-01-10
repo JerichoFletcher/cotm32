@@ -49,6 +49,7 @@ set(CXX_SOURCES
   sim/src/sdl_window.cpp
   sim/src/imgui_renderer.cpp
   sim/src/simulator.cpp
+  sim/src/name_utils.cpp
 
   sim/src/views/reg_view.cpp
   sim/src/views/csr_view.cpp
@@ -101,6 +102,7 @@ set(RTL_SOURCES
   rtl/cpu/pipeline/ifid_reg.sv
   rtl/cpu/pipeline/idex_reg.sv
   rtl/cpu/pipeline/exmem_reg.sv
+  rtl/cpu/pipeline/memwb_reg.sv
 )
 
 add_executable(cotm32

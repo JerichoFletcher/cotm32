@@ -16,16 +16,19 @@ module processor_core (
   logic [XLEN-1:0] id_pc /* verilator public */;
   logic [XLEN-1:0] ex_pc /* verilator public */;
   logic [XLEN-1:0] mem_pc /* verilator public */;
+  logic [XLEN-1:0] wb_pc /* verilator public */;
   wire [XLEN-1:0] if_pc_4 /* verilator public */;
   wire [XLEN-1:0] id_pc_4 /* verilator public */;
   wire [XLEN-1:0] ex_pc_4 /* verilator public */;
   wire [XLEN-1:0] mem_pc_4 /* verilator public */;
+  wire [XLEN-1:0] wb_pc_4 /* verilator public */;
 
   imm_t id_imm_sel /* verilator public */;
   logic [XLEN-1:0] id_imm /* verilator public */;
   logic [XLEN-1:0] ex_imm /* verilator public */;
   wire [XLEN-1:0] id_rs1 /* verilator public */;
   wire [XLEN-1:0] ex_rs1 /* verilator public */;
+  wire [XLEN-1:0] mem_rs1 /* verilator public */;
   wire [XLEN-1:0] id_rs2 /* verilator public */;
   wire [XLEN-1:0] ex_rs2 /* verilator public */;
   wire [XLEN-1:0] mem_rs2 /* verilator public */;
@@ -33,6 +36,7 @@ module processor_core (
   logic id_regfile_we /* verilator public */;
   logic ex_regfile_we /* verilator public */;
   logic mem_regfile_we /* verilator public */;
+  logic wb_regfile_we /* verilator public */;
   logic [REG_ADDR_WIDTH-1:0] id_rd_addr /* verilator public */;
   logic [REG_ADDR_WIDTH-1:0] id_rs1_addr /* verilator public */;
   logic [REG_ADDR_WIDTH-1:0] id_rs2_addr /* verilator public */;
@@ -40,6 +44,7 @@ module processor_core (
   logic [REG_ADDR_WIDTH-1:0] ex_rs1_addr /* verilator public */;
   logic [REG_ADDR_WIDTH-1:0] ex_rs2_addr /* verilator public */;
   logic [REG_ADDR_WIDTH-1:0] mem_rd_addr /* verilator public */;
+  logic [REG_ADDR_WIDTH-1:0] wb_rd_addr /* verilator public */;
 
   alu_a_sel_t id_alu_a_sel /* verilator public */;
   alu_b_sel_t id_alu_b_sel /* verilator public */;
@@ -55,6 +60,7 @@ module processor_core (
   wire [XLEN-1:0] ex_alu_b_in /* verilator public */;
   logic [XLEN-1:0] ex_alu_out /* verilator public */;
   logic [XLEN-1:0] mem_alu_out /* verilator public */;
+  logic [XLEN-1:0] wb_alu_out /* verilator public */;
 
   logic id_bu_be /* verilator public */;
   logic ex_bu_be /* verilator public */;
@@ -62,25 +68,27 @@ module processor_core (
   bu_op_t ex_bu_op /* verilator public */;
   logic ex_take_branch /* verilator public */;
 
-  logic dmem_we /* verilator public */;
-  logic [XLEN-1:0] dmem_wdata /* verilator public */;
-  logic [XLEN/BYTE_WIDTH-1:0] dmem_wstrb /* verilator public */;
-  logic [XLEN-1:0] dmem_rdata /* verilator public */;
+  logic mem_dmem_we /* verilator public */;
+  logic [XLEN-1:0] mem_dmem_wdata /* verilator public */;
+  logic [XLEN/BYTE_WIDTH-1:0] mem_dmem_wstrb /* verilator public */;
+  logic [XLEN-1:0] mem_dmem_rdata /* verilator public */;
 
-  logic [XLEN-1:0] rom_rdata /* verilator public */;
+  logic [XLEN-1:0] mem_rom_rdata /* verilator public */;
 
   lsu_ls_t id_lsu_ls_op /* verilator public */;
   lsu_ls_t ex_lsu_ls_op /* verilator public */;
   lsu_ls_t mem_lsu_ls_op /* verilator public */;
-  logic [XLEN-1:0] lsu_addr /* verilator public */;
-  logic [XLEN-1:0] lsu_rdata /* verilator public */;
+  logic [XLEN-1:0] mem_lsu_addr /* verilator public */;
+  logic [XLEN-1:0] mem_lsu_rdata /* verilator public */;
+  logic [XLEN-1:0] wb_lsu_rdata /* verilator public */;
 
   reg_wb_sel_t id_reg_wb_sel /* verilator public */;
   reg_wb_sel_t ex_reg_wb_sel /* verilator public */;
   reg_wb_sel_t mem_reg_wb_sel /* verilator public */;
-  wire [XLEN-1:0] reg_wb /* verilator public */;
+  reg_wb_sel_t wb_reg_wb_sel /* verilator public */;
+  wire [XLEN-1:0] wb_reg_wb /* verilator public */;
 
-  logic [XLEN-1:0] reg_wb_vals [0:REG_WB_VALCOUNT-1];
+  logic [XLEN-1:0] wb_reg_wb_vals [0:REG_WB_VALCOUNT-1];
 
   always_comb begin
     ex_alu_a_vals[ALU_A_RS1] = ex_rs1;
@@ -93,11 +101,11 @@ module processor_core (
   end
 
   always_comb begin
-    reg_wb_vals[REG_WB_ZERO] = '0;
-    reg_wb_vals[REG_WB_ALU] = ex_alu_out;
-    reg_wb_vals[REG_WB_PC4] = if_pc_4;
-    reg_wb_vals[REG_WB_LSU] = lsu_rdata;
-    reg_wb_vals[REG_WB_CSR] = csr_rdata;
+    wb_reg_wb_vals[REG_WB_ZERO] = '0;
+    wb_reg_wb_vals[REG_WB_ALU] = wb_alu_out;
+    wb_reg_wb_vals[REG_WB_PC4] = wb_pc_4;
+    wb_reg_wb_vals[REG_WB_LSU] = wb_lsu_rdata;
+    wb_reg_wb_vals[REG_WB_CSR] = wb_csr_rdata;
   end
 
   // Trap signals
@@ -137,17 +145,18 @@ module processor_core (
   logic [MXLEN-1:0] id_csr_zimm /* verilator public */;
   logic [MXLEN-1:0] ex_csr_zimm /* verilator public */;
   logic [MXLEN-1:0] mem_csr_zimm /* verilator public */;
-  logic [MXLEN-1:0] csr_wdata;
+  logic [MXLEN-1:0] mem_csr_wdata;
 
-  logic [MXLEN-1:0] csr_wdata_vals [0:ZICSR_DATA_VALCOUNT-1];
+  logic [MXLEN-1:0] mem_csr_wdata_vals [0:ZICSR_DATA_VALCOUNT-1];
 
-  logic [MXLEN-1:0] csr_rdata;
-  wire [MXLEN-1:0] csr_mtvec;
-  wire [MXLEN-1:0] csr_mepc;
+  logic [MXLEN-1:0] mem_csr_rdata /* verilator public */;
+  logic [MXLEN-1:0] wb_csr_rdata /* verilator public */;
+  wire [MXLEN-1:0] mem_csr_mtvec;
+  wire [MXLEN-1:0] mem_csr_mepc;
 
   always_comb begin
-    csr_wdata_vals[ZICSR_DATA_RS1] = id_rs1;
-    csr_wdata_vals[ZICSR_DATA_IMM] = id_csr_zimm;
+    mem_csr_wdata_vals[ZICSR_DATA_RS1] = mem_rs1;
+    mem_csr_wdata_vals[ZICSR_DATA_IMM] = mem_csr_zimm;
   end
 
   // Pipeline wires
@@ -163,6 +172,10 @@ module processor_core (
   wire exmem_stall /* verilator public */;
   wire exmem_flush /* verilator public */;
 
+  wire memwb_valid /* verilator public */;
+  wire memwb_stall /* verilator public */;
+  wire memwb_flush /* verilator public */;
+
   /////////////// IF      ///////////////
   // Instruction fetch unit
   inst_fetch #(
@@ -175,8 +188,8 @@ module processor_core (
 
     .i_trap_mret(trap_mret),
     .i_trap_req(trap_req),
-    .i_mtvec(csr_mtvec),
-    .i_mepc(csr_mepc),
+    .i_mtvec(mem_csr_mtvec),
+    .i_mepc(mem_csr_mepc),
 
     .o_addr(if_pc),
     .o_addr_4(if_pc_4),
@@ -246,8 +259,8 @@ module processor_core (
   ) rf(
     .i_clk(i_clk),
     .i_rst(i_rst),
-    .i_we(mem_regfile_we),
-    .i_wdata(reg_wb),
+    .i_we(wb_regfile_we),
+    .i_wdata(wb_reg_wb),
     .i_waddr(id_rd_addr),
     .i_raddr('{id_rs1_addr, id_rs2_addr}),
     .i_trap_req(trap_req),
@@ -356,6 +369,7 @@ module processor_core (
     .i_flush(exmem_flush),
     .i_data('{
       ex_alu_out,
+      ex_rs1,
       ex_rs2,
       ex_regfile_we,
       ex_rd_addr,
@@ -372,6 +386,7 @@ module processor_core (
     .i_valid(idex_valid),
     .o_data('{
       mem_alu_out,
+      mem_rs1,
       mem_rs2,
       mem_regfile_we,
       mem_rd_addr,
@@ -395,19 +410,19 @@ module processor_core (
     .DATA_WIDTH(XLEN)
   ) dmem(
     .i_clk(i_clk),
-    .i_we(dmem_we),
-    .i_addr(lsu_addr),
-    .i_wdata(dmem_wdata),
-    .i_wstrb(dmem_wstrb),
-    .o_rdata(dmem_rdata)
+    .i_we(mem_dmem_we),
+    .i_addr(mem_lsu_addr),
+    .i_wdata(mem_dmem_wdata),
+    .i_wstrb(mem_dmem_wstrb),
+    .o_rdata(mem_dmem_rdata)
   );
 
   // ROM
   rodata_mem #(
     .DATA_WIDTH(XLEN)
   ) rom(
-    .i_addr(lsu_addr),
-    .o_rdata(rom_rdata)
+    .i_addr(mem_lsu_addr),
+    .o_rdata(mem_rom_rdata)
   );
 
   // LSU
@@ -415,18 +430,79 @@ module processor_core (
     .i_op(mem_lsu_ls_op),
     .i_addr(mem_alu_out),
     .i_wdata(mem_rs2),
-    .i_rdata_dmem(dmem_rdata),
-    .i_rdata_rom(rom_rdata),
+    .i_rdata_dmem(mem_dmem_rdata),
+    .i_rdata_rom(mem_rom_rdata),
     .i_trap_req(trap_req),
-    .o_addr(lsu_addr),
-    .o_wdata(dmem_wdata),
-    .o_rdata(lsu_rdata),
-    .o_wstrb(dmem_wstrb),
-    .o_we_dmem(dmem_we),
+    .o_addr(mem_lsu_addr),
+    .o_wdata(mem_dmem_wdata),
+    .o_rdata(mem_lsu_rdata),
+    .o_wstrb(mem_dmem_wstrb),
+    .o_we_dmem(mem_dmem_we),
     .o_t_load_addr_misaligned(t_load_addr_misaligned),
     .o_t_load_access_fault(t_load_access_fault),
     .o_t_store_addr_misaligned(t_store_addr_misaligned),
     .o_t_store_access_fault(t_store_access_fault)
+  );
+
+  // CSR write data mux
+  mux #(
+    .N_OPTIONS(ZICSR_DATA_VALCOUNT),
+    .DATA_WIDTH(MXLEN)
+  ) mux_csr(
+    .i_sel(mem_csr_data_sel),
+    .i_val(mem_csr_wdata_vals),
+    .o_val(mem_csr_wdata)
+  );
+
+  // CSR file
+  csr_file csr(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_we(mem_csr_we),
+    .i_op(mem_csr_op),
+    .i_addr(mem_csr_addr),
+    .i_wdata(mem_csr_wdata),
+    .i_pc(mem_pc),
+
+    .i_trap_req(trap_req),
+    .i_trap_cause(trap_cause),
+    .i_trap_tval(trap_tval),
+
+    .o_rdata(mem_csr_rdata),
+    .o_mtvec(mem_csr_mtvec),
+    .o_mepc(mem_csr_mepc),
+
+    .o_t_illegal_inst(csr_t_illegal_inst)
+  );
+
+  /////////////// MEM/WB  ///////////////
+  memwb_reg memwb(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_stall(memwb_stall),
+    .i_flush(memwb_flush),
+    .i_data('{
+      mem_lsu_rdata,
+      mem_alu_out,
+      mem_csr_rdata,
+      mem_regfile_we,
+      mem_rd_addr,
+      mem_reg_wb_sel,
+      mem_pc,
+      mem_pc_4
+    }),
+    .i_valid(exmem_valid),
+    .o_data('{
+      wb_lsu_rdata,
+      wb_alu_out,
+      wb_csr_rdata,
+      wb_regfile_we,
+      wb_rd_addr,
+      wb_reg_wb_sel,
+      wb_pc,
+      wb_pc_4
+    }),
+    .o_valid(memwb_valid)
   );
 
   /////////////// WB      ///////////////
@@ -435,9 +511,9 @@ module processor_core (
     .N_OPTIONS(REG_WB_VALCOUNT),
     .DATA_WIDTH(XLEN)
   ) mux_wb(
-    .i_sel(id_reg_wb_sel),
-    .i_val(reg_wb_vals),
-    .o_val(reg_wb)
+    .i_sel(wb_reg_wb_sel),
+    .i_val(wb_reg_wb_vals),
+    .o_val(wb_reg_wb)
   );
 
   // Trap dispatch
@@ -466,37 +542,6 @@ module processor_core (
     .i_trap_mret(trap_mret),
     .i_trap_req(trap_req),
     .o_trap_mode(trap_mode)
-  );
-
-  // CSR write data mux
-  mux #(
-    .N_OPTIONS(ZICSR_DATA_VALCOUNT),
-    .DATA_WIDTH(MXLEN)
-  ) mux_csr(
-    .i_sel(id_csr_data_sel),
-    .i_val(csr_wdata_vals),
-    .o_val(csr_wdata)
-  );
-
-  // CSR file
-  csr_file csr(
-    .i_clk(i_clk),
-    .i_rst(i_rst),
-    .i_we(id_csr_we),
-    .i_op(id_csr_op),
-    .i_addr(id_csr_addr),
-    .i_wdata(csr_wdata),
-    .i_pc(id_pc),
-
-    .i_trap_req(trap_req),
-    .i_trap_cause(trap_cause),
-    .i_trap_tval(trap_tval),
-
-    .o_rdata(csr_rdata),
-    .o_mtvec(csr_mtvec),
-    .o_mepc(csr_mepc),
-
-    .o_t_illegal_inst(csr_t_illegal_inst)
   );
 
 endmodule
