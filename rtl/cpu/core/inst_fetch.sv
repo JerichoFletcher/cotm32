@@ -10,6 +10,8 @@ module inst_fetch #(
   input logic i_take_branch,
   input logic [XLEN-1:0] i_new_addr,
 
+  input logic i_stall,
+
   input logic i_trap_mret,
   input logic i_trap_req,
   input logic [MXLEN-1:0] i_mtvec,
@@ -63,7 +65,7 @@ module inst_fetch #(
   always_ff @(posedge i_clk) begin
     if (i_rst) begin
       o_addr <= RESET_VECTOR;
-    end else begin
+    end else if (!i_stall) begin
       o_addr <= pc_mux_out;
     end
   end

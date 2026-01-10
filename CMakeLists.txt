@@ -104,6 +104,7 @@ set(RTL_SOURCES
   rtl/cpu/pipeline/exmem_reg.sv
   rtl/cpu/pipeline/memwb_reg.sv
   rtl/cpu/pipeline/fwd_unit.sv
+  rtl/cpu/pipeline/hazard_unit.sv
 )
 
 add_executable(cotm32

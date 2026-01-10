@@ -9,9 +9,13 @@ _start: # _start at PC reset vector (0x0)
   # csrw  mtvec, t0
 
 test:
-  addi  t0, zero, 3
-  add   t0, t0, t0
-  add   t0, t0, t0
+  addi  t0, zero, 0xab
+  la    sp, _estack
+  addi  sp, sp, -16
+  sw    t0, 0(sp)
+
+  lhu   t1, 0(sp)
+  mv    t2, t1
 
 main:
   j stall

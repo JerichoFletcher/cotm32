@@ -160,6 +160,8 @@ module processor_core (
   end
 
   // Pipeline wires
+  wire if_stall /* verilator public */;
+
   wire ifid_valid /* verilator public */;
   wire ifid_stall /* verilator public */;
   wire ifid_flush /* verilator public */;
@@ -205,6 +207,8 @@ module processor_core (
     .i_rst(i_rst),
     .i_take_branch(ex_take_branch),
     .i_new_addr(ex_alu_out),
+
+    .i_stall(if_stall),
 
     .i_trap_mret(trap_mret),
     .i_trap_req(trap_req),
@@ -571,11 +575,27 @@ module processor_core (
     .o_forward_b(forward_b)
   );
 
+  // Hazard detection unit
+  hazard_unit hu(
+    .i_id_rs1_addr(id_rs1_addr),
+    .i_id_rs2_addr(id_rs2_addr),
+    .i_ex_rd_addr(ex_rd_addr),
+    .i_ex_regfile_we(ex_regfile_we),
+    .i_ex_lsu_ls_op(ex_lsu_ls_op),
+    .i_ex_valid(idex_valid),
+    .i_ex_take_branch(ex_take_branch),
+    .o_stall_if(if_stall),
+    .o_stall_ifid(ifid_stall),
+    .o_flush_ifid(ifid_flush),
+    .o_flush_idex(idex_flush)
+  );
+
+  /////////////// TRAP    ///////////////
   // Trap dispatch
   trap_dispatch td(
     .i_pc(id_pc),
     .i_inst(id_inst),
-    .i_ls_addr(ex_alu_out),
+    .i_ls_addr(mem_alu_out),
     .i_inst_addr_misaligned(t_inst_addr_misaligned),
     .i_inst_access_fault(t_inst_access_fault),
     .i_illegal_inst(t_illegal_inst),
