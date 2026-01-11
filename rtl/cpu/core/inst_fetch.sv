@@ -55,7 +55,7 @@ module inst_fetch #(
     pc_sel = IFU_PC_PC4;
     if (i_trap_req) begin
       pc_sel = IFU_PC_MTVEC;
-    end if (i_trap_mret) begin
+    end else if (i_trap_mret) begin
       pc_sel = IFU_PC_MEPC;
     end else if (i_take_branch) begin
       pc_sel = IFU_PC_BRANCH;

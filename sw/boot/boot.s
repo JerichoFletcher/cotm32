@@ -13,9 +13,6 @@ test:
   ecall
 
 main:
-  nop
-  nop
-  nop
   j stall
 
 stall:
