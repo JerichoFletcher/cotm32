@@ -516,7 +516,7 @@ module processor_core (
     .DATA_WIDTH(XLEN)
   ) dmem(
     .i_clk(i_clk),
-    .i_we(mem_dmem_we && exmem_valid),
+    .i_we(mem_dmem_we && exmem_valid && !trap_req),
     .i_addr(mem_lsu_addr),
     .i_wdata(mem_dmem_wdata),
     .i_wstrb(mem_dmem_wstrb),
