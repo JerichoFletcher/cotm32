@@ -83,6 +83,7 @@ set(RTL_SOURCES
   rtl/cpu/cotm32.sv
   rtl/cpu/processor_core.sv
 
+  rtl/cpu/core/register_file.sv
   rtl/cpu/core/alu.sv
   rtl/cpu/core/bu.sv
   rtl/cpu/core/cu.sv
@@ -92,10 +93,6 @@ set(RTL_SOURCES
   rtl/cpu/core/lsu.sv
   rtl/cpu/core/rodata_mem.sv
   rtl/cpu/core/sign_ext.sv
-  rtl/cpu/core/register/register.sv
-  rtl/cpu/core/register/register_rport.sv
-  rtl/cpu/core/register/register_wport.sv
-  rtl/cpu/core/register/register_file.sv
 
   rtl/cpu/priv/csr_file.sv
   rtl/cpu/priv/trap_control.sv

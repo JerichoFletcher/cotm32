@@ -11,12 +11,16 @@ void RegDrawer::render(const Simulator& sim) {
     if (ImGui::BeginChild(
             "reg", ImVec2(ImGui::GetContentRegionAvail().x, 0), ImGuiChildFlags_AutoResizeY
         )) {
-        RegView view(sim.v());
-        draw_signal(
-            "Write Enable", view.write_enable(), cotm32::colors::GREEN, cotm32::colors::OFF, false
-        );
-
         if (ImGui::CollapsingHeader("Register View", ImGuiTreeNodeFlags_DefaultOpen)) {
+            RegView view(sim.v());
+            draw_signal(
+                "Write Enable",
+                view.write_enable(),
+                cotm32::colors::GREEN,
+                cotm32::colors::OFF,
+                false
+            );
+
             if (ImGui::BeginTable(
                     "table_reg", 3, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_RowBg
                 )) {

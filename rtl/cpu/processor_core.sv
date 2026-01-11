@@ -311,17 +311,16 @@ module processor_core (
   );
 
   // Register file
-  register_file #(
-    .N_RPORTS(2),
-    .N_REGS(NUM_REGS)
-  ) rf(
+  register_file rf(
     .i_clk(i_clk),
     .i_rst(i_rst),
     .i_we(wb_regfile_we && memwb_valid),
     .i_wdata(wb_reg_wb),
     .i_waddr(wb_rd_addr),
-    .i_raddr('{id_rs1_addr, id_rs2_addr}),
-    .o_rdata('{id_rs1, id_rs2})
+    .i_rs1_addr(id_rs1_addr),
+    .i_rs2_addr(id_rs2_addr),
+    .o_rs1(id_rs1),
+    .o_rs2(id_rs2)
   );
 
   //////////////////////////////// ID/EX  ////////////////////////////////
