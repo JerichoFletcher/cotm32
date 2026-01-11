@@ -89,21 +89,25 @@ module processor_core (
   reg_wb_sel_t ex_reg_wb_sel /* verilator public */;
   reg_wb_sel_t mem_reg_wb_sel /* verilator public */;
   reg_wb_sel_t wb_reg_wb_sel /* verilator public */;
+  wire [XLEN-1:0] mem_reg_wb /* verilator public */;
   wire [XLEN-1:0] wb_reg_wb /* verilator public */;
 
+  logic [XLEN-1:0] mem_reg_wb_vals [0:REG_WB_VALCOUNT-1];
   logic [XLEN-1:0] wb_reg_wb_vals [0:REG_WB_VALCOUNT-1];
 
   always_comb begin
     ex_alu_a_vals[ALU_A_RS1] = ex_rs1_fwd;
     ex_alu_a_vals[ALU_A_PC] = ex_pc;
-  end
 
-  always_comb begin
     ex_alu_b_vals[ALU_B_RS2] = ex_rs2_fwd;
     ex_alu_b_vals[ALU_B_IMM] = ex_imm;
-  end
 
-  always_comb begin
+    mem_reg_wb_vals[REG_WB_ZERO] = '0;
+    mem_reg_wb_vals[REG_WB_ALU] = mem_alu_out;
+    mem_reg_wb_vals[REG_WB_PC4] = mem_pc_4;
+    mem_reg_wb_vals[REG_WB_LSU] = mem_lsu_rdata;
+    mem_reg_wb_vals[REG_WB_CSR] = mem_csr_rdata;
+
     wb_reg_wb_vals[REG_WB_ZERO] = '0;
     wb_reg_wb_vals[REG_WB_ALU] = wb_alu_out;
     wb_reg_wb_vals[REG_WB_PC4] = wb_pc_4;
@@ -216,13 +220,11 @@ module processor_core (
 
   always_comb begin
     forward_a_vals[PIPE_FWD_SRC_NONE] = ex_rs1;
-    forward_a_vals[PIPE_FWD_SRC_EXMEM] = mem_alu_out;
+    forward_a_vals[PIPE_FWD_SRC_EXMEM] = mem_reg_wb;
     forward_a_vals[PIPE_FWD_SRC_MEMWB] = wb_reg_wb;
-  end
 
-  always_comb begin
     forward_b_vals[PIPE_FWD_SRC_NONE] = ex_rs2;
-    forward_b_vals[PIPE_FWD_SRC_EXMEM] = mem_alu_out;
+    forward_b_vals[PIPE_FWD_SRC_EXMEM] = mem_reg_wb;
     forward_b_vals[PIPE_FWD_SRC_MEMWB] = wb_reg_wb;
   end
 
@@ -579,6 +581,16 @@ module processor_core (
     .o_t_illegal_inst(mem_t_illegal_inst_csr)
   );
 
+  // Early writeback mux (only for forwarding)
+  mux #(
+    .N_OPTIONS(REG_WB_VALCOUNT),
+    .DATA_WIDTH(XLEN)
+  ) mem_mux_wb(
+    .i_sel(mem_reg_wb_sel),
+    .i_val(mem_reg_wb_vals),
+    .o_val(mem_reg_wb)
+  );
+
   // Trap dispatch
   trap_dispatch td(
     .i_pc(mem_pc),
@@ -645,7 +657,7 @@ module processor_core (
   mux #(
     .N_OPTIONS(REG_WB_VALCOUNT),
     .DATA_WIDTH(XLEN)
-  ) mux_wb(
+  ) wb_mux_wb(
     .i_sel(wb_reg_wb_sel),
     .i_val(wb_reg_wb_vals),
     .o_val(wb_reg_wb)
