@@ -13,8 +13,6 @@ module register_file #(
   input logic [$clog2(N_REGS)-1:0] i_waddr,
   input logic [$clog2(N_REGS)-1:0] i_raddr [0:N_RPORTS-1],
 
-  input logic i_trap_req,
-
   output logic [XLEN-1:0] o_rdata [0:N_RPORTS-1]
 );
   
@@ -23,7 +21,6 @@ module register_file #(
   logic [XLEN-1:0] qbus [0:N_REGS-1] /* verilator public */;
   logic [N_REGS-1:0] we_vec;
 
-  wire we = i_we & ~i_trap_req;
   wire [XLEN-1:0] rdata_a = o_rdata[0];
   wire [XLEN-1:0] rdata_b = o_rdata[1];
 
@@ -32,7 +29,7 @@ module register_file #(
   register_wport #(
     .N_REGS(N_REGS)
   ) wport(
-    .i_we(we),
+    .i_we(i_we),
     .i_waddr(i_waddr),
     .o_we(we_vec)
   );

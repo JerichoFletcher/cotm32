@@ -51,6 +51,7 @@ const IdExRegView PipelineRegsView::id_ex() const {
 
     view.pc = core->ex_pc;
     view.pc_4 = core->ex_pc_4;
+    view.inst = core->ex_inst;
 
     return view;
 }
@@ -64,6 +65,7 @@ const ExMemRegView PipelineRegsView::ex_mem() const {
     view.flush = core->exmem_flush;
 
     view.alu_out = core->mem_alu_out;
+    view.rs1 = core->mem_rs1;
     view.rs2 = core->mem_rs2;
 
     view.regfile_we = core->mem_regfile_we;
@@ -79,6 +81,7 @@ const ExMemRegView PipelineRegsView::ex_mem() const {
 
     view.pc = core->mem_pc;
     view.pc_4 = core->mem_pc_4;
+    view.inst = core->mem_inst;
 
     return view;
 }
@@ -101,6 +104,7 @@ const MemWbRegView PipelineRegsView::mem_wb() const {
 
     view.pc = core->wb_pc;
     view.pc_4 = core->wb_pc_4;
+    view.inst = core->wb_inst;
 
     return view;
 }

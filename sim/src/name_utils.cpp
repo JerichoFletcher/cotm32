@@ -36,6 +36,8 @@ static const std::map<CsrId, std::string> csr_indices = {
 static const std::array<std::string, 2> csr_write_names = {"RS1", "IMM"};
 static const std::array<std::string, 4> csr_op_names = {"NONE", "RW", "RS", "RC"};
 
+static const std::array<std::string, 3> fwd_src_names = {"NONE", "EX/MEM", "MEM/WB"};
+
 template <typename T, std::size_t size>
 inline bool in_bounds(int i, std::array<T, size> arr) {
     return 0 <= i && i < size;
@@ -90,5 +92,10 @@ const std::string& csr_write_name(CsrWriteSrc csr_write) {
 const std::string& csr_op_name(CsrOp csr_op) {
     if (!in_bounds(csr_op, csr_op_names)) return EMPTY;
     return csr_op_names[csr_op];
+}
+
+const std::string& pipe_fwd_src_name(FwdSrc fwd_src) {
+    if (!in_bounds(fwd_src, fwd_src_names)) return EMPTY;
+    return fwd_src_names[fwd_src];
 }
 }  // namespace cotm32::name_utils

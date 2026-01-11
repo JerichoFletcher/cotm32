@@ -7,7 +7,8 @@ Sidebar::Sidebar()
       m_csr_drawer(),
       m_mem_drawer(),
       m_trap_drawer(),
-      m_pipeline_regs_drawer() {}
+      m_pipeline_regs_drawer(),
+      m_fwd_drawer() {}
 
 void Sidebar::render(const Simulator& sim) {
     auto ws = ImGui::GetMainViewport()->WorkSize;
@@ -33,6 +34,7 @@ void Sidebar::render(const Simulator& sim) {
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Pipelining")) {
+                this->m_fwd_drawer.render(sim);
                 this->m_pipeline_regs_drawer.render(sim);
                 ImGui::EndTabItem();
             }

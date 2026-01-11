@@ -16,4 +16,6 @@ const std::string& reg_wb_name(RegWritebackSrc reg_wb_sel);
 const std::string& csr_name(CsrId csr_id);
 const std::string& csr_write_name(CsrWriteSrc csr_write);
 const std::string& csr_op_name(CsrOp csr_op);
+
+const std::string& pipe_fwd_src_name(FwdSrc fwd_src);
 }  // namespace cotm32::name_utils

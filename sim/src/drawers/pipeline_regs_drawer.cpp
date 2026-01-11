@@ -28,23 +28,22 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
         if (ImGui::CollapsingHeader("Pipeline Registers", ImGuiTreeNodeFlags_DefaultOpen)) {
             PipelineRegsView view(sim.v());
 
-            if (ImGui::CollapsingHeader("IF/ID")) {
+            if (ImGui::CollapsingHeader("IF/ID", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto phase = view.if_id();
                 draw_sig_vsf(phase.valid, phase.stall, phase.flush);
 
                 ImGui::Text("PC          : 0x%08x", phase.pc);
                 ImGui::Text("PC+4        : 0x%08x", phase.pc_4);
-
-                ImGui::Separator();
                 ImGui::Text("Instruction : 0x%08x", phase.inst);
             }
 
-            if (ImGui::CollapsingHeader("ID/EX")) {
+            if (ImGui::CollapsingHeader("ID/EX", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto phase = view.id_ex();
                 draw_sig_vsf(phase.valid, phase.stall, phase.flush);
 
                 ImGui::Text("PC          : 0x%08x", phase.pc);
                 ImGui::Text("PC+4        : 0x%08x", phase.pc_4);
+                ImGui::Text("Instruction : 0x%08x", phase.inst);
 
                 ImGui::Separator();
                 auto& alu_op_name = cotm32::name_utils::alu_op_name(phase.alu_op);
@@ -141,15 +140,17 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 }
             }
 
-            if (ImGui::CollapsingHeader("EX/MEM")) {
+            if (ImGui::CollapsingHeader("EX/MEM", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto phase = view.ex_mem();
                 draw_sig_vsf(phase.valid, phase.stall, phase.flush);
 
                 ImGui::Text("PC          : 0x%08x", phase.pc);
                 ImGui::Text("PC+4        : 0x%08x", phase.pc_4);
+                ImGui::Text("Instruction : 0x%08x", phase.inst);
 
                 ImGui::Separator();
                 ImGui::Text("ALU Out     : 0x%08x (%d)", phase.alu_out, phase.alu_out);
+                ImGui::Text("RS1         : 0x%08x (%d)", phase.rs1, phase.rs1);
                 ImGui::Text("RS2         : 0x%08x (%d)", phase.rs2, phase.rs2);
 
                 ImGui::Separator();
@@ -203,12 +204,13 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                 }
             }
 
-            if (ImGui::CollapsingHeader("MEM/WB")) {
+            if (ImGui::CollapsingHeader("MEM/WB", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto phase = view.mem_wb();
                 draw_sig_vsf(phase.valid, phase.stall, phase.flush);
 
                 ImGui::Text("PC          : 0x%08x", phase.pc);
                 ImGui::Text("PC+4        : 0x%08x", phase.pc_4);
+                ImGui::Text("Instruction : 0x%08x", phase.inst);
 
                 ImGui::Separator();
                 ImGui::Text("ALU Out     : 0x%08x (%d)", phase.alu_out, phase.alu_out);

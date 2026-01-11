@@ -94,3 +94,9 @@ typedef enum {
     CsrWriteSrc_RS1,
     CsrWriteSrc_IMM,
 } CsrWriteSrc;
+
+typedef enum {
+    FwdSrc_NONE,
+    FwdSrc_EXMEM,
+    FwdSrc_MEMWB,
+} FwdSrc;

@@ -12,6 +12,9 @@ module processor_core (
   // Signals
   logic [INST_WIDTH-1:0] if_inst /* verilator public */;
   logic [INST_WIDTH-1:0] id_inst /* verilator public */;
+  logic [INST_WIDTH-1:0] ex_inst /* verilator public */;
+  logic [INST_WIDTH-1:0] mem_inst /* verilator public */;
+  logic [INST_WIDTH-1:0] wb_inst /* verilator public */;
   logic [XLEN-1:0] if_pc /* verilator public */;
   logic [XLEN-1:0] id_pc /* verilator public */;
   logic [XLEN-1:0] ex_pc /* verilator public */;
@@ -109,23 +112,41 @@ module processor_core (
   end
 
   // Trap signals
-  wire trap_mret /* verilator public */;
-  wire trap_req /* verilator public */;
   trap_cause_t trap_cause;
   wire [MXLEN-1:0] trap_tval;
 
-  wire cu_t_illegal_inst;
-  wire csr_t_illegal_inst;
+  wire trap_mret /* verilator public */;
+  wire trap_req /* verilator public */;
 
-  wire t_inst_addr_misaligned;
-  wire t_inst_access_fault;
-  wire t_illegal_inst = cu_t_illegal_inst | csr_t_illegal_inst;
-  wire t_ebreak;
-  wire t_load_addr_misaligned;
-  wire t_load_access_fault;
-  wire t_store_addr_misaligned;
-  wire t_store_access_fault;
-  wire t_ecall_m;
+  wire id_trap_mret;
+  wire ex_trap_mret;
+  wire mem_trap_mret;
+
+  wire if_t_inst_addr_misaligned;
+  wire if_t_inst_access_fault;
+  
+  wire id_t_inst_addr_misaligned;
+  wire id_t_inst_access_fault;
+  wire id_t_illegal_inst;
+  wire id_t_ebreak;
+  wire id_t_ecall_m;
+
+  wire ex_t_inst_addr_misaligned;
+  wire ex_t_inst_access_fault;
+  wire ex_t_illegal_inst;
+  wire ex_t_ebreak;
+  wire ex_t_ecall_m;
+
+  wire mem_t_inst_addr_misaligned;
+  wire mem_t_inst_access_fault;
+  wire mem_t_illegal_inst;
+  wire mem_t_illegal_inst_csr;
+  wire mem_t_ebreak;
+  wire mem_t_load_addr_misaligned;
+  wire mem_t_load_access_fault;
+  wire mem_t_store_addr_misaligned;
+  wire mem_t_store_access_fault;
+  wire mem_t_ecall_m;
 
   wire trap_mode /* verilator public */;
 
@@ -160,8 +181,6 @@ module processor_core (
   end
 
   // Pipeline wires
-  wire if_stall /* verilator public */;
-
   wire ifid_valid /* verilator public */;
   wire ifid_stall /* verilator public */;
   wire ifid_flush /* verilator public */;
@@ -178,13 +197,22 @@ module processor_core (
   wire memwb_stall /* verilator public */;
   wire memwb_flush /* verilator public */;
 
+  wire ifid_stall_hu;
+  wire ifid_flush_hu;
+  wire idex_flush_hu;
+
+  assign ifid_stall = ifid_stall_hu;
+  assign ifid_flush = ifid_flush_hu || trap_req || trap_mret;
+  assign idex_flush = idex_flush_hu || trap_req || trap_mret;
+  assign exmem_flush = trap_req || trap_mret;
+
   forward_src_t forward_a /* verilator public */;
   forward_src_t forward_b /* verilator public */;
   
   logic [XLEN-1:0] forward_a_vals [0:2];
   logic [XLEN-1:0] forward_b_vals [0:2];
-  wire [XLEN-1:0] ex_rs1_fwd;
-  wire [XLEN-1:0] ex_rs2_fwd;
+  wire [XLEN-1:0] ex_rs1_fwd /* verilator public */;
+  wire [XLEN-1:0] ex_rs2_fwd /* verilator public */;
 
   always_comb begin
     forward_a_vals[PIPE_FWD_SRC_NONE] = ex_rs1;
@@ -198,17 +226,17 @@ module processor_core (
     forward_b_vals[PIPE_FWD_SRC_MEMWB] = wb_reg_wb;
   end
 
-  /////////////// IF      ///////////////
+  //////////////////////////////// IF     ////////////////////////////////
   // Instruction fetch unit
   inst_fetch #(
     .RESET_VECTOR(PC_RESET_VECTOR)
   ) ifu(
     .i_clk(i_clk),
     .i_rst(i_rst),
-    .i_take_branch(ex_take_branch),
+    .i_take_branch(ex_take_branch && idex_valid),
     .i_new_addr(ex_alu_out),
 
-    .i_stall(if_stall),
+    .i_stall(ifid_stall),
 
     .i_trap_mret(trap_mret),
     .i_trap_req(trap_req),
@@ -217,8 +245,8 @@ module processor_core (
 
     .o_addr(if_pc),
     .o_addr_4(if_pc_4),
-    .o_t_inst_addr_misaligned(t_inst_addr_misaligned),
-    .o_t_inst_access_fault(t_inst_access_fault)
+    .o_t_inst_addr_misaligned(if_t_inst_addr_misaligned),
+    .o_t_inst_access_fault(if_t_inst_access_fault)
   );
 
   // IMEM
@@ -227,18 +255,24 @@ module processor_core (
     .o_inst(if_inst)
   );
 
-  /////////////// IF/ID   ///////////////
+  //////////////////////////////// IF/ID  ////////////////////////////////
   ifid_reg ifid(
     .i_clk(i_clk),
     .i_rst(i_rst),
     .i_stall(ifid_stall),
     .i_flush(ifid_flush),
+
     .i_data('{if_pc, if_pc_4, if_inst}),
+    .i_t_inst_addr_misaligned(if_t_inst_addr_misaligned),
+    .i_t_inst_access_fault(if_t_inst_access_fault),
+
     .o_data('{id_pc, id_pc_4, id_inst}),
-    .o_valid(ifid_valid)
+    .o_valid(ifid_valid),
+    .o_t_inst_addr_misaligned(id_t_inst_addr_misaligned),
+    .o_t_inst_access_fault(id_t_inst_access_fault)
   );
 
-  /////////////// ID      ///////////////
+  //////////////////////////////// ID     ////////////////////////////////
   // CU
   cu cu(
     .i_inst(id_inst),
@@ -263,10 +297,10 @@ module processor_core (
     .o_csr_op(id_csr_op),
     .o_csr_zimm(id_csr_zimm),
 
-    .o_t_illegal_inst(cu_t_illegal_inst),
-    .o_t_ecall_m(t_ecall_m),
-    .o_t_ebreak(t_ebreak),
-    .o_trap_mret(trap_mret)
+    .o_t_illegal_inst(id_t_illegal_inst),
+    .o_t_ebreak(id_t_ebreak),
+    .o_t_ecall_m(id_t_ecall_m),
+    .o_trap_mret(id_trap_mret)
   );
 
   // Immediate sign extender
@@ -283,15 +317,14 @@ module processor_core (
   ) rf(
     .i_clk(i_clk),
     .i_rst(i_rst),
-    .i_we(wb_regfile_we),
+    .i_we(wb_regfile_we && memwb_valid),
     .i_wdata(wb_reg_wb),
     .i_waddr(wb_rd_addr),
     .i_raddr('{id_rs1_addr, id_rs2_addr}),
-    .i_trap_req(trap_req),
     .o_rdata('{id_rs1, id_rs2})
   );
 
-  /////////////// ID/EX   ///////////////
+  //////////////////////////////// ID/EX  ////////////////////////////////
   idex_reg idex(
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -318,9 +351,16 @@ module processor_core (
       id_rs2,
       id_imm,
       id_pc,
-      id_pc_4
+      id_pc_4,
+      id_inst
     }),
     .i_valid(ifid_valid),
+    .i_t_inst_addr_misaligned(id_t_inst_addr_misaligned),
+    .i_t_inst_access_fault(id_t_inst_access_fault),
+    .i_t_illegal_inst(id_t_illegal_inst),
+    .i_t_ebreak(id_t_ebreak),
+    .i_t_ecall_m(id_t_ecall_m),
+    .i_trap_mret(id_trap_mret),
     .o_data('{
       ex_alu_op,
       ex_alu_a_sel,
@@ -342,12 +382,19 @@ module processor_core (
       ex_rs2,
       ex_imm,
       ex_pc,
-      ex_pc_4
+      ex_pc_4,
+      ex_inst
     }),
-    .o_valid(idex_valid)
+    .o_valid(idex_valid),
+    .o_t_inst_addr_misaligned(ex_t_inst_addr_misaligned),
+    .o_t_inst_access_fault(ex_t_inst_access_fault),
+    .o_t_illegal_inst(ex_t_illegal_inst),
+    .o_t_ebreak(ex_t_ebreak),
+    .o_t_ecall_m(ex_t_ecall_m),
+    .o_trap_mret(ex_trap_mret)
   );
 
-  /////////////// EX      ///////////////
+  //////////////////////////////// EX     ////////////////////////////////
   // RS1 forward mux
   mux #(
     .N_OPTIONS(3),
@@ -405,7 +452,7 @@ module processor_core (
     .o_take(ex_take_branch)
   );
 
-  /////////////// EX/MEM  ///////////////
+  //////////////////////////////// EX/MEM ////////////////////////////////
   exmem_reg exmem(
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -425,9 +472,16 @@ module processor_core (
       ex_csr_op,
       ex_csr_zimm,
       ex_pc,
-      ex_pc_4
+      ex_pc_4,
+      ex_inst
     }),
     .i_valid(idex_valid),
+    .i_t_inst_addr_misaligned(ex_t_inst_addr_misaligned),
+    .i_t_inst_access_fault(ex_t_inst_access_fault),
+    .i_t_illegal_inst(ex_t_illegal_inst),
+    .i_t_ebreak(ex_t_ebreak),
+    .i_t_ecall_m(ex_t_ecall_m),
+    .i_trap_mret(ex_trap_mret),
     .o_data('{
       mem_alu_out,
       mem_rs1,
@@ -442,19 +496,26 @@ module processor_core (
       mem_csr_op,
       mem_csr_zimm,
       mem_pc,
-      mem_pc_4
+      mem_pc_4,
+      mem_inst
     }),
-    .o_valid(exmem_valid)
+    .o_valid(exmem_valid),
+    .o_t_inst_addr_misaligned(mem_t_inst_addr_misaligned),
+    .o_t_inst_access_fault(mem_t_inst_access_fault),
+    .o_t_illegal_inst(mem_t_illegal_inst),
+    .o_t_ebreak(mem_t_ebreak),
+    .o_t_ecall_m(mem_t_ecall_m),
+    .o_trap_mret(mem_trap_mret)
   );
 
-  /////////////// MEM     ///////////////
+  //////////////////////////////// MEM    ////////////////////////////////
   // DMEM
   data_mem #(
     .MEM_SIZE(DATA_MEM_SIZE),
     .DATA_WIDTH(XLEN)
   ) dmem(
     .i_clk(i_clk),
-    .i_we(mem_dmem_we),
+    .i_we(mem_dmem_we && exmem_valid),
     .i_addr(mem_lsu_addr),
     .i_wdata(mem_dmem_wdata),
     .i_wstrb(mem_dmem_wstrb),
@@ -482,10 +543,10 @@ module processor_core (
     .o_rdata(mem_lsu_rdata),
     .o_wstrb(mem_dmem_wstrb),
     .o_we_dmem(mem_dmem_we),
-    .o_t_load_addr_misaligned(t_load_addr_misaligned),
-    .o_t_load_access_fault(t_load_access_fault),
-    .o_t_store_addr_misaligned(t_store_addr_misaligned),
-    .o_t_store_access_fault(t_store_access_fault)
+    .o_t_load_addr_misaligned(mem_t_load_addr_misaligned),
+    .o_t_load_access_fault(mem_t_load_access_fault),
+    .o_t_store_addr_misaligned(mem_t_store_addr_misaligned),
+    .o_t_store_access_fault(mem_t_store_access_fault)
   );
 
   // CSR write data mux
@@ -502,7 +563,7 @@ module processor_core (
   csr_file csr(
     .i_clk(i_clk),
     .i_rst(i_rst),
-    .i_we(mem_csr_we),
+    .i_we(mem_csr_we && exmem_valid),
     .i_op(mem_csr_op),
     .i_addr(mem_csr_addr),
     .i_wdata(mem_csr_wdata),
@@ -516,10 +577,39 @@ module processor_core (
     .o_mtvec(mem_csr_mtvec),
     .o_mepc(mem_csr_mepc),
 
-    .o_t_illegal_inst(csr_t_illegal_inst)
+    .o_t_illegal_inst(mem_t_illegal_inst_csr)
   );
 
-  /////////////// MEM/WB  ///////////////
+  // Trap dispatch
+  trap_dispatch td(
+    .i_pc(mem_pc),
+    .i_inst(mem_inst),
+    .i_ls_addr(mem_alu_out),
+    .i_inst_addr_misaligned(mem_t_inst_addr_misaligned),
+    .i_inst_access_fault(mem_t_inst_access_fault),
+    .i_illegal_inst(mem_t_illegal_inst || mem_t_illegal_inst_csr),
+    .i_ebreak(mem_t_ebreak),
+    .i_load_addr_misaligned(mem_t_load_addr_misaligned),
+    .i_load_access_fault(mem_t_load_access_fault),
+    .i_store_addr_misaligned(mem_t_store_addr_misaligned),
+    .i_store_access_fault(mem_t_store_access_fault),
+    .i_ecall_m(mem_t_ecall_m),
+    .o_trap_req(trap_req),
+    .o_trap_cause(trap_cause),
+    .o_trap_tval(trap_tval)
+  );
+
+  // Trap control unit
+  trap_control tc(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_trap_mret(mem_trap_mret),
+    .i_trap_req(trap_req),
+    .o_trap_mode(trap_mode),
+    .o_trap_mret(trap_mret)
+  );
+
+  //////////////////////////////// MEM/WB ////////////////////////////////
   memwb_reg memwb(
     .i_clk(i_clk),
     .i_rst(i_rst),
@@ -533,9 +623,10 @@ module processor_core (
       mem_rd_addr,
       mem_reg_wb_sel,
       mem_pc,
-      mem_pc_4
+      mem_pc_4,
+      mem_inst
     }),
-    .i_valid(exmem_valid),
+    .i_valid(exmem_valid && ~trap_req),
     .o_data('{
       wb_lsu_rdata,
       wb_alu_out,
@@ -544,12 +635,13 @@ module processor_core (
       wb_rd_addr,
       wb_reg_wb_sel,
       wb_pc,
-      wb_pc_4
+      wb_pc_4,
+      wb_inst
     }),
     .o_valid(memwb_valid)
   );
 
-  /////////////// WB      ///////////////
+  //////////////////////////////// WB     ////////////////////////////////
   // Register writeback mux
   mux #(
     .N_OPTIONS(REG_WB_VALCOUNT),
@@ -560,7 +652,7 @@ module processor_core (
     .o_val(wb_reg_wb)
   );
 
-  /////////////// PIPE    ///////////////
+  //////////////////////////////// PIPE   ////////////////////////////////
   // Forwarding unit
   fwd_unit fu(
     .i_idex_rs1_addr(ex_rs1_addr),
@@ -583,40 +675,10 @@ module processor_core (
     .i_ex_regfile_we(ex_regfile_we),
     .i_ex_lsu_ls_op(ex_lsu_ls_op),
     .i_ex_valid(idex_valid),
-    .i_ex_take_branch(ex_take_branch),
-    .o_stall_if(if_stall),
-    .o_stall_ifid(ifid_stall),
-    .o_flush_ifid(ifid_flush),
-    .o_flush_idex(idex_flush)
-  );
-
-  /////////////// TRAP    ///////////////
-  // Trap dispatch
-  trap_dispatch td(
-    .i_pc(id_pc),
-    .i_inst(id_inst),
-    .i_ls_addr(mem_alu_out),
-    .i_inst_addr_misaligned(t_inst_addr_misaligned),
-    .i_inst_access_fault(t_inst_access_fault),
-    .i_illegal_inst(t_illegal_inst),
-    .i_ebreak(t_ebreak),
-    .i_load_addr_misaligned(t_load_addr_misaligned),
-    .i_load_access_fault(t_load_access_fault),
-    .i_store_addr_misaligned(t_store_addr_misaligned),
-    .i_store_access_fault(t_store_access_fault),
-    .i_ecall_m(t_ecall_m),
-    .o_trap_req(trap_req),
-    .o_trap_cause(trap_cause),
-    .o_trap_tval(trap_tval)
-  );
-
-  // Trap control unit
-  trap_control tc(
-    .i_clk(i_clk),
-    .i_rst(i_rst),
-    .i_trap_mret(trap_mret),
-    .i_trap_req(trap_req),
-    .o_trap_mode(trap_mode)
+    .i_ex_take_branch(ex_take_branch && idex_valid),
+    .o_stall_ifid(ifid_stall_hu),
+    .o_flush_ifid(ifid_flush_hu),
+    .o_flush_idex(idex_flush_hu)
   );
 
 endmodule

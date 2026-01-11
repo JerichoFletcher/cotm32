@@ -44,6 +44,7 @@ struct IdExRegView {
 
     IData pc;
     IData pc_4;
+    IData inst;
 };
 
 struct ExMemRegView {
@@ -52,6 +53,7 @@ struct ExMemRegView {
     bool flush;
 
     IData alu_out;
+    IData rs1;
     IData rs2;
 
     bool regfile_we;
@@ -67,6 +69,7 @@ struct ExMemRegView {
 
     IData pc;
     IData pc_4;
+    IData inst;
 };
 
 struct MemWbRegView {
@@ -84,6 +87,7 @@ struct MemWbRegView {
 
     IData pc;
     IData pc_4;
+    IData inst;
 };
 
 class PipelineRegsView {

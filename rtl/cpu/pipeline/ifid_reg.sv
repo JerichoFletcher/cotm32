@@ -11,9 +11,15 @@ module ifid_reg(
   // IF
   input ifid_data_t i_data,
 
+  input logic i_t_inst_addr_misaligned,
+  input logic i_t_inst_access_fault,
+
   // ID
   output ifid_data_t o_data,
-  output logic o_valid
+  output logic o_valid,
+
+  output logic o_t_inst_addr_misaligned,
+  output logic o_t_inst_access_fault
 );
 
   import cotm32_pkg::*;
@@ -26,9 +32,15 @@ module ifid_reg(
       o_valid <= '0;
       o_data <= '0;
       o_data.inst <= INST_NOP;
+
+      o_t_inst_addr_misaligned <= '0;
+      o_t_inst_access_fault <= '0;
     end else if (!i_stall) begin
       o_valid <= '1;
       o_data <= i_data;
+
+      o_t_inst_addr_misaligned <= i_t_inst_addr_misaligned;
+      o_t_inst_access_fault <= i_t_inst_access_fault;
     end
     // Use latched values when stalled
   end

@@ -3,21 +3,19 @@
 
 .section .text
 _start: # _start at PC reset vector (0x0)
-  # la    sp, _estack
-  # la    t0, trap_entry
-  # andi  t0, t0, -4
-  # csrw  mtvec, t0
+  la    sp, _estack
+  la    t0, trap_entry
+  andi  t0, t0, -4
+  csrw  mtvec, t0
 
 test:
-  addi  t0, zero, 0xab
-  la    sp, _estack
-  addi  sp, sp, -16
-  sw    t0, 0(sp)
-
-  lhu   t1, 0(sp)
-  mv    t2, t1
+  li    a7, 0xdeadbeef
+  ecall
 
 main:
+  nop
+  nop
+  nop
   j stall
 
 stall:

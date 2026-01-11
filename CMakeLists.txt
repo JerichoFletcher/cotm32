@@ -55,6 +55,7 @@ set(CXX_SOURCES
   sim/src/views/csr_view.cpp
   sim/src/views/trap_view.cpp
   sim/src/views/pipeline_regs_view.cpp
+  sim/src/views/fwd_view.cpp
 
   sim/src/drawers/draw_utils.cpp
   sim/src/drawers/sidebar.cpp
@@ -65,6 +66,7 @@ set(CXX_SOURCES
   sim/src/drawers/trap_drawer.cpp
   sim/src/drawers/dump_drawer.cpp
   sim/src/drawers/pipeline_regs_drawer.cpp
+  sim/src/drawers/fwd_drawer.cpp
 
   sim/src/controllers/time_controller.cpp
   sim/src/controllers/dump_controller.cpp

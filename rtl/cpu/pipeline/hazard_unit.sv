@@ -13,7 +13,6 @@ module hazard_unit (
 
   input logic i_ex_take_branch,
 
-  output logic o_stall_if,
   output logic o_stall_ifid,
   output logic o_flush_ifid,
   output logic o_flush_idex
@@ -53,7 +52,6 @@ module hazard_unit (
   end
 
   always_comb begin
-    o_stall_if = '0;
     o_stall_ifid = '0;
     o_flush_ifid = '0;
     o_flush_idex = '0;
@@ -61,7 +59,6 @@ module hazard_unit (
     // On load-use hazard: stall IF/ID
     // Insert a bubble to prevent double execution
     if (hazard_lu) begin
-      o_stall_if = '1;
       o_stall_ifid = '1;
       o_flush_idex = '1;
     end

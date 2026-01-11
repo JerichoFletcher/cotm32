@@ -40,6 +40,7 @@ typedef struct packed {
 
   logic [XLEN-1:0] pc;
   logic [XLEN-1:0] pc_4;
+  logic [INST_WIDTH-1:0] inst;
 } idex_data_t;
 
 // EX/MEM data
@@ -61,6 +62,7 @@ typedef struct packed {
 
   logic [XLEN-1:0] pc;
   logic [XLEN-1:0] pc_4;
+  logic [INST_WIDTH-1:0] inst;
 } exmem_data_t;
 
 // MEM/WB data
@@ -75,6 +77,7 @@ typedef struct packed {
 
   logic [XLEN-1:0] pc;
   logic [XLEN-1:0] pc_4;
+  logic [INST_WIDTH-1:0] inst;
 } memwb_data_t;
 
 typedef enum logic [$clog2(3)-1:0] {
