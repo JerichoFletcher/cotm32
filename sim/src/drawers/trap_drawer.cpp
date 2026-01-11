@@ -97,9 +97,9 @@ void TrapDrawer::render(const Simulator& sim) {
             }
             ImGui::Separator();
 
-            draw_signal("Trap mode", trap_mode, cotm32::colors::RED, cotm32::colors::OFF, false);
-            draw_signal("Trap req", trap_req, cotm32::colors::YELLOW, cotm32::colors::OFF, false);
-            draw_signal("Trap ret", trap_mret, cotm32::colors::GREEN, cotm32::colors::OFF, false);
+            draw_signal("Trap Mode", trap_mode, cotm32::colors::RED, cotm32::colors::OFF, false);
+            draw_signal("Trap Req", trap_req, cotm32::colors::YELLOW, cotm32::colors::OFF, false);
+            draw_signal("Trap Ret", trap_mret, cotm32::colors::GREEN, cotm32::colors::OFF, false);
         }
     }
     ImGui::EndChild();

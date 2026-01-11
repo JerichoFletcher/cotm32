@@ -53,6 +53,7 @@ set(CXX_SOURCES
 
   sim/src/views/reg_view.cpp
   sim/src/views/csr_view.cpp
+  sim/src/views/mem_view.cpp
   sim/src/views/trap_view.cpp
   sim/src/views/pipeline_regs_view.cpp
   sim/src/views/fwd_view.cpp
