@@ -49,9 +49,15 @@ set(CXX_SOURCES
   sim/src/sdl_window.cpp
   sim/src/imgui_renderer.cpp
   sim/src/simulator.cpp
+  sim/src/name_utils.cpp
+
   sim/src/views/reg_view.cpp
   sim/src/views/csr_view.cpp
+  sim/src/views/mem_view.cpp
   sim/src/views/trap_view.cpp
+  sim/src/views/pipeline_regs_view.cpp
+  sim/src/views/fwd_view.cpp
+
   sim/src/drawers/draw_utils.cpp
   sim/src/drawers/sidebar.cpp
   sim/src/drawers/time_drawer.cpp
@@ -60,6 +66,9 @@ set(CXX_SOURCES
   sim/src/drawers/mem_drawer.cpp
   sim/src/drawers/trap_drawer.cpp
   sim/src/drawers/dump_drawer.cpp
+  sim/src/drawers/pipeline_regs_drawer.cpp
+  sim/src/drawers/fwd_drawer.cpp
+
   sim/src/controllers/time_controller.cpp
   sim/src/controllers/dump_controller.cpp
 )
@@ -67,10 +76,15 @@ set(CXX_SOURCES
 set(RTL_SOURCES
   rtl/cotm32_pkg.sv
   rtl/cotm32_priv_pkg.sv
+  rtl/cotm32_pipeline_pkg.sv
+
   rtl/comp/dec.sv
   rtl/comp/mux.sv
+
   rtl/cpu/cotm32.sv
   rtl/cpu/processor_core.sv
+
+  rtl/cpu/core/register_file.sv
   rtl/cpu/core/alu.sv
   rtl/cpu/core/bu.sv
   rtl/cpu/core/cu.sv
@@ -80,13 +94,17 @@ set(RTL_SOURCES
   rtl/cpu/core/lsu.sv
   rtl/cpu/core/rodata_mem.sv
   rtl/cpu/core/sign_ext.sv
-  rtl/cpu/core/register/register.sv
-  rtl/cpu/core/register/register_rport.sv
-  rtl/cpu/core/register/register_wport.sv
-  rtl/cpu/core/register/register_file.sv
+
   rtl/cpu/priv/csr_file.sv
   rtl/cpu/priv/trap_control.sv
   rtl/cpu/priv/trap_dispatch.sv
+
+  rtl/cpu/pipeline/ifid_reg.sv
+  rtl/cpu/pipeline/idex_reg.sv
+  rtl/cpu/pipeline/exmem_reg.sv
+  rtl/cpu/pipeline/memwb_reg.sv
+  rtl/cpu/pipeline/fwd_unit.sv
+  rtl/cpu/pipeline/hazard_unit.sv
 )
 
 add_executable(cotm32

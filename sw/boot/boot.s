@@ -7,7 +7,10 @@ _start: # _start at PC reset vector (0x0)
   la    t0, trap_entry
   andi  t0, t0, -4
   csrw  mtvec, t0
-  j     main
+
+test:
+  li    a7, 0xdeadbeef
+  ecall
 
 main:
   j stall
@@ -29,9 +32,8 @@ trap_entry:
   la    t1, trap_table
   add   t1, t1, t0
   lw    t2, 0(t1)
-  jr    t2
+  jalr  t2
   
-trap_ret:
   # Restore registers and tear down stack frame
   lw    t2, 0(sp)
   lw    t1, 4(sp)
@@ -72,7 +74,7 @@ trap_handle_ecall_m:
   csrr  t0, mepc
   addi  t0, t0, 4
   csrw  mepc, t0
-  j     trap_ret
+  ret
 
 trap_handle_reserved:
   j     trap_handle_reserved

@@ -94,7 +94,7 @@ bool VerilatedContainer::read_byte(uint32_t addr, uint8_t* out) const {
     } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
         *out = this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START];
     } else if (DATA_MEM_START <= addr && addr <= DATA_MEM_END) {
-        *out = this->m_top->cotm32->core->mem__DOT__mem_bytes[addr - DATA_MEM_START];
+        *out = this->m_top->cotm32->core->dmem__DOT__mem_bytes[addr - DATA_MEM_START];
     } else {
         return false;
     }
@@ -107,7 +107,7 @@ bool VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
     } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
         this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START] = val;
     } else if (DATA_MEM_START <= addr && addr <= DATA_MEM_END) {
-        this->m_top->cotm32->core->mem__DOT__mem_bytes[addr - DATA_MEM_START] = val;
+        this->m_top->cotm32->core->dmem__DOT__mem_bytes[addr - DATA_MEM_START] = val;
     } else {
         return false;
     }

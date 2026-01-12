@@ -5,7 +5,8 @@ module trap_control (
   input logic i_trap_mret,
   input logic i_trap_req,
 
-  output logic o_trap_mode
+  output logic o_trap_mode,
+  output logic o_trap_mret
 );
 
   import cotm32_pkg::*;
@@ -23,5 +24,7 @@ module trap_control (
       o_trap_mode <= '0;
     end
   end
+
+  assign o_trap_mret = i_trap_mret;
 
 endmodule

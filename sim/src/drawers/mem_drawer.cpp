@@ -2,8 +2,11 @@
 
 #include <fmt/core.h>
 
+#include "colors.hpp"
 #include "cotm32_defs.hpp"
+#include "drawers/draw_utils.hpp"
 #include "imgui.h"
+#include "views/mem_view.hpp"
 
 static const char* mem_src_options[3] = {"IMEM", "ROM", "DMEM"};
 static const char* mem_disp_w_options[3] = {"Byte", "Half (2 bytes)", "Word (4 bytes)"};
@@ -15,6 +18,16 @@ void MemDrawer::render(const Simulator& sim) {
             "mem", ImVec2(ImGui::GetContentRegionAvail().x, 0), ImGuiChildFlags_AutoResizeY
         )) {
         if (ImGui::CollapsingHeader("Memory Inspector", ImGuiTreeNodeFlags_DefaultOpen)) {
+            MemView view(sim.v());
+            draw_signal(
+                "Write Enable",
+                view.write_enable(),
+                cotm32::colors::GREEN,
+                cotm32::colors::OFF,
+                false
+            );
+
+            ImGui::Separator();
             ImGui::Combo(
                 "Source", &this->m_mem_sec_curr, mem_src_options, IM_COUNTOF(mem_src_options)
             );
@@ -50,7 +63,6 @@ void MemDrawer::render(const Simulator& sim) {
             }
             this->m_mem_offset = this->m_mem_offset > offset_max ? offset_max : this->m_mem_offset;
 
-            ImGui::Separator();
             ImGui::Text("Size     : %d B", mem_src_size);
             ImGui::Text("Address  : %08x:%08x", mem_src_start, mem_src_end);
 
@@ -99,32 +111,25 @@ void MemDrawer::render(const Simulator& sim) {
                     for (int c = 0; c < DISPLAY_WINDOW_W; c += disp_w) {
                         ImGui::TableNextColumn();
 
-                        uint32_t addr_base =
+                        uint32_t addr =
                             mem_src_start + this->m_mem_offset + r * DISPLAY_WINDOW_W + c;
-                        uint8_t val8_0, val8_1, val8_2, val8_3;
+
                         switch (this->m_mem_disp_w) {
                             case 0:
-                                if (sim.v().read_byte(addr_base, &val8_0)) {
-                                    ImGui::Text("%02x", val8_0);
+                                uint8_t val8;
+                                if (view.read_byte(addr, val8)) {
+                                    ImGui::Text("%02x", val8);
                                 }
                                 break;
                             case 1:
-                                if (sim.v().read_byte(addr_base, &val8_0) &&
-                                    sim.v().read_byte(addr_base + 1, &val8_1)) {
-                                    uint16_t val16 = (((uint16_t)val8_1 & 0xff) << 8) |
-                                                     ((uint16_t)val8_0 & 0xff);
+                                uint16_t val16;
+                                if (view.read_half(addr, val16)) {
                                     ImGui::Text("%04x", val16);
                                 }
                                 break;
                             case 2:
-                                if (sim.v().read_byte(addr_base, &val8_0) &&
-                                    sim.v().read_byte(addr_base + 1, &val8_1) &&
-                                    sim.v().read_byte(addr_base + 2, &val8_2) &&
-                                    sim.v().read_byte(addr_base + 3, &val8_3)) {
-                                    uint32_t val32 = (((uint16_t)val8_3 & 0xff) << 24) |
-                                                     (((uint16_t)val8_2 & 0xff) << 16) |
-                                                     (((uint16_t)val8_1 & 0xff) << 8) |
-                                                     ((uint16_t)val8_0 & 0xff);
+                                uint32_t val32;
+                                if (view.read_word(addr, val32)) {
                                     ImGui::Text("%08x", val32);
                                 }
                                 break;

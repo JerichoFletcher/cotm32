@@ -10,6 +10,8 @@ module inst_fetch #(
   input logic i_take_branch,
   input logic [XLEN-1:0] i_new_addr,
 
+  input logic i_stall,
+
   input logic i_trap_mret,
   input logic i_trap_req,
   input logic [MXLEN-1:0] i_mtvec,
@@ -53,7 +55,7 @@ module inst_fetch #(
     pc_sel = IFU_PC_PC4;
     if (i_trap_req) begin
       pc_sel = IFU_PC_MTVEC;
-    end if (i_trap_mret) begin
+    end else if (i_trap_mret) begin
       pc_sel = IFU_PC_MEPC;
     end else if (i_take_branch) begin
       pc_sel = IFU_PC_BRANCH;
@@ -63,7 +65,7 @@ module inst_fetch #(
   always_ff @(posedge i_clk) begin
     if (i_rst) begin
       o_addr <= RESET_VECTOR;
-    end else begin
+    end else if (!i_stall) begin
       o_addr <= pc_mux_out;
     end
   end

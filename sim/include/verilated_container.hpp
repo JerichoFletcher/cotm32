@@ -17,8 +17,8 @@ public:
     inline std::unique_ptr<Vtop>& top() { return this->m_top; }
 
     inline uint64_t time() const { return this->m_contextp->time(); }
-    inline IData pc() const { return this->m_top->cotm32->core->pc; }
-    inline IData inst() const { return this->m_top->cotm32->core->inst; }
+    inline IData pc() const { return this->m_top->cotm32->core->if_pc; }
+    inline IData inst() const { return this->m_top->cotm32->core->if_inst; }
 
     inline bool is_dumping() const { return this->m_tfp->isOpen(); }
     inline int dump_processed_steps() const { return this->m_d_proc_steps; }
