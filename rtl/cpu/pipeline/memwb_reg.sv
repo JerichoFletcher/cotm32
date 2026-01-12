@@ -19,10 +19,14 @@ module memwb_reg(
 
   import cotm32_pkg::*;
 
+  // NOP = addi x0, x0, 0
+  localparam INST_NOP = 32'h00000013;
+
   always_ff @(posedge i_clk) begin
     if (i_rst || i_flush) begin
       o_valid <= '0;
       o_data <= '0;
+      o_data.inst <= INST_NOP;
     end else if (!i_stall) begin
       o_valid <= i_valid;
       o_data <= i_data;

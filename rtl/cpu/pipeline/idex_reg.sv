@@ -36,10 +36,15 @@ module idex_reg(
   import cotm32_pkg::*;
   import cotm32_priv_pkg::*;
 
+  // NOP = addi x0, x0, 0
+  localparam INST_NOP = 32'h00000013;
+
   always_ff @(posedge i_clk) begin
     if (i_rst || i_flush) begin
       o_valid <= '0;
       o_data <= '0;
+      o_data.inst <= INST_NOP;
+      
       o_data.lsu_ls_op <= LSU_NONE;
       o_data.csr_op <= ZICSR_CSR_OP_NONE;
 
