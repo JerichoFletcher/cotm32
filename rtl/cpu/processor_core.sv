@@ -186,7 +186,7 @@ module processor_core (
 
   logic [MXLEN-1:0] mem_csr_rdata /* verilator public */;
   logic [MXLEN-1:0] wb_csr_rdata /* verilator public */;
-  wire [MXLEN-1:0] mem_csr_mtvec;
+  zicsr_val_mtvec_t mem_csr_mtvec;
   wire [MXLEN-1:0] mem_csr_mepc;
 
   always_comb begin

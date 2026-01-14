@@ -33,10 +33,13 @@ static const StringArray<9> mu_op_names = {
 };
 
 static const std::map<CsrId, std::string> csr_indices = {
-    {CsrId::CsrId_MTVEC,  "mtvec" },
-    {CsrId::CsrId_MEPC,   "mepc"  },
-    {CsrId::CsrId_MCAUSE, "mcause"},
-    {CsrId::CsrId_MTVAL,  "mtval" },
+    {CsrId::CsrId_MSTATUS, "mstatus"},
+    {CsrId::CsrId_MIE,     "mie"    },
+    {CsrId::CsrId_MTVEC,   "mtvec"  },
+    {CsrId::CsrId_MEPC,    "mepc"   },
+    {CsrId::CsrId_MCAUSE,  "mcause" },
+    {CsrId::CsrId_MTVAL,   "mtval"  },
+    {CsrId::CsrId_MIP,     "mip"    },
 };
 static const StringArray<2> csr_write_names = {"RS1", "IMM"};
 static const StringArray<4> csr_op_names = {"NONE", "RW", "RS", "RC"};
