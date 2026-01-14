@@ -13,16 +13,17 @@ parameter XLEN = 32;
 parameter NUM_REGS = 32;
 
 parameter PC_RESET_VECTOR = 32'h0000_0000;
-parameter INST_MEM_SIZE = 1024;
-parameter ROM_MEM_SIZE  = 1024;
-parameter DATA_MEM_SIZE = 4096;
 
-parameter INST_MEM_START  = 32'h0000_0000;
-parameter INST_MEM_END    = 32'(INST_MEM_START + INST_MEM_SIZE - 1);
-parameter ROM_MEM_START   = 32'h0001_0000;
-parameter ROM_MEM_END     = 32'(ROM_MEM_START + ROM_MEM_SIZE - 1);
-parameter DATA_MEM_START  = 32'h1000_0000;
-parameter DATA_MEM_END    = 32'(DATA_MEM_START + DATA_MEM_SIZE - 1);
+parameter BOOTROM_MEM_SIZE  = 4096;
+// parameter CLINT_MEM_SIZE    = 65536;
+parameter DATA_MEM_SIZE     = 4096;
+
+parameter BOOTROM_MEM_START = 32'h0000_0000;
+parameter BOOTROM_MEM_END   = 32'(BOOTROM_MEM_START + BOOTROM_MEM_SIZE - 1);
+// parameter CLINT_MEM_START = 32'h0000_0000;
+// parameter CLINT_MEM_END   = 32'(CLINT_MEM_START + CLINT_MEM_SIZE - 1);
+parameter DATA_MEM_START    = 32'h8000_0000;
+parameter DATA_MEM_END      = 32'(DATA_MEM_START + DATA_MEM_SIZE - 1);
 
 //////////////////////////////// RV32I  ////////////////////////////////
 // ALU operation selector
@@ -107,7 +108,7 @@ typedef enum logic [$clog2(9)-1:0] {
 // LSU memory source
 typedef enum logic [$clog2(3)-1:0] {
   LSU_MEM_SRC_UNKNOWN,
-  LSU_MEM_SRC_ROM,
+  LSU_MEM_SRC_BOOTROM,
   LSU_MEM_SRC_DMEM
 } lsu_mem_src_t;
 

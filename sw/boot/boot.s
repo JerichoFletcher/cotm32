@@ -2,22 +2,8 @@
 .extern _estack
 
 .section .text
-_start: # _start at PC reset vector (0x0)
-  la      sp, _estack
-  la      t0, trap_entry
-  andi    t0, t0, -4
-  csrw    mtvec, t0
-
-test:
-  li      t0, 72
-  li      t1, 8
-  div     t2, t0, t1
-
 main:
-  j stall
-
-stall:
-  j stall
+  j       main
 
 trap_entry:
   # Establish stack frame and store registers
@@ -79,6 +65,20 @@ trap_handle_ecall_m:
 
 trap_handle_reserved:
   j       trap_handle_reserved
+
+.section .text.init
+_start:
+  la      sp, _estack
+  la      t0, trap_entry
+  andi    t0, t0, -4
+  csrw    mtvec, t0
+
+test:
+  li      t0, 72
+  li      t1, 5
+  mul     a7, t0, t1
+  ecall
+  j       main
 
 .section .rodata
 trap_table:

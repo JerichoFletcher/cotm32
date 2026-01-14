@@ -331,6 +331,7 @@ module cu (
 
     if (stop) begin
       reg_wb_sel = REG_WB_ALU;
+      return;
     end else begin
       stop = 1;
       unique case (mu_f7_f3_t'({f7, f3}))
@@ -348,6 +349,7 @@ module cu (
 
     if (stop) begin
       reg_wb_sel = REG_WB_MU;
+      return;
     end else  begin
       invalid = '1;
     end

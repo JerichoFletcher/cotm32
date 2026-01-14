@@ -243,6 +243,15 @@ module processor_core (
     forward_b_vals[PIPE_FWD_SRC_MEMWB] = wb_reg_wb;
   end
 
+  //////////////////////////////// BOOT   ////////////////////////////////
+  rom #(
+    .N_READ_PORTS(2),
+    .MEM_SIZE(BOOTROM_MEM_SIZE)
+  ) bootrom(
+    .i_addr('{if_pc, mem_lsu_addr}),
+    .o_rdata('{if_inst, mem_rom_rdata})
+  );
+
   //////////////////////////////// IF     ////////////////////////////////
   // Instruction fetch unit
   inst_fetch #(
@@ -264,12 +273,6 @@ module processor_core (
     .o_addr_4(if_pc_4),
     .o_t_inst_addr_misaligned(if_t_inst_addr_misaligned),
     .o_t_inst_access_fault(if_t_inst_access_fault)
-  );
-
-  // IMEM
-  inst_mem im(
-    .i_addr(if_pc),
-    .o_inst(if_inst)
   );
 
   //////////////////////////////// IF/ID  ////////////////////////////////
@@ -556,21 +559,13 @@ module processor_core (
     .o_rdata(mem_dmem_rdata)
   );
 
-  // ROM
-  rodata_mem #(
-    .DATA_WIDTH(XLEN)
-  ) rom(
-    .i_addr(mem_lsu_addr),
-    .o_rdata(mem_rom_rdata)
-  );
-
   // LSU
   lsu lsu(
     .i_op(mem_lsu_ls_op),
     .i_addr(mem_alu_out),
     .i_wdata(mem_rs2),
     .i_rdata_dmem(mem_dmem_rdata),
-    .i_rdata_rom(mem_rom_rdata),
+    .i_rdata_bootrom(mem_rom_rdata),
     .i_trap_req(trap_req),
     .o_addr(mem_lsu_addr),
     .o_wdata(mem_dmem_wdata),

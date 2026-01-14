@@ -46,7 +46,10 @@ void load_elf(const char* path, VerilatedContainer& v) {
                   << std::endl;
 
         for (size_t j = 0; j < buf.size(); j++) {
-            v.write_byte(addr + j, buf[j]);
+            if (!v.write_byte(addr + j, buf[j])) {
+                std::cerr << fmt::format("Failed to write at {:08x}", addr + j) << std::endl;
+                return;
+            }
         }
     }
 }

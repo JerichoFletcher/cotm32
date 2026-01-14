@@ -89,10 +89,12 @@ void VerilatedContainer::stop_trace_dump() {
 }
 
 bool VerilatedContainer::read_byte(uint32_t addr, uint8_t* out) const {
-    if (INST_MEM_START <= addr && addr <= INST_MEM_END) {
-        *out = this->m_top->cotm32->core->im__DOT__mem_bytes[addr - INST_MEM_START];
-    } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
-        *out = this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START];
+    // if (INST_MEM_START <= addr && addr <= INST_MEM_END) {
+    //     *out = this->m_top->cotm32->core->im__DOT__mem_bytes[addr - INST_MEM_START];
+    // } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
+    //     *out = this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START];
+    if (BOOTROM_MEM_START <= addr && addr <= BOOTROM_MEM_END) {
+        *out = this->m_top->cotm32->core->bootrom__DOT__mem_bytes[addr - BOOTROM_MEM_START];
     } else if (DATA_MEM_START <= addr && addr <= DATA_MEM_END) {
         *out = this->m_top->cotm32->core->dmem__DOT__mem_bytes[addr - DATA_MEM_START];
     } else {
@@ -102,10 +104,12 @@ bool VerilatedContainer::read_byte(uint32_t addr, uint8_t* out) const {
 }
 
 bool VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
-    if (INST_MEM_START <= addr && addr <= INST_MEM_END) {
-        this->m_top->cotm32->core->im__DOT__mem_bytes[addr - INST_MEM_START] = val;
-    } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
-        this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START] = val;
+    // if (INST_MEM_START <= addr && addr <= INST_MEM_END) {
+    //     this->m_top->cotm32->core->im__DOT__mem_bytes[addr - INST_MEM_START] = val;
+    // } else if (ROM_MEM_START <= addr && addr <= ROM_MEM_END) {
+    //     this->m_top->cotm32->core->rom__DOT__mem_bytes[addr - ROM_MEM_START] = val;
+    if (BOOTROM_MEM_START <= addr && addr <= BOOTROM_MEM_END) {
+        this->m_top->cotm32->core->bootrom__DOT__mem_bytes[addr - BOOTROM_MEM_START] = val;
     } else if (DATA_MEM_START <= addr && addr <= DATA_MEM_END) {
         this->m_top->cotm32->core->dmem__DOT__mem_bytes[addr - DATA_MEM_START] = val;
     } else {
