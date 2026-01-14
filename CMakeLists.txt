@@ -21,7 +21,7 @@ set(BOOT_BIN  ${CMAKE_BINARY_DIR}/boot.bin)
 add_custom_command(
   OUTPUT ${BOOT_BIN}
   COMMAND ${RISCV_GCC}
-    -march=rv32i_zicsr
+    -march=rv32im_zicsr
     -mabi=ilp32
     -nostdlib
     -T ${BOOT_LD}
@@ -90,10 +90,11 @@ set(RTL_SOURCES
   rtl/cpu/core/cu.sv
   rtl/cpu/core/data_mem.sv
   rtl/cpu/core/inst_fetch.sv
-  rtl/cpu/core/inst_mem.sv
   rtl/cpu/core/lsu.sv
-  rtl/cpu/core/rodata_mem.sv
+  rtl/cpu/core/rom.sv
   rtl/cpu/core/sign_ext.sv
+  
+  rtl/cpu/core/mu.sv
 
   rtl/cpu/priv/csr_file.sv
   rtl/cpu/priv/trap_control.sv

@@ -8,7 +8,10 @@
 #include "imgui.h"
 #include "views/mem_view.hpp"
 
-static const char* mem_src_options[3] = {"IMEM", "ROM", "DMEM"};
+using cotm32::draw_utils::draw_signal;
+
+// static const char* mem_src_options[3] = {"IMEM", "ROM", "DMEM"};
+static const char* mem_src_options[2] = {"BOOTROM", "DMEM"};
 static const char* mem_disp_w_options[3] = {"Byte", "Half (2 bytes)", "Word (4 bytes)"};
 
 MemDrawer::MemDrawer() : m_mem_sec_curr(0), m_mem_offset(0), m_mem_disp_w(0) {}
@@ -32,29 +35,31 @@ void MemDrawer::render(const Simulator& sim) {
                 "Source", &this->m_mem_sec_curr, mem_src_options, IM_COUNTOF(mem_src_options)
             );
 
-            int window_start;
             int mem_src_size;
             int mem_src_start;
             int mem_src_end;
             int offset_max;
 
             switch (this->m_mem_sec_curr) {
+                // case 0:
+                //     mem_src_size = INST_MEM_SIZE;
+                //     mem_src_start = INST_MEM_START;
+                //     mem_src_end = INST_MEM_END;
+                //     offset_max = INST_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
+                //     break;
+                // case 1:
+                //     mem_src_size = ROM_MEM_SIZE;
+                //     mem_src_start = ROM_MEM_START;
+                //     mem_src_end = ROM_MEM_END;
+                //     offset_max = ROM_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
+                //     break;
                 case 0:
-                    window_start = INST_MEM_START;
-                    mem_src_size = INST_MEM_SIZE;
-                    mem_src_start = INST_MEM_START;
-                    mem_src_end = INST_MEM_END;
-                    offset_max = INST_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
+                    mem_src_size = BOOTROM_MEM_SIZE;
+                    mem_src_start = BOOTROM_MEM_START;
+                    mem_src_end = BOOTROM_MEM_END;
+                    offset_max = BOOTROM_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
                     break;
                 case 1:
-                    window_start = ROM_MEM_START;
-                    mem_src_size = ROM_MEM_SIZE;
-                    mem_src_start = ROM_MEM_START;
-                    mem_src_end = ROM_MEM_END;
-                    offset_max = ROM_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
-                    break;
-                case 2:
-                    window_start = DATA_MEM_START;
                     mem_src_size = DATA_MEM_SIZE;
                     mem_src_start = DATA_MEM_START;
                     mem_src_end = DATA_MEM_END;

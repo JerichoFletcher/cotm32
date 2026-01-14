@@ -39,6 +39,8 @@ const IdExRegView PipelineRegsView::id_ex() const {
     view.lsu_ls_op = static_cast<LsuLoadStoreOp>(core->ex_lsu_ls_op);
     view.reg_wb_sel = static_cast<RegWritebackSrc>(core->ex_reg_wb_sel);
 
+    view.mu_op = static_cast<MuOp>(core->ex_mu_op);
+
     view.csr_we = core->ex_csr_we;
     view.csr_data_sel = static_cast<CsrWriteSrc>(core->ex_csr_data_sel);
     view.csr_addr = static_cast<CsrId>(core->ex_csr_addr);
@@ -65,6 +67,7 @@ const ExMemRegView PipelineRegsView::ex_mem() const {
     view.flush = core->exmem_flush;
 
     view.alu_out = core->mem_alu_out;
+    view.mu_out = core->mem_mu_out;
     view.rs1 = core->mem_rs1;
     view.rs2 = core->mem_rs2;
 
@@ -96,6 +99,7 @@ const MemWbRegView PipelineRegsView::mem_wb() const {
 
     view.lsu_rdata = core->wb_lsu_rdata;
     view.alu_out = core->wb_alu_out;
+    view.mu_out = core->wb_mu_out;
     view.csr_rdata = core->wb_csr_rdata;
 
     view.regfile_we = core->wb_regfile_we;

@@ -32,6 +32,8 @@ struct IdExRegView {
     LsuLoadStoreOp lsu_ls_op;
     RegWritebackSrc reg_wb_sel;
 
+    MuOp mu_op;
+
     bool csr_we;
     CsrWriteSrc csr_data_sel;
     CsrId csr_addr;
@@ -53,6 +55,8 @@ struct ExMemRegView {
     bool flush;
 
     IData alu_out;
+    IData mu_out;
+
     IData rs1;
     IData rs2;
 
@@ -79,6 +83,7 @@ struct MemWbRegView {
 
     IData lsu_rdata;
     IData alu_out;
+    IData mu_out;
     IData csr_rdata;
 
     bool regfile_we;

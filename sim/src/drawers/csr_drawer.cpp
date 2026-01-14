@@ -8,6 +8,8 @@
 #include "views/csr_view.hpp"
 #include "views/trap_view.hpp"
 
+using cotm32::draw_utils::draw_signal;
+
 void CsrDrawer::render(const Simulator& sim) {
     if (ImGui::BeginChild(
             "csr", ImVec2(ImGui::GetContentRegionAvail().x, 0), ImGuiChildFlags_AutoResizeY

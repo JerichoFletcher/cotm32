@@ -7,6 +7,8 @@
 #include "name_utils.hpp"
 #include "views/reg_view.hpp"
 
+using cotm32::draw_utils::draw_signal;
+
 void RegDrawer::render(const Simulator& sim) {
     if (ImGui::BeginChild(
             "reg", ImVec2(ImGui::GetContentRegionAvail().x, 0), ImGuiChildFlags_AutoResizeY

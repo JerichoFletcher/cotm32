@@ -13,9 +13,15 @@ module hazard_unit (
 
   input logic i_ex_take_branch,
 
+  input logic i_ex_mu_busy,
+  input logic i_ex_mu_done,
+
   output logic o_stall_ifid,
+  output logic o_stall_idex,
+
   output logic o_flush_ifid,
-  output logic o_flush_idex
+  output logic o_flush_idex,
+  output logic o_flush_exmem
 );
 
   import cotm32_pkg::*;
@@ -28,9 +34,11 @@ module hazard_unit (
     i_ex_lsu_ls_op == LSU_LOAD_HU
   );
   logic hazard_lu;
+  logic lock_ex;
 
   always_comb begin
     hazard_lu = '0;
+    lock_ex = '0;
 
     // Load-use hazard when:
     // 1. EX current inst is LOAD to RD = RX
@@ -49,12 +57,24 @@ module hazard_unit (
         hazard_lu = '1;
       end
     end
+
+    // MU locks EX when busy and not done
+    if (
+      i_ex_valid &&
+      i_ex_mu_busy &&
+      !i_ex_mu_done
+    ) begin
+      lock_ex = '1;
+    end
   end
 
   always_comb begin
     o_stall_ifid = '0;
+    o_stall_idex = '0;
+
     o_flush_ifid = '0;
     o_flush_idex = '0;
+    o_flush_exmem = '0;
 
     // On load-use hazard: stall IF/ID
     // Insert a bubble to prevent double execution
@@ -67,6 +87,13 @@ module hazard_unit (
     if (i_ex_take_branch) begin
       o_flush_ifid = '1;
       o_flush_idex = '1;
+    end
+
+    // On EX lock: stall all stages before MEM, insert a bubble in MEM
+    if (lock_ex) begin
+      o_stall_ifid = '1;
+      o_stall_idex = '1;
+      o_flush_exmem = '1;
     end
   end
 

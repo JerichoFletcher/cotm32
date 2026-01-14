@@ -28,6 +28,8 @@ typedef struct packed {
   lsu_ls_t lsu_ls_op;
   reg_wb_sel_t reg_wb_sel;
 
+  mu_op_t mu_op;
+
   logic csr_we;
   zicsr_data_sel_t csr_data_sel;
   zicsr_csr_addr_t csr_addr;
@@ -54,6 +56,8 @@ typedef struct packed {
   lsu_ls_t lsu_ls_op;
   reg_wb_sel_t reg_wb_sel;
 
+  logic [XLEN-1:0] mu_out;
+
   logic csr_we;
   zicsr_data_sel_t csr_data_sel;
   zicsr_csr_addr_t csr_addr;
@@ -74,6 +78,8 @@ typedef struct packed {
   logic regfile_we;
   logic [$clog2(NUM_REGS)-1:0] rd_addr;
   reg_wb_sel_t reg_wb_sel;
+  
+  logic [XLEN-1:0] mu_out;
 
   logic [XLEN-1:0] pc;
   logic [XLEN-1:0] pc_4;

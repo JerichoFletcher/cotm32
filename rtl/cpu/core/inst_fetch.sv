@@ -79,7 +79,7 @@ module inst_fetch #(
 
   always_comb begin
     o_t_inst_access_fault = '0;
-    if ((INST_MEM_START > 0 && o_addr < INST_MEM_START) || o_addr > INST_MEM_END) begin
+    if ((BOOTROM_MEM_START > 0 && o_addr < BOOTROM_MEM_START) || o_addr > BOOTROM_MEM_END) begin
       o_t_inst_access_fault = '1;
     end
   end

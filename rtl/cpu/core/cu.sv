@@ -7,6 +7,9 @@ import cotm32_pkg::bu_op_t;
 import cotm32_pkg::imm_t;
 import cotm32_pkg::lsu_ls_t;
 import cotm32_pkg::reg_wb_sel_t;
+
+import cotm32_pkg::mu_op_t;
+
 import cotm32_priv_pkg::MXLEN;
 import cotm32_priv_pkg::zicsr_data_sel_t;
 import cotm32_priv_pkg::zicsr_csr_addr_t;
@@ -29,6 +32,8 @@ module cu (
   output imm_t o_imm_sel,
   output lsu_ls_t o_lsu_ls,
   output reg_wb_sel_t o_reg_wb_sel,
+
+  output mu_op_t o_mu_op,
 
   output logic o_csr_we,
   output zicsr_data_sel_t o_csr_data_sel,
@@ -66,13 +71,15 @@ module cu (
     o_csr_we = '0;
     o_csr_op = ZICSR_CSR_OP_NONE;
 
+    o_mu_op = MU_NOP;
+
     o_t_illegal_inst = '0;
     o_t_ecall_m = '0;
     o_t_ebreak = '0;
     o_trap_mret = '0;
 
     unique case (opcode)
-      OP_ALU    : begin
+      OP_CREG   : begin
         // Read from RS1, RS2; write to RD
         o_rd_addr = rd;
         o_rs1_addr = rs1;
@@ -81,14 +88,13 @@ module cu (
         // ALU A = RS1, B = RS2
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_RS2;
-        o_alu_op = f7f3_to_alu_op(funct7, funct3, invalid);
+        f7f3_to_creg_op(funct7, funct3, o_alu_op, o_mu_op, o_reg_wb_sel, invalid);
         if (invalid) o_t_illegal_inst = '1;
 
-        // Write back from ALU to register
-        o_reg_wb_sel = REG_WB_ALU;
+        // Write back from ALU/MU to register
         o_regfile_we = '1;
       end
-      OP_ALUI   : begin
+      OP_CIMM   : begin
         // Read from RS1; write to RD
         o_rd_addr = rd;
         o_rs1_addr = rs1;
@@ -97,7 +103,7 @@ module cu (
         o_alu_a_sel = ALU_A_RS1;
         o_alu_b_sel = ALU_B_IMM;
         o_imm_sel = IMM_I;
-        o_alu_op = f7f3_to_alui_op(funct7, funct3, invalid);
+        o_alu_op = f7f3_to_cimm_op(funct7, funct3, invalid);
         if (invalid) o_t_illegal_inst = '1;
 
         // Write back from ALU to register
@@ -295,63 +301,94 @@ module cu (
     endcase
   end
 
-  function alu_op_t f7f3_to_alu_op(
+  function void f7f3_to_creg_op(
     input logic [6:0] f7,
     input logic [2:0] f3,
+    ref alu_op_t alu_op,
+    ref mu_op_t mu_op,
+    ref reg_wb_sel_t reg_wb_sel,
     ref bit invalid
   );
+    bit stop;
+
+    alu_op = ALU_ADD;
+    mu_op = MU_NOP;
+
+    stop = 1;
     unique case (alu_f7_f3_t'({f7, f3}))
-      ALU_F7F3_ADD  : f7f3_to_alu_op = ALU_ADD;
-      ALU_F7F3_SUB  : f7f3_to_alu_op = ALU_SUB;
-      ALU_F7F3_SLL  : f7f3_to_alu_op = ALU_SLL;
-      ALU_F7F3_SLT  : f7f3_to_alu_op = ALU_SLT;
-      ALU_F7F3_SLTU : f7f3_to_alu_op = ALU_SLTU;
-      ALU_F7F3_XOR  : f7f3_to_alu_op = ALU_XOR;
-      ALU_F7F3_SRL  : f7f3_to_alu_op = ALU_SRL;
-      ALU_F7F3_SRA  : f7f3_to_alu_op = ALU_SRA;
-      ALU_F7F3_OR   : f7f3_to_alu_op = ALU_OR;
-      ALU_F7F3_AND  : f7f3_to_alu_op = ALU_AND;
-      default       : begin
-        invalid = 1;
-        f7f3_to_alu_op = ALU_ADD;
-      end
+      ALU_F7F3_ADD  : alu_op = ALU_ADD;
+      ALU_F7F3_SUB  : alu_op = ALU_SUB;
+      ALU_F7F3_SLL  : alu_op = ALU_SLL;
+      ALU_F7F3_SLT  : alu_op = ALU_SLT;
+      ALU_F7F3_SLTU : alu_op = ALU_SLTU;
+      ALU_F7F3_XOR  : alu_op = ALU_XOR;
+      ALU_F7F3_SRL  : alu_op = ALU_SRL;
+      ALU_F7F3_SRA  : alu_op = ALU_SRA;
+      ALU_F7F3_OR   : alu_op = ALU_OR;
+      ALU_F7F3_AND  : alu_op = ALU_AND;
+      default       : stop = 0;
     endcase
+
+    if (stop) begin
+      reg_wb_sel = REG_WB_ALU;
+      return;
+    end else begin
+      stop = 1;
+      unique case (mu_f7_f3_t'({f7, f3}))
+        MU_F7F3_MUL     : mu_op = MU_MUL;
+        MU_F7F3_MULH    : mu_op = MU_MULH;
+        MU_F7F3_MULHSU  : mu_op = MU_MULHSU;
+        MU_F7F3_MULHU   : mu_op = MU_MULHU;
+        MU_F7F3_DIV     : mu_op = MU_DIV;
+        MU_F7F3_DIVU    : mu_op = MU_DIVU;
+        MU_F7F3_REM     : mu_op = MU_REM;
+        MU_F7F3_REMU    : mu_op = MU_REMU;
+        default         : stop = 0;
+      endcase
+    end
+
+    if (stop) begin
+      reg_wb_sel = REG_WB_MU;
+      return;
+    end else  begin
+      invalid = '1;
+    end
   endfunction
 
-  function alu_op_t f7f3_to_alui_op(
+  function alu_op_t f7f3_to_cimm_op(
     input logic [6:0] f7,
     input logic [2:0] f3,
     ref bit invalid
   );
     unique case (f3)
-      ALU_F7F3_ADD[2:0] : f7f3_to_alui_op = ALU_ADD;
+      ALU_F7F3_ADD[2:0] : f7f3_to_cimm_op = ALU_ADD;
       ALU_F7F3_SLL[2:0] : begin
         unique case (f7)
-          ALU_F7F3_SLL[9:3] : f7f3_to_alui_op = ALU_SLL;
+          ALU_F7F3_SLL[9:3] : f7f3_to_cimm_op = ALU_SLL;
           default           : begin
             invalid = 1;
-            f7f3_to_alui_op = ALU_SLL;
+            f7f3_to_cimm_op = ALU_SLL;
           end
         endcase
       end
-      ALU_F7F3_SLT[2:0] : f7f3_to_alui_op = ALU_SLT;
-      ALU_F7F3_SLTU[2:0]: f7f3_to_alui_op = ALU_SLTU;
-      ALU_F7F3_XOR[2:0] : f7f3_to_alui_op = ALU_XOR;
+      ALU_F7F3_SLT[2:0] : f7f3_to_cimm_op = ALU_SLT;
+      ALU_F7F3_SLTU[2:0]: f7f3_to_cimm_op = ALU_SLTU;
+      ALU_F7F3_XOR[2:0] : f7f3_to_cimm_op = ALU_XOR;
       ALU_F7F3_SRL[2:0] : begin
         unique case (f7)
-          ALU_F7F3_SRL[9:3] : f7f3_to_alui_op = ALU_SRL;
-          ALU_F7F3_SRA[9:3] : f7f3_to_alui_op = ALU_SRA;
+          ALU_F7F3_SRL[9:3] : f7f3_to_cimm_op = ALU_SRL;
+          ALU_F7F3_SRA[9:3] : f7f3_to_cimm_op = ALU_SRA;
           default           : begin
             invalid = 1;
-            f7f3_to_alui_op = ALU_SRL;
+            f7f3_to_cimm_op = ALU_SRL;
           end
         endcase
       end
-      ALU_F7F3_OR[2:0]  : f7f3_to_alui_op = ALU_OR;
-      ALU_F7F3_AND[2:0] : f7f3_to_alui_op = ALU_AND;
+      ALU_F7F3_OR[2:0]  : f7f3_to_cimm_op = ALU_OR;
+      ALU_F7F3_AND[2:0] : f7f3_to_cimm_op = ALU_AND;
       default           : begin
         invalid = 1;
-        f7f3_to_alui_op = ALU_ADD;
+        f7f3_to_cimm_op = ALU_ADD;
       end
     endcase
   endfunction

@@ -1,17 +1,24 @@
 ENTRY(_start)
 
 MEMORY {
-  IMEM (rx) : ORIGIN = 0x00000000, LENGTH = 1K
-  ROM (rx)  : ORIGIN = 0x00010000, LENGTH = 1K
-  DMEM (rwx): ORIGIN = 0x10000000, LENGTH = 4K
+  BOOTROM (rx)  : ORIGIN = 0x00000000, LENGTH = 4K
+  CLINT (rw)    : ORIGIN = 0x02000000, LENGTH = 64K
+  RAM (rwx)     : ORIGIN = 0x80000000, LENGTH = 4K
 }
 
 SECTIONS {
-  . = ORIGIN(IMEM);
-  .text   : { *(.text*) } > IMEM
+  . = ORIGIN(BOOTROM);
+  .text   : {
+    *(.text.init)
+    *(.text*)
+  } > BOOTROM
 
-  . = ORIGIN(ROM);
-  .rodata : { *(.rodata*) } > ROM
+  . = ALIGN(4);
+  .rodata : {
+    *(.rodata*)
+  } > BOOTROM
+  
+  _etext = .;
 
-  _estack = ORIGIN(DMEM) + LENGTH(DMEM);
+  _estack = ORIGIN(RAM) + LENGTH(RAM);
 }

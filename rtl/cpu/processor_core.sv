@@ -71,6 +71,14 @@ module processor_core (
   bu_op_t ex_bu_op /* verilator public */;
   logic ex_take_branch /* verilator public */;
 
+  mu_op_t id_mu_op /* verilator public */;
+  mu_op_t ex_mu_op /* verilator public */;
+  wire ex_mu_busy /* verilator public */;
+  wire ex_mu_done /* verilator public */;
+  logic [XLEN-1:0] ex_mu_out /* verilator public */;
+  logic [XLEN-1:0] mem_mu_out /* verilator public */;
+  logic [XLEN-1:0] wb_mu_out /* verilator public */;
+
   logic mem_dmem_we /* verilator public */;
   logic [XLEN-1:0] mem_dmem_wdata /* verilator public */;
   logic [XLEN/BYTE_WIDTH-1:0] mem_dmem_wstrb /* verilator public */;
@@ -104,12 +112,14 @@ module processor_core (
 
     mem_reg_wb_vals[REG_WB_ZERO] = '0;
     mem_reg_wb_vals[REG_WB_ALU] = mem_alu_out;
+    mem_reg_wb_vals[REG_WB_MU] = mem_mu_out;
     mem_reg_wb_vals[REG_WB_PC4] = mem_pc_4;
     mem_reg_wb_vals[REG_WB_LSU] = mem_lsu_rdata;
     mem_reg_wb_vals[REG_WB_CSR] = mem_csr_rdata;
 
     wb_reg_wb_vals[REG_WB_ZERO] = '0;
     wb_reg_wb_vals[REG_WB_ALU] = wb_alu_out;
+    wb_reg_wb_vals[REG_WB_MU] = wb_mu_out;
     wb_reg_wb_vals[REG_WB_PC4] = wb_pc_4;
     wb_reg_wb_vals[REG_WB_LSU] = wb_lsu_rdata;
     wb_reg_wb_vals[REG_WB_CSR] = wb_csr_rdata;
@@ -202,13 +212,18 @@ module processor_core (
   wire memwb_flush /* verilator public */;
 
   wire ifid_stall_hu;
+  wire idex_stall_hu;
+
   wire ifid_flush_hu;
   wire idex_flush_hu;
+  wire exmem_flush_hu;
 
   assign ifid_stall = ifid_stall_hu;
+  assign idex_stall = idex_stall_hu;
+
   assign ifid_flush = ifid_flush_hu || trap_req || trap_mret;
   assign idex_flush = idex_flush_hu || trap_req || trap_mret;
-  assign exmem_flush = trap_req || trap_mret;
+  assign exmem_flush = exmem_flush_hu || trap_req || trap_mret;
 
   forward_src_t forward_a /* verilator public */;
   forward_src_t forward_b /* verilator public */;
@@ -227,6 +242,15 @@ module processor_core (
     forward_b_vals[PIPE_FWD_SRC_EXMEM] = mem_reg_wb;
     forward_b_vals[PIPE_FWD_SRC_MEMWB] = wb_reg_wb;
   end
+
+  //////////////////////////////// BOOT   ////////////////////////////////
+  rom #(
+    .N_READ_PORTS(2),
+    .MEM_SIZE(BOOTROM_MEM_SIZE)
+  ) bootrom(
+    .i_addr('{if_pc, mem_lsu_addr}),
+    .o_rdata('{if_inst, mem_rom_rdata})
+  );
 
   //////////////////////////////// IF     ////////////////////////////////
   // Instruction fetch unit
@@ -249,12 +273,6 @@ module processor_core (
     .o_addr_4(if_pc_4),
     .o_t_inst_addr_misaligned(if_t_inst_addr_misaligned),
     .o_t_inst_access_fault(if_t_inst_access_fault)
-  );
-
-  // IMEM
-  inst_mem im(
-    .i_addr(if_pc),
-    .o_inst(if_inst)
   );
 
   //////////////////////////////// IF/ID  ////////////////////////////////
@@ -292,6 +310,8 @@ module processor_core (
     .o_imm_sel(id_imm_sel),
     .o_lsu_ls(id_lsu_ls_op),
     .o_reg_wb_sel(id_reg_wb_sel),
+
+    .o_mu_op(id_mu_op),
 
     .o_csr_we(id_csr_we),
     .o_csr_data_sel(id_csr_data_sel),
@@ -343,6 +363,7 @@ module processor_core (
       id_rs2_addr,
       id_lsu_ls_op,
       id_reg_wb_sel,
+      id_mu_op,
       id_csr_we,
       id_csr_data_sel,
       id_csr_addr,
@@ -374,6 +395,7 @@ module processor_core (
       ex_rs2_addr,
       ex_lsu_ls_op,
       ex_reg_wb_sel,
+      ex_mu_op,
       ex_csr_we,
       ex_csr_data_sel,
       ex_csr_addr,
@@ -453,6 +475,18 @@ module processor_core (
     .o_take(ex_take_branch)
   );
 
+  // MU
+  mu mu(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_op(ex_mu_op),
+    .i_a(ex_rs1_fwd),
+    .i_b(ex_rs2_fwd),
+    .o(ex_mu_out),
+    .o_busy(ex_mu_busy),
+    .o_done(ex_mu_done)
+  );
+
   //////////////////////////////// EX/MEM ////////////////////////////////
   exmem_reg exmem(
     .i_clk(i_clk),
@@ -467,6 +501,7 @@ module processor_core (
       ex_rd_addr,
       ex_lsu_ls_op,
       ex_reg_wb_sel,
+      ex_mu_out,
       ex_csr_we,
       ex_csr_data_sel,
       ex_csr_addr,
@@ -491,6 +526,7 @@ module processor_core (
       mem_rd_addr,
       mem_lsu_ls_op,
       mem_reg_wb_sel,
+      mem_mu_out,
       mem_csr_we,
       mem_csr_data_sel,
       mem_csr_addr,
@@ -523,21 +559,13 @@ module processor_core (
     .o_rdata(mem_dmem_rdata)
   );
 
-  // ROM
-  rodata_mem #(
-    .DATA_WIDTH(XLEN)
-  ) rom(
-    .i_addr(mem_lsu_addr),
-    .o_rdata(mem_rom_rdata)
-  );
-
   // LSU
   lsu lsu(
     .i_op(mem_lsu_ls_op),
     .i_addr(mem_alu_out),
     .i_wdata(mem_rs2),
     .i_rdata_dmem(mem_dmem_rdata),
-    .i_rdata_rom(mem_rom_rdata),
+    .i_rdata_bootrom(mem_rom_rdata),
     .i_trap_req(trap_req),
     .o_addr(mem_lsu_addr),
     .o_wdata(mem_dmem_wdata),
@@ -633,6 +661,7 @@ module processor_core (
       mem_regfile_we,
       mem_rd_addr,
       mem_reg_wb_sel,
+      mem_mu_out,
       mem_pc,
       mem_pc_4,
       mem_inst
@@ -645,6 +674,7 @@ module processor_core (
       wb_regfile_we,
       wb_rd_addr,
       wb_reg_wb_sel,
+      wb_mu_out,
       wb_pc,
       wb_pc_4,
       wb_inst
@@ -687,9 +717,13 @@ module processor_core (
     .i_ex_lsu_ls_op(ex_lsu_ls_op),
     .i_ex_valid(idex_valid),
     .i_ex_take_branch(ex_take_branch && idex_valid),
+    .i_ex_mu_busy(ex_mu_busy),
+    .i_ex_mu_done(ex_mu_done),
     .o_stall_ifid(ifid_stall_hu),
+    .o_stall_idex(idex_stall_hu),
     .o_flush_ifid(ifid_flush_hu),
-    .o_flush_idex(idex_flush_hu)
+    .o_flush_idex(idex_flush_hu),
+    .o_flush_exmem(exmem_flush_hu)
   );
 
 endmodule

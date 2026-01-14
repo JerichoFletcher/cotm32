@@ -7,8 +7,8 @@ module lsu (
   input lsu_ls_t i_op,
   input logic [XLEN-1:0] i_addr,
   input logic [XLEN-1:0] i_wdata,
+  input logic [XLEN-1:0] i_rdata_bootrom,
   input logic [XLEN-1:0] i_rdata_dmem,
-  input logic [XLEN-1:0] i_rdata_rom,
 
   input logic i_trap_req,
 
@@ -29,14 +29,14 @@ module lsu (
   lsu_mem_src_t mem_src;
   logic [XLEN-1:0] mem_rdata;
 
-  lsu_mem_src_t valid_load_src[2] = '{LSU_MEM_SRC_ROM, LSU_MEM_SRC_DMEM};
+  lsu_mem_src_t valid_load_src[2] = '{LSU_MEM_SRC_BOOTROM, LSU_MEM_SRC_DMEM};
   lsu_mem_src_t valid_store_src[1] = '{LSU_MEM_SRC_DMEM};
 
   always_comb begin
-    if (ROM_MEM_START <= i_addr && i_addr <= ROM_MEM_END) begin
-      mem_src = LSU_MEM_SRC_ROM;
-      o_addr = i_addr - ROM_MEM_START;
-    end else if (DATA_MEM_START <= i_addr && i_addr <= DATA_MEM_END) begin
+    if ((BOOTROM_MEM_START == 0 || BOOTROM_MEM_START <= i_addr) && i_addr <= BOOTROM_MEM_END) begin
+      mem_src = LSU_MEM_SRC_BOOTROM;
+      o_addr = i_addr - BOOTROM_MEM_START;
+    end else if ((DATA_MEM_START == 0 || DATA_MEM_START <= i_addr) && i_addr <= DATA_MEM_END) begin
       mem_src = LSU_MEM_SRC_DMEM;
       o_addr = i_addr - DATA_MEM_START;
     end else begin
@@ -47,9 +47,9 @@ module lsu (
 
   always_comb begin
     unique case (mem_src)
-      LSU_MEM_SRC_DMEM: mem_rdata = i_rdata_dmem[XLEN-1:0];
-      LSU_MEM_SRC_ROM : mem_rdata = i_rdata_rom[XLEN-1:0];
-      default         : mem_rdata = '0;
+      LSU_MEM_SRC_BOOTROM : mem_rdata = i_rdata_bootrom[XLEN-1:0];
+      LSU_MEM_SRC_DMEM    : mem_rdata = i_rdata_dmem[XLEN-1:0];
+      default             : mem_rdata = '0;
     endcase
   end
 
