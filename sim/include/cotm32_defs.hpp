@@ -49,15 +49,15 @@ typedef enum {
 } AluPortB;
 
 typedef enum {
-    NONE,
-    LOAD_B,
-    LOAD_H,
-    LOAD_W,
-    LOAD_BU,
-    LOAD_HU,
-    STORE_B,
-    STORE_H,
-    STORE_W
+    LsuLoadStoreOp_NONE,
+    LsuLoadStoreOp_LOAD_B,
+    LsuLoadStoreOp_LOAD_H,
+    LsuLoadStoreOp_LOAD_W,
+    LsuLoadStoreOp_LOAD_BU,
+    LsuLoadStoreOp_LOAD_HU,
+    LsuLoadStoreOp_STORE_B,
+    LsuLoadStoreOp_STORE_H,
+    LsuLoadStoreOp_STORE_W
 } LsuLoadStoreOp;
 
 typedef enum {
