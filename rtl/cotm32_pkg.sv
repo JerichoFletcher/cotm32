@@ -24,6 +24,7 @@ parameter ROM_MEM_END     = 32'(ROM_MEM_START + ROM_MEM_SIZE - 1);
 parameter DATA_MEM_START  = 32'h1000_0000;
 parameter DATA_MEM_END    = 32'(DATA_MEM_START + DATA_MEM_SIZE - 1);
 
+//////////////////////////////// RV32I  ////////////////////////////////
 // ALU operation selector
 typedef enum logic [$clog2(10)-1:0] {
   ALU_ADD,
@@ -111,10 +112,11 @@ typedef enum logic [$clog2(3)-1:0] {
 } lsu_mem_src_t;
 
 // Register writeback selectors
-parameter REG_WB_VALCOUNT = 5;
+parameter REG_WB_VALCOUNT = 6;
 typedef enum logic [$clog2(REG_WB_VALCOUNT)-1:0] {
   REG_WB_ZERO,
   REG_WB_ALU,
+  REG_WB_MU,
   REG_WB_PC4,
   REG_WB_LSU,
   REG_WB_CSR
@@ -122,8 +124,8 @@ typedef enum logic [$clog2(REG_WB_VALCOUNT)-1:0] {
 
 // Opcodes
 typedef enum logic [INST_OPCODE_WIDTH-1:0] {
-  OP_ALU    = 7'b0110011,
-  OP_ALUI   = 7'b0010011,
+  OP_CREG   = 7'b0110011,
+  OP_CIMM   = 7'b0010011,
   OP_JALR   = 7'b1100111,
   OP_LOAD   = 7'b0000011,
   OP_STORE  = 7'b0100011,
@@ -174,5 +176,30 @@ typedef enum logic [2:0] {
   BU_F3_LTU = 3'b110,
   BU_F3_GEU = 3'b111
 } bu_f3_t;
+
+//////////////////////////////// RV32M  ////////////////////////////////
+// MU operation selector
+typedef enum logic [$clog2(9)-1:0] {
+  MU_NOP,
+  MU_MUL,
+  MU_MULH,
+  MU_MULHU,
+  MU_MULHSU,
+  MU_DIV,
+  MU_DIVU,
+  MU_REM,
+  MU_REMU
+} mu_op_t;
+
+typedef enum logic [9:0] {
+  MU_F7F3_MUL     = 10'b0000001_000,
+  MU_F7F3_MULH    = 10'b0000001_001,
+  MU_F7F3_MULHSU  = 10'b0000001_010,
+  MU_F7F3_MULHU   = 10'b0000001_011,
+  MU_F7F3_DIV     = 10'b0000001_100,
+  MU_F7F3_DIVU    = 10'b0000001_101,
+  MU_F7F3_REM     = 10'b0000001_110,
+  MU_F7F3_REMU    = 10'b0000001_111
+} mu_f7_f3_t;
 
 endpackage : cotm32_pkg
