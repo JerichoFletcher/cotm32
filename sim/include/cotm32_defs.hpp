@@ -16,6 +16,7 @@ static constexpr inline uint32_t ROM_MEM_END = (ROM_MEM_START + ROM_MEM_SIZE - 1
 static constexpr inline uint32_t DATA_MEM_START = 0x1000'0000;
 static constexpr inline uint32_t DATA_MEM_END = (DATA_MEM_START + DATA_MEM_SIZE - 1);
 
+//////////////////////////////// RV32I  ////////////////////////////////
 typedef enum {
     AluOp_ADD,
     AluOp_SUB,
@@ -65,6 +66,7 @@ typedef enum {
 typedef enum {
     RegWritebackSrc_ZERO,
     RegWritebackSrc_ALU,
+    RegWriteBackSrc_MU,
     RegWritebackSrc_PC4,
     RegWritebackSrc_LSU,
     RegWritebackSrc_CSR,
@@ -100,3 +102,16 @@ typedef enum {
     FwdSrc_EXMEM,
     FwdSrc_MEMWB,
 } FwdSrc;
+
+//////////////////////////////// RV32M  ////////////////////////////////
+typedef enum {
+    MuOp_NOP,
+    MuOp_MUL,
+    MuOp_MULH,
+    MuOp_MULHU,
+    MuOp_MULHSU,
+    MuOp_DIV,
+    MuOp_DIVU,
+    MuOp_REM,
+    MuOp_REMU,
+} MuOp;

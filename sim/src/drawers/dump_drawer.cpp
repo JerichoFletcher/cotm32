@@ -5,6 +5,8 @@
 #include "imgui.h"
 #include "imgui_stdlib.h"
 
+using cotm32::draw_utils::draw_signal;
+
 DumpDrawer::DumpDrawer(DumpController& c_dump)
     : m_c_dump(c_dump),
       m_length(0),

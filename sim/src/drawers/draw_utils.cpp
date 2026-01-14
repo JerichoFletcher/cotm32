@@ -2,6 +2,7 @@
 
 static constexpr inline int SIG_RADIUS = 6.0f;
 
+namespace cotm32::draw_utils {
 void draw_signal(
     const char* label, bool on, ImU32 on_color, ImU32 off_color, bool use_avail_region
 ) {
@@ -22,3 +23,4 @@ void draw_signal(
 ) {
     draw_signal(label.c_str(), on, on_color, off_color, use_avail_region);
 }
+}  // namespace cotm32::draw_utils

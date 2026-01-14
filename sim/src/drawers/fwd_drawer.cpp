@@ -5,6 +5,8 @@
 #include "name_utils.hpp"
 #include "views/fwd_view.hpp"
 
+using cotm32::draw_utils::draw_signal;
+
 void FwdDrawer::render(const Simulator& sim) {
     if (ImGui::BeginChild(
             "fwd", ImVec2(ImGui::GetContentRegionAvail().x, 0), ImGuiChildFlags_AutoResizeY

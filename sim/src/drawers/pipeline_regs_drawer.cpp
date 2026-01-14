@@ -7,6 +7,8 @@
 #include "name_utils.hpp"
 #include "views/pipeline_regs_view.hpp"
 
+using cotm32::draw_utils::draw_signal;
+
 void draw_sig_vsf(bool valid, bool stall, bool flush) {
     auto c_off = cotm32::colors::OFF;
     auto c_red = cotm32::colors::RED;
@@ -76,6 +78,14 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
                     ImGui::Text("BU Op       : %s", bu_op.c_str());
                 } else {
                     ImGui::Text("Bu Op       : ??? (%d)", phase.bu_op);
+                }
+
+                ImGui::Separator();
+                auto& mu_op_name = cotm32::name_utils::mu_op_name(phase.mu_op);
+                if (!mu_op_name.empty()) {
+                    ImGui::Text("MU Op       : %s", mu_op_name.c_str());
+                } else {
+                    ImGui::Text("MU Op       : ??? (%d)", phase.mu_op);
                 }
 
                 ImGui::Separator();
@@ -150,6 +160,7 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
 
                 ImGui::Separator();
                 ImGui::Text("ALU Out     : 0x%08x (%d)", phase.alu_out, phase.alu_out);
+                ImGui::Text("MU Out      : 0x%08x (%d)", phase.mu_out, phase.mu_out);
                 ImGui::Text("RS1         : 0x%08x (%d)", phase.rs1, phase.rs1);
                 ImGui::Text("RS2         : 0x%08x (%d)", phase.rs2, phase.rs2);
 
@@ -214,6 +225,7 @@ void PipelineRegsDrawer::render(const Simulator& sim) {
 
                 ImGui::Separator();
                 ImGui::Text("ALU Out     : 0x%08x (%d)", phase.alu_out, phase.alu_out);
+                ImGui::Text("MU Out      : 0x%08x (%d)", phase.mu_out, phase.mu_out);
                 ImGui::Text("LSU Read    : 0x%08x (%d)", phase.lsu_rdata, phase.lsu_rdata);
                 ImGui::Text("CSR Read    : 0x%08x (%d)", phase.csr_rdata, phase.csr_rdata);
 

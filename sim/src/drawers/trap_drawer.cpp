@@ -7,6 +7,8 @@
 #include "imgui.h"
 #include "views/trap_view.hpp"
 
+using cotm32::draw_utils::draw_signal;
+
 static constexpr inline int TRAP_CAUSE_INST_ADDR_MISALIGNED = 0;
 static constexpr inline int TRAP_CAUSE_INST_ACCESS_FAULT = 1;
 static constexpr inline int TRAP_CAUSE_ILLEGAL_INST = 2;

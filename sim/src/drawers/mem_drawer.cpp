@@ -8,6 +8,8 @@
 #include "imgui.h"
 #include "views/mem_view.hpp"
 
+using cotm32::draw_utils::draw_signal;
+
 static const char* mem_src_options[3] = {"IMEM", "ROM", "DMEM"};
 static const char* mem_disp_w_options[3] = {"Byte", "Half (2 bytes)", "Word (4 bytes)"};
 
