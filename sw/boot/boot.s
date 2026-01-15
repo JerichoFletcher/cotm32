@@ -1,9 +1,43 @@
 .globl _start
 .extern _estack
 
+.equ mtime,       0x0200bff8
+.equ mtimecmp,    0x02004000
+
+.section .text.init
+_start:
+  # Set stack pointer
+  la      sp, _estack
+
+  # Set trap vector
+  la      t0, trap_entry
+  andi    t0, t0, -4
+  csrw    mtvec, t0
+
+  # Set mie.MTIE
+  li      t0, (1 << 7)
+  csrs    mie, t0
+
+  # Set mtimecmp = 10 cycles
+  la      t0, mtimecmp
+  li      t1, 0
+  sw      t1, 4(t0)
+  li      t1, 10
+  sw      t1, 0(t0)
+
+  # Set mstatus.MIE
+  csrsi   mstatus, (1 << 3)
+
+  call    main
+1:
+  j       1b
+
 .section .text
 main:
-  j       main
+  la      t2, mtime
+  lw      t0, 0(t2)
+  lw      t1, 4(t2)
+  ret
 
 trap_entry:
   # Establish stack frame and store registers
@@ -65,20 +99,6 @@ trap_handle_ecall_m:
 
 trap_handle_reserved:
   j       trap_handle_reserved
-
-.section .text.init
-_start:
-  la      sp, _estack
-  la      t0, trap_entry
-  andi    t0, t0, -4
-  csrw    mtvec, t0
-
-test:
-  li      t0, 72
-  li      t1, 5
-  mul     a7, t0, t1
-  ecall
-  j       main
 
 .section .rodata
 trap_table:

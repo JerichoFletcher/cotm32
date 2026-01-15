@@ -2,10 +2,13 @@
 
 package cotm32_priv_pkg;
 
+import cotm32_pkg::*;
+
 parameter MXLEN = 32;
 
 parameter ZICSR_CSR_ADDR_WIDTH = 12;
 
+//////////////////////////////// CSR    ////////////////////////////////
 // Trap cause
 typedef enum logic [MXLEN-1:0] {
   TRAP_CAUSE_INST_ADDR_MISALIGNED   = {1'b0, 31'd0},
@@ -58,7 +61,6 @@ typedef enum logic [2:0] {
   ZICSR_F3_CSRRCI = 3'b111
 } zicsr_f3_t;
 
-//////////////////////////////// CSR    ////////////////////////////////
 // mstatus bits
 typedef struct packed {
   logic [31:8] reserved_31_8;
@@ -101,5 +103,13 @@ typedef struct packed {
   logic msip;
   logic [2:0] reserved_2_0;
 } zicsr_val_mip_t;
+
+//////////////////////////////// MMR    ////////////////////////////////
+// CLINT memory-mapped register addresses
+typedef enum logic [XLEN-1:0] {
+  CLINT_MMR_ADDR_MSIP     = 32'h02_000000,
+  CLINT_MMR_ADDR_MTIMECMP = 32'h02_004000,
+  CLINT_MMR_ADDR_MTIME    = 32'h02_00BFF8
+} clint_mmr_addr_t;
 
 endpackage : cotm32_priv_pkg

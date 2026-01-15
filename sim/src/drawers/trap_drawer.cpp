@@ -9,15 +9,19 @@
 
 using cotm32::draw_utils::draw_signal;
 
-static constexpr inline int TRAP_CAUSE_INST_ADDR_MISALIGNED = 0;
-static constexpr inline int TRAP_CAUSE_INST_ACCESS_FAULT = 1;
-static constexpr inline int TRAP_CAUSE_ILLEGAL_INST = 2;
-static constexpr inline int TRAP_CAUSE_BREAKPOINT = 3;
-static constexpr inline int TRAP_CAUSE_LOAD_ADDR_MISALIGNED = 4;
-static constexpr inline int TRAP_CAUSE_LOAD_ACCESS_FAULT = 5;
-static constexpr inline int TRAP_CAUSE_STORE_ADDR_MISALIGNED = 6;
-static constexpr inline int TRAP_CAUSE_STORE_ACCESS_FAULT = 7;
-static constexpr inline int TRAP_CAUSE_ECALL_M = 11;
+static constexpr inline uint32_t TRAP_CAUSE_INST_ADDR_MISALIGNED = 0;
+static constexpr inline uint32_t TRAP_CAUSE_INST_ACCESS_FAULT = 1;
+static constexpr inline uint32_t TRAP_CAUSE_ILLEGAL_INST = 2;
+static constexpr inline uint32_t TRAP_CAUSE_BREAKPOINT = 3;
+static constexpr inline uint32_t TRAP_CAUSE_LOAD_ADDR_MISALIGNED = 4;
+static constexpr inline uint32_t TRAP_CAUSE_LOAD_ACCESS_FAULT = 5;
+static constexpr inline uint32_t TRAP_CAUSE_STORE_ADDR_MISALIGNED = 6;
+static constexpr inline uint32_t TRAP_CAUSE_STORE_ACCESS_FAULT = 7;
+static constexpr inline uint32_t TRAP_CAUSE_ECALL_M = 11;
+
+static constexpr inline uint32_t TRAP_CAUSE_M_SOFTWARE_INTERRUPT = 3 | 0x8000'0000;
+static constexpr inline uint32_t TRAP_CAUSE_M_TIMER_INTERRUPT = 7 | 0x8000'0000;
+static constexpr inline uint32_t TRAP_CAUSE_M_EXTERNAL_INTERRUPT = 11 | 0x8000'0000;
 
 void TrapDrawer::render(const Simulator& sim) {
     if (ImGui::BeginChild(
@@ -83,6 +87,18 @@ void TrapDrawer::render(const Simulator& sim) {
                     case TRAP_CAUSE_ECALL_M:
                         msg = "M-mode environment call";
                         desc = fmt::format("a7 = 0x{:08x}", trap.reg_a7()).c_str();
+                        break;
+                    case TRAP_CAUSE_M_SOFTWARE_INTERRUPT:
+                        msg = "M-mode software interrupt";
+                        desc = nullptr;
+                        break;
+                    case TRAP_CAUSE_M_TIMER_INTERRUPT:
+                        msg = "M-mode timer interrupt";
+                        desc = nullptr;
+                        break;
+                    case TRAP_CAUSE_M_EXTERNAL_INTERRUPT:
+                        msg = "M-mode external interrupt";
+                        desc = nullptr;
                         break;
                     default:
                         msg = "Unknown trap cause";

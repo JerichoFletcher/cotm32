@@ -14,18 +14,43 @@ module csr_file
   input trap_cause_t i_trap_cause,
   input logic [MXLEN-1:0] i_trap_tval,
 
+  input logic i_mtip,
+
   output logic [MXLEN-1:0] o_rdata,
+  output zicsr_val_mstatus_t o_mstatus,
+  output zicsr_val_mie_t o_mie,
   output zicsr_val_mtvec_t o_mtvec,
   output logic [MXLEN-1:0] o_mepc,
+  output zicsr_val_mip_t o_mip,
 
   output logic o_t_illegal_inst
 );
 
-  logic [MXLEN-1:0] mem [zicsr_csr_addr_t] /* verilator public */;
+  zicsr_val_mstatus_t mstatus;
+  zicsr_val_mie_t mie;
+  zicsr_val_mtvec_t mtvec;
+  logic [MXLEN-1:0] mepc;
+  logic [MXLEN-1:0] mcause;
+  logic [MXLEN-1:0] mtval;
+  zicsr_val_mip_t mip;
 
-  assign o_rdata  = mem[i_addr];
-  assign o_mtvec  = zicsr_val_mtvec_t'(mem[ZICSR_CSR_MTVEC]);
-  assign o_mepc   = mem[ZICSR_CSR_MEPC];
+  logic [MXLEN-1:0] mem [zicsr_csr_addr_t] /* verilator public */;
+  logic [MXLEN-1:0] wval;
+
+  assign mem[ZICSR_CSR_MSTATUS] = mstatus;
+  assign mem[ZICSR_CSR_MIE]     = mie;
+  assign mem[ZICSR_CSR_MTVEC]   = mtvec;
+  assign mem[ZICSR_CSR_MEPC]    = mepc;
+  assign mem[ZICSR_CSR_MCAUSE]  = mcause;
+  assign mem[ZICSR_CSR_MTVAL]   = mtval;
+  assign mem[ZICSR_CSR_MIP]     = mip;
+
+  assign o_rdata    = mem[i_addr];
+  assign o_mstatus  = mstatus;
+  assign o_mie      = mie;
+  assign o_mtvec    = mtvec;
+  assign o_mepc     = mepc;
+  assign o_mip      = mip;
 
   always_comb begin
     o_t_illegal_inst = '0;
@@ -37,26 +62,43 @@ module csr_file
     end
   end
 
+  always_comb begin
+    case (i_op)
+      ZICSR_CSR_OP_RW: wval = i_wdata;
+      ZICSR_CSR_OP_RS: wval = mem[i_addr] | i_wdata;
+      ZICSR_CSR_OP_RC: wval = mem[i_addr] & ~i_wdata;
+      default: wval = '0;
+    endcase
+  end
+
   always_ff @(posedge i_clk) begin
     if (i_rst) begin
-      mem[ZICSR_CSR_MSTATUS]  <= '0;
-      mem[ZICSR_CSR_MIE]      <= '0;
-      mem[ZICSR_CSR_MTVEC]    <= '0;
-      mem[ZICSR_CSR_MEPC]     <= '0;
-      mem[ZICSR_CSR_MCAUSE]   <= '0;
-      mem[ZICSR_CSR_MTVAL]    <= '0;
-      mem[ZICSR_CSR_MIP]      <= '0;
-    end else if (i_trap_req) begin
-      mem[ZICSR_CSR_MEPC]     <= i_pc;
-      mem[ZICSR_CSR_MCAUSE]   <= i_trap_cause;
-      mem[ZICSR_CSR_MTVAL]    <= i_trap_tval;
-    end else if (i_we && mem.exists(i_addr) == 1) begin
-      case (i_op)
-        ZICSR_CSR_OP_RW: mem[i_addr] <= i_wdata;
-        ZICSR_CSR_OP_RS: mem[i_addr] <= mem[i_addr] | i_wdata;
-        ZICSR_CSR_OP_RC: mem[i_addr] <= mem[i_addr] & ~i_wdata;
-        default: begin /* NOP */ end
-      endcase
+      mstatus <= '0;
+      mie     <= '0;
+      mtvec   <= '0;
+      mepc    <= '0;
+      mcause  <= '0;
+      mtval   <= '0;
+      mip     <= '0;
+    end else begin
+      if (i_trap_req) begin
+        mepc    <= i_pc;
+        mcause  <= i_trap_cause;
+        mtval   <= i_trap_tval;
+      end else if (i_we && mem.exists(i_addr) == 1) begin
+        unique case (i_addr)
+          ZICSR_CSR_MSTATUS : mstatus <= wval;
+          ZICSR_CSR_MIE     : mie     <= wval;
+          ZICSR_CSR_MTVEC   : mtvec   <= wval;
+          ZICSR_CSR_MEPC    : mepc    <= wval;
+          ZICSR_CSR_MCAUSE  : mcause  <= wval;
+          ZICSR_CSR_MTVAL   : mtval   <= wval;
+          ZICSR_CSR_MIP     : mip     <= wval;
+          default: begin /* NOP */ end
+        endcase
+      end
+
+      mip.mtip <= i_mtip;
     end
   end
 

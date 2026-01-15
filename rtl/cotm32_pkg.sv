@@ -15,13 +15,13 @@ parameter NUM_REGS = 32;
 parameter PC_RESET_VECTOR = 32'h0000_0000;
 
 parameter BOOTROM_MEM_SIZE  = 4096;
-// parameter CLINT_MEM_SIZE    = 65536;
+parameter CLINT_MEM_SIZE    = 65536;
 parameter DATA_MEM_SIZE     = 4096;
 
 parameter BOOTROM_MEM_START = 32'h0000_0000;
 parameter BOOTROM_MEM_END   = 32'(BOOTROM_MEM_START + BOOTROM_MEM_SIZE - 1);
-// parameter CLINT_MEM_START = 32'h0000_0000;
-// parameter CLINT_MEM_END   = 32'(CLINT_MEM_START + CLINT_MEM_SIZE - 1);
+parameter CLINT_MEM_START = 32'h0200_0000;
+parameter CLINT_MEM_END   = 32'(CLINT_MEM_START + CLINT_MEM_SIZE - 1);
 parameter DATA_MEM_START    = 32'h8000_0000;
 parameter DATA_MEM_END      = 32'(DATA_MEM_START + DATA_MEM_SIZE - 1);
 
@@ -109,7 +109,8 @@ typedef enum logic [$clog2(9)-1:0] {
 typedef enum logic [$clog2(3)-1:0] {
   LSU_MEM_SRC_UNKNOWN,
   LSU_MEM_SRC_BOOTROM,
-  LSU_MEM_SRC_DMEM
+  LSU_MEM_SRC_DMEM,
+  LSU_MEM_SRC_CLINT
 } lsu_mem_src_t;
 
 // Register writeback selectors

@@ -1,13 +1,23 @@
-module processor_core (
-  input logic i_clk,
-  input logic i_rst
-);
-
+module processor_core
   import cotm32_pkg::*;
   import cotm32_priv_pkg::*;
   import cotm32_pipeline_pkg::*;
+(
+  input logic i_clk,
+  input logic i_rst,
+
+  input logic [XLEN-1:0] i_clint_rdata,
+  input logic i_clint_mtip,
+
+  output logic [$clog2(CLINT_MEM_SIZE)-1:0] o_clint_addr,
+  output logic o_clint_we,
+  output logic [XLEN-1:0] o_clint_wdata
+);
 
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
+
+  assign o_clint_addr = mem_lsu_addr[$clog2(CLINT_MEM_SIZE)-1:0];
+  assign o_clint_wdata = mem_lsu_wdata;
 
   // Signals
   logic [INST_WIDTH-1:0] if_inst /* verilator public */;
@@ -79,8 +89,9 @@ module processor_core (
   logic [XLEN-1:0] mem_mu_out /* verilator public */;
   logic [XLEN-1:0] wb_mu_out /* verilator public */;
 
+  logic [XLEN-1:0] mem_lsu_wdata /* verilator public */;
+
   logic mem_dmem_we /* verilator public */;
-  logic [XLEN-1:0] mem_dmem_wdata /* verilator public */;
   logic [XLEN/BYTE_WIDTH-1:0] mem_dmem_wstrb /* verilator public */;
   logic [XLEN-1:0] mem_dmem_rdata /* verilator public */;
 
@@ -126,11 +137,18 @@ module processor_core (
   end
 
   // Trap signals
-  trap_cause_t trap_cause;
-  wire [MXLEN-1:0] trap_tval;
+  logic trap_mret /* verilator public */;
+  logic trap_req /* verilator public */;
 
-  wire trap_mret /* verilator public */;
-  wire trap_req /* verilator public */;
+  trap_cause_t trap_cause;
+  logic [MXLEN-1:0] trap_tval;
+
+  wire exception_req;
+  trap_cause_t exception_cause;
+  wire [MXLEN-1:0] exception_tval;
+
+  wire interrupt_req;
+  trap_cause_t interrupt_cause;
 
   wire id_trap_mret;
   wire ex_trap_mret;
@@ -186,8 +204,11 @@ module processor_core (
 
   logic [MXLEN-1:0] mem_csr_rdata /* verilator public */;
   logic [MXLEN-1:0] wb_csr_rdata /* verilator public */;
+  zicsr_val_mstatus_t mem_csr_mstatus;
+  zicsr_val_mie_t mem_csr_mie;
   zicsr_val_mtvec_t mem_csr_mtvec;
   wire [MXLEN-1:0] mem_csr_mepc;
+  zicsr_val_mip_t mem_csr_mip;
 
   always_comb begin
     mem_csr_wdata_vals[ZICSR_DATA_RS1] = mem_rs1;
@@ -554,7 +575,7 @@ module processor_core (
     .i_clk(i_clk),
     .i_we(mem_dmem_we && exmem_valid && !trap_req),
     .i_addr(mem_lsu_addr),
-    .i_wdata(mem_dmem_wdata),
+    .i_wdata(mem_lsu_wdata),
     .i_wstrb(mem_dmem_wstrb),
     .o_rdata(mem_dmem_rdata)
   );
@@ -564,14 +585,16 @@ module processor_core (
     .i_op(mem_lsu_ls_op),
     .i_addr(mem_alu_out),
     .i_wdata(mem_rs2),
-    .i_rdata_dmem(mem_dmem_rdata),
     .i_rdata_bootrom(mem_rom_rdata),
+    .i_rdata_dmem(mem_dmem_rdata),
+    .i_rdata_clint(i_clint_rdata),
     .i_trap_req(trap_req),
     .o_addr(mem_lsu_addr),
-    .o_wdata(mem_dmem_wdata),
+    .o_wdata(mem_lsu_wdata),
     .o_rdata(mem_lsu_rdata),
     .o_wstrb(mem_dmem_wstrb),
     .o_we_dmem(mem_dmem_we),
+    .o_we_clint(o_clint_we),
     .o_t_load_addr_misaligned(mem_t_load_addr_misaligned),
     .o_t_load_access_fault(mem_t_load_access_fault),
     .o_t_store_addr_misaligned(mem_t_store_addr_misaligned),
@@ -602,9 +625,14 @@ module processor_core (
     .i_trap_cause(trap_cause),
     .i_trap_tval(trap_tval),
 
+    .i_mtip(i_clint_mtip),
+
     .o_rdata(mem_csr_rdata),
+    .o_mstatus(mem_csr_mstatus),
+    .o_mie(mem_csr_mie),
     .o_mtvec(mem_csr_mtvec),
     .o_mepc(mem_csr_mepc),
+    .o_mip(mem_csr_mip),
 
     .o_t_illegal_inst(mem_t_illegal_inst_csr)
   );
@@ -619,8 +647,8 @@ module processor_core (
     .o_val(mem_reg_wb)
   );
 
-  // Trap dispatch
-  trap_dispatch td(
+  // Exception dispatch
+  exception_dispatch exc_d(
     .i_pc(mem_pc),
     .i_inst(mem_inst),
     .i_ls_addr(mem_alu_out),
@@ -633,10 +661,36 @@ module processor_core (
     .i_store_addr_misaligned(mem_t_store_addr_misaligned),
     .i_store_access_fault(mem_t_store_access_fault),
     .i_ecall_m(mem_t_ecall_m),
-    .o_trap_req(trap_req),
-    .o_trap_cause(trap_cause),
-    .o_trap_tval(trap_tval)
+    .o_exception_req(exception_req),
+    .o_exception_cause(exception_cause),
+    .o_exception_tval(exception_tval)
   );
+
+  // Interrupt dispatch
+  interrupt_dispatch interr_d(
+    .i_mstatus(mem_csr_mstatus),
+    .i_mie(mem_csr_mie),
+    .i_mip(mem_csr_mip),
+    .o_interrupt_req(interrupt_req),
+    .o_interrupt_cause(interrupt_cause)
+  );
+
+  // Exception-interrupt priority merging
+  always_comb begin
+    if (exception_req && exmem_valid) begin
+      trap_req = '1;
+      trap_cause = exception_cause;
+      trap_tval = exception_tval;
+    end else if (interrupt_req) begin
+      trap_req = '1;
+      trap_cause = interrupt_cause;
+      trap_tval = '0;
+    end else begin
+      trap_req = '0;
+      trap_cause = trap_cause_t'('0);
+      trap_tval = '0;
+    end
+  end
 
   // Trap control unit
   trap_control tc(
