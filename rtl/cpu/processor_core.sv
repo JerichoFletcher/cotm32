@@ -621,6 +621,7 @@ module processor_core
     .i_wdata(mem_csr_wdata),
     .i_pc(mem_pc),
 
+    .i_trap_mret(trap_mret),
     .i_trap_req(trap_req),
     .i_trap_cause(trap_cause),
     .i_trap_tval(trap_tval),

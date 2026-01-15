@@ -10,6 +10,7 @@ module csr_file
   input logic [MXLEN-1:0] i_wdata,
   input logic [MXLEN-1:0] i_pc,
 
+  input logic i_trap_mret,
   input logic i_trap_req,
   input trap_cause_t i_trap_cause,
   input logic [MXLEN-1:0] i_trap_tval,
@@ -85,6 +86,14 @@ module csr_file
         mepc    <= i_pc;
         mcause  <= i_trap_cause;
         mtval   <= i_trap_tval;
+        
+        mstatus.mpie  <= mstatus.mie;
+        mstatus.mie   <= '0;
+        mstatus.mpp   <= 2'b11; // TODO: Should be current privilege mode
+      end else if (i_trap_mret) begin
+        mstatus.mie   <= mstatus.mpie;
+        mstatus.mpie  <= '1;
+        mstatus.mpp   <= 2'b11; // TODO: Should be least-privileged mode
       end else if (i_we && mem.exists(i_addr) == 1) begin
         unique case (i_addr)
           ZICSR_CSR_MSTATUS : mstatus <= wval;

@@ -63,7 +63,9 @@ typedef enum logic [2:0] {
 
 // mstatus bits
 typedef struct packed {
-  logic [31:8] reserved_31_8;
+  logic [31:13] reserved_31_13;
+  logic [12:11] mpp;
+  logic [10:8] reserved_10_8;
   logic mpie;
   logic [6:4] reserved_6_4;
   logic mie;

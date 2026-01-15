@@ -47,14 +47,28 @@ trap_entry:
   sw      t1, 4(sp)
   sw      t2, 0(sp)
 
-  # Look up the handler in the trap jump table
+  # Branch off between exceptions and interrupts
   csrr    t0, mcause
+  bltz    t0, interr_handle
+  j       exc_handle
+
+exc_handle:
   slli    t0, t0, 2
-  la      t1, trap_table
+  la      t1, exc_table
   add     t1, t1, t0
   lw      t2, 0(t1)
   jalr    t2
-  
+  j       trap_exit
+
+interr_handle:
+  slli    t0, t0, 2
+  la      t1, interr_table
+  add     t1, t1, t0
+  lw      t2, 0(t1)
+  jalr    t2
+  j       trap_exit
+
+trap_exit:
   # Restore registers and tear down stack frame
   lw      t2, 0(sp)
   lw      t1, 4(sp)
@@ -63,31 +77,32 @@ trap_entry:
   addi    sp, sp, 16
   mret
 
-trap_handle_inst_addr_misaligned:
-  j       trap_handle_inst_addr_misaligned
+########## EXCEPTION HANDLERS ##########
+exc_handle_inst_addr_misaligned:
+  j       exc_handle_inst_addr_misaligned
 
-trap_handle_inst_access_fault:
-  j       trap_handle_inst_access_fault
+exc_handle_inst_access_fault:
+  j       exc_handle_inst_access_fault
 
-trap_handle_illegal_inst:
-  j       trap_handle_illegal_inst
+exc_handle_illegal_inst:
+  j       exc_handle_illegal_inst
 
-trap_handle_breakpoint:
-  j       trap_handle_breakpoint
+exc_handle_breakpoint:
+  j       exc_handle_breakpoint
 
-trap_handle_load_addr_misaligned:
-  j       trap_handle_load_addr_misaligned
+exc_handle_load_addr_misaligned:
+  j       exc_handle_load_addr_misaligned
 
-trap_handle_load_access_fault:
-  j       trap_handle_load_access_fault
+exc_handle_load_access_fault:
+  j       exc_handle_load_access_fault
 
-trap_handle_store_addr_misaligned:
-  j       trap_handle_store_addr_misaligned
+exc_handle_store_addr_misaligned:
+  j       exc_handle_store_addr_misaligned
 
-trap_handle_store_access_fault:
-  j       trap_handle_store_access_fault
+exc_handle_store_access_fault:
+  j       exc_handle_store_access_fault
 
-trap_handle_ecall_m:
+exc_handle_ecall_m:
   # TODO: Inspect a7 and handle
   mv      a0, a7
 
@@ -97,20 +112,47 @@ trap_handle_ecall_m:
   csrw    mepc, t0
   ret
 
-trap_handle_reserved:
-  j       trap_handle_reserved
+exc_handle_reserved:
+  j       exc_handle_reserved
+
+########## INTERRUPT HANDLERS ##########
+interr_handle_m_software:
+  j       interr_handle_m_software
+
+interr_handle_m_timer:
+  j       interr_handle_m_timer
+
+interr_handle_m_external:
+  j       interr_handle_m_external
+
+interr_handle_reserved:
+  j       interr_handle_reserved
 
 .section .rodata
-trap_table:
-  .word   trap_handle_inst_addr_misaligned
-  .word   trap_handle_inst_access_fault
-  .word   trap_handle_illegal_inst
-  .word   trap_handle_breakpoint
-  .word   trap_handle_load_addr_misaligned
-  .word   trap_handle_load_access_fault
-  .word   trap_handle_store_addr_misaligned
-  .word   trap_handle_store_access_fault
-  .word   trap_handle_reserved
-  .word   trap_handle_reserved
-  .word   trap_handle_reserved
-  .word   trap_handle_ecall_m
+exc_table:
+  .word   exc_handle_inst_addr_misaligned
+  .word   exc_handle_inst_access_fault
+  .word   exc_handle_illegal_inst
+  .word   exc_handle_breakpoint
+  .word   exc_handle_load_addr_misaligned
+  .word   exc_handle_load_access_fault
+  .word   exc_handle_store_addr_misaligned
+  .word   exc_handle_store_access_fault
+  .word   exc_handle_reserved
+  .word   exc_handle_reserved
+  .word   exc_handle_reserved
+  .word   exc_handle_ecall_m
+
+interr_table:
+  .word   interr_handle_reserved
+  .word   interr_handle_reserved
+  .word   interr_handle_reserved
+  .word   interr_handle_m_software
+  .word   interr_handle_reserved
+  .word   interr_handle_reserved
+  .word   interr_handle_reserved
+  .word   interr_handle_m_timer
+  .word   interr_handle_reserved
+  .word   interr_handle_reserved
+  .word   interr_handle_reserved
+  .word   interr_handle_m_external
