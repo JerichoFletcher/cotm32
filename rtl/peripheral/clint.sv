@@ -1,13 +1,12 @@
 // Core local interrupt
 module clint
   import cotm32_pkg::*;
-  import cotm32_priv_pkg::*;
 (
   input logic i_clk,
   input logic i_rst,
 
-  input logic [$clog2(CLINT_MEM_SIZE)-1:0] i_addr,
   input logic i_we,
+  input logic [$clog2(CLINT_MEM_SIZE)-1:0] i_addr,
   input logic [XLEN-1:0] i_wdata,
 
   output logic [XLEN-1:0] o_rdata,
@@ -51,6 +50,7 @@ module clint
       msip      <= '0;
       mtime     <= '0;
       mtimecmp  <= '1;
+      prescaler_cnt <= TIMER_PRESCALER;
     end else begin
       if (i_we && mem.exists(i_addr) == 1) begin
         unique case (i_addr)
@@ -73,11 +73,11 @@ module clint
         endcase
       end
 
-      if (prescaler_cnt == TIMER_PRESCALER - 1) begin
-        mtime <= mtime + 1;
-        prescaler_cnt <= '0;
+      if (0 < prescaler_cnt) begin
+        prescaler_cnt <= prescaler_cnt - 1;
       end else begin
-        prescaler_cnt <= prescaler_cnt + 1;
+        mtime <= mtime + 64'd1;
+        prescaler_cnt <= TIMER_PRESCALER;
       end
     end
   end

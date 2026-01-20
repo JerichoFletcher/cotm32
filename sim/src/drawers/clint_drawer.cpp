@@ -45,8 +45,8 @@ void ClintDrawer::render(const Simulator& sim) {
 
             ImGui::Separator();
             draw_signal("msip", view.msip(), cotm32::colors::YELLOW, cotm32::colors::OFF, false);
-            ImGui::Text("mtime       : %-20ld", view.mtime());
-            ImGui::Text("mtimecmp    : %-20ld", view.mtimecmp());
+            ImGui::Text("mtime       : %20lu", view.mtime());
+            ImGui::Text("mtimecmp    : %20lu", view.mtimecmp());
         }
     }
     ImGui::EndChild();

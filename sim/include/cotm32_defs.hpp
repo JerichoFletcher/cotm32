@@ -7,12 +7,15 @@ static constexpr inline int NUM_REGS = 32;
 
 static constexpr inline int BOOTROM_MEM_SIZE = 4096;
 static constexpr inline int CLINT_MEM_SIZE = 65536;
+static constexpr inline int UART_MEM_SIZE = 256;
 static constexpr inline int DATA_MEM_SIZE = 4096;
 
 static constexpr inline uint32_t BOOTROM_MEM_START = 0x0000'0000;
 static constexpr inline uint32_t BOOTROM_MEM_END = (BOOTROM_MEM_START + BOOTROM_MEM_SIZE - 1);
 static constexpr inline uint32_t CLINT_MEM_START = 0x0200'0000;
 static constexpr inline uint32_t CLINT_MEM_END = (CLINT_MEM_START + CLINT_MEM_SIZE - 1);
+static constexpr inline uint32_t UART_MEM_START = 0x1000'0000;
+static constexpr inline uint32_t UART_MEM_END = (UART_MEM_START + UART_MEM_SIZE - 1);
 static constexpr inline uint32_t DATA_MEM_START = 0x8000'0000;
 static constexpr inline uint32_t DATA_MEM_END = (DATA_MEM_START + DATA_MEM_SIZE - 1);
 

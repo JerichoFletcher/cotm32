@@ -2,7 +2,7 @@
 
 #include "imgui.h"
 
-TimeDrawer::TimeDrawer(TimeController& ctrl) : m_ctrl(ctrl) {}
+TimeDrawer::TimeDrawer(TimeController& c_time) : m_ctrl(c_time) {}
 
 void TimeDrawer::render(const Simulator& sim) {
     ImGui::SetNextWindowPos(ImVec2(355, 5), ImGuiCond_Once, ImVec2(0, 0));

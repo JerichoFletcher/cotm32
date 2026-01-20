@@ -6,18 +6,30 @@ module processor_core
   input logic i_clk,
   input logic i_rst,
 
+  // CLINT
   input logic [XLEN-1:0] i_clint_rdata,
   input logic i_clint_mtip,
 
-  output logic [$clog2(CLINT_MEM_SIZE)-1:0] o_clint_addr,
   output logic o_clint_we,
-  output logic [XLEN-1:0] o_clint_wdata
+  output logic [$clog2(CLINT_MEM_SIZE)-1:0] o_clint_addr,
+  output logic [XLEN-1:0] o_clint_wdata,
+
+  // UARTs
+  input logic [XLEN-1:0] i_uart_rdata,
+
+  output logic o_uart_re,
+  output logic o_uart_we,
+  output logic [$clog2(UART_MEM_SIZE)-1:0] o_uart_addr,
+  output logic [XLEN-1:0] o_uart_wdata
 );
 
   localparam REG_ADDR_WIDTH = $clog2(NUM_REGS);
 
   assign o_clint_addr = mem_lsu_addr[$clog2(CLINT_MEM_SIZE)-1:0];
   assign o_clint_wdata = mem_lsu_wdata;
+
+  assign o_uart_addr = mem_lsu_addr[$clog2(UART_MEM_SIZE)-1:0];
+  assign o_uart_wdata = mem_lsu_wdata;
 
   // Signals
   logic [INST_WIDTH-1:0] if_inst /* verilator public */;
@@ -586,15 +598,21 @@ module processor_core
     .i_addr(mem_alu_out),
     .i_wdata(mem_rs2),
     .i_rdata_bootrom(mem_rom_rdata),
-    .i_rdata_dmem(mem_dmem_rdata),
     .i_rdata_clint(i_clint_rdata),
+    .i_rdata_uart(i_uart_rdata),
+    .i_rdata_dmem(mem_dmem_rdata),
     .i_trap_req(trap_req),
     .o_addr(mem_lsu_addr),
     .o_wdata(mem_lsu_wdata),
     .o_rdata(mem_lsu_rdata),
     .o_wstrb(mem_dmem_wstrb),
-    .o_we_dmem(mem_dmem_we),
+
+    .o_re_uart(o_uart_re),
+
     .o_we_clint(o_clint_we),
+    .o_we_uart(o_uart_we),
+    .o_we_dmem(mem_dmem_we),
+
     .o_t_load_addr_misaligned(mem_t_load_addr_misaligned),
     .o_t_load_access_fault(mem_t_load_access_fault),
     .o_t_store_addr_misaligned(mem_t_store_addr_misaligned),

@@ -5,7 +5,7 @@
 
 class TimeDrawer : public SimulatorRenderListener {
 public:
-    TimeDrawer(TimeController& m_ctrl);
+    TimeDrawer(TimeController& c_time);
     void render(const Simulator& sim) override;
 
 private:

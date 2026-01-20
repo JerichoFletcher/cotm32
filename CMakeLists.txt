@@ -13,7 +13,13 @@ find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
 find_program(RISCV_OBJCOPY  riscv64-unknown-elf-objcopy REQUIRED)
 
 # Bootloader
-set(BOOT_SRC  ${CMAKE_SOURCE_DIR}/sw/boot/boot.s)
+set(BOOT_SRC
+  ${CMAKE_SOURCE_DIR}/sw/boot/boot.s
+  ${CMAKE_SOURCE_DIR}/sw/boot/sys.s
+  ${CMAKE_SOURCE_DIR}/sw/boot/exc.s
+  ${CMAKE_SOURCE_DIR}/sw/boot/interr.s
+)
+set(BOOT_INC  ${CMAKE_SOURCE_DIR}/sw/include)
 set(BOOT_LD   ${CMAKE_SOURCE_DIR}/sw/boot/boot.ld)
 set(BOOT_ELF  ${CMAKE_BINARY_DIR}/boot.elf)
 set(BOOT_BIN  ${CMAKE_BINARY_DIR}/boot.bin)
@@ -24,6 +30,7 @@ add_custom_command(
     -march=rv32im_zicsr
     -mabi=ilp32
     -nostdlib
+    -I ${BOOT_INC}
     -T ${BOOT_LD}
     -o ${BOOT_ELF}
     ${BOOT_SRC}
@@ -33,6 +40,7 @@ add_custom_command(
     ${BOOT_BIN}
   DEPENDS
     ${BOOT_SRC}
+    ${BOOT_INC}
     ${BOOT_LD}
   COMMENT "Building RISC-V bootloader"
 )
@@ -62,17 +70,19 @@ set(CXX_SOURCES
   sim/src/drawers/draw_utils.cpp
   sim/src/drawers/sidebar.cpp
   sim/src/drawers/time_drawer.cpp
+  sim/src/drawers/dump_drawer.cpp
+  sim/src/drawers/term_drawer.cpp
   sim/src/drawers/reg_drawer.cpp
   sim/src/drawers/csr_drawer.cpp
   sim/src/drawers/mem_drawer.cpp
   sim/src/drawers/trap_drawer.cpp
-  sim/src/drawers/dump_drawer.cpp
   sim/src/drawers/pipeline_regs_drawer.cpp
   sim/src/drawers/fwd_drawer.cpp
   sim/src/drawers/clint_drawer.cpp
 
   sim/src/controllers/time_controller.cpp
   sim/src/controllers/dump_controller.cpp
+  sim/src/controllers/term_controller.cpp
 )
 
 set(RTL_SOURCES
@@ -111,6 +121,7 @@ set(RTL_SOURCES
   rtl/cpu/pipeline/hazard_unit.sv
 
   rtl/peripheral/clint.sv
+  rtl/peripheral/uart/uart_term.sv
 )
 
 add_executable(cotm32
@@ -133,6 +144,7 @@ verilate(cotm32
   PREFIX Vtop
   VERILATOR_ARGS
     "-Wall"
+    "-Wno-UNUSEDPARAM"
     "-Wno-UNUSEDSIGNAL"
   TRACE
 )

@@ -8,8 +8,9 @@ module lsu (
   input logic [XLEN-1:0] i_addr,
   input logic [XLEN-1:0] i_wdata,
   input logic [XLEN-1:0] i_rdata_bootrom,
-  input logic [XLEN-1:0] i_rdata_dmem,
   input logic [XLEN-1:0] i_rdata_clint,
+  input logic [XLEN-1:0] i_rdata_uart,
+  input logic [XLEN-1:0] i_rdata_dmem,
 
   input logic i_trap_req,
 
@@ -17,7 +18,11 @@ module lsu (
   output logic [XLEN-1:0] o_wdata,
   output logic [XLEN-1:0] o_rdata,
   output logic [XLEN/BYTE_WIDTH-1:0] o_wstrb,
+
+  output logic o_re_uart,
+
   output logic o_we_dmem,
+  output logic o_we_uart,
   output logic o_we_clint,
 
   output logic o_t_load_addr_misaligned,
@@ -31,26 +36,43 @@ module lsu (
   lsu_mem_src_t mem_src;
   logic [XLEN-1:0] mem_rdata;
 
-  lsu_mem_src_t valid_load_src[3] = '{LSU_MEM_SRC_BOOTROM, LSU_MEM_SRC_DMEM, LSU_MEM_SRC_CLINT};
-  lsu_mem_src_t valid_store_src[2] = '{LSU_MEM_SRC_DMEM, LSU_MEM_SRC_CLINT};
+  lsu_mem_src_t valid_load_src[4] = '{
+    LSU_MEM_SRC_BOOTROM,
+    LSU_MEM_SRC_CLINT,
+    LSU_MEM_SRC_UART,
+    LSU_MEM_SRC_DMEM
+  };
+  lsu_mem_src_t valid_store_src[3] = '{
+    LSU_MEM_SRC_CLINT,
+    LSU_MEM_SRC_UART,
+    LSU_MEM_SRC_DMEM
+  };
 
+  logic re;
   logic we;
-  logic we_dmem;
-  logic we_clint;
+  logic src_dmem;
+  logic src_uart;
+  logic src_clint;
 
-  assign o_we_dmem = we && we_dmem;
-  assign o_we_clint = we && we_clint;
+  assign o_re_uart = re && src_uart;
+
+  assign o_we_dmem = we && src_dmem;
+  assign o_we_uart = we && src_uart;
+  assign o_we_clint = we && src_clint;
 
   always_comb begin
     if ((BOOTROM_MEM_START == 0 || BOOTROM_MEM_START <= i_addr) && i_addr <= BOOTROM_MEM_END) begin
       mem_src = LSU_MEM_SRC_BOOTROM;
       o_addr = i_addr - BOOTROM_MEM_START;
-    end else if ((DATA_MEM_START == 0 || DATA_MEM_START <= i_addr) && i_addr <= DATA_MEM_END) begin
-      mem_src = LSU_MEM_SRC_DMEM;
-      o_addr = i_addr - DATA_MEM_START;
     end else if ((CLINT_MEM_START == 0 || CLINT_MEM_START <= i_addr) && i_addr <= CLINT_MEM_END) begin
       mem_src = LSU_MEM_SRC_CLINT;
       o_addr = i_addr - CLINT_MEM_START;
+    end else if ((UART_MEM_START == 0 || UART_MEM_START <= i_addr) && i_addr <= UART_MEM_END) begin
+      mem_src = LSU_MEM_SRC_UART;
+      o_addr = i_addr - UART_MEM_START;
+    end else if ((DATA_MEM_START == 0 || DATA_MEM_START <= i_addr) && i_addr <= DATA_MEM_END) begin
+      mem_src = LSU_MEM_SRC_DMEM;
+      o_addr = i_addr - DATA_MEM_START;
     end else begin
       mem_src = LSU_MEM_SRC_UNKNOWN;
       o_addr = '0;
@@ -58,20 +80,25 @@ module lsu (
   end
 
   always_comb begin
-    we_dmem = '0;
-    we_clint = '0;
+    src_dmem = '0;
+    src_uart = '0;
+    src_clint = '0;
 
     unique case (mem_src)
       LSU_MEM_SRC_BOOTROM : begin
         mem_rdata = i_rdata_bootrom;
       end
-      LSU_MEM_SRC_DMEM    : begin
-        mem_rdata = i_rdata_dmem;
-        we_dmem = '1;
-      end
       LSU_MEM_SRC_CLINT   : begin
         mem_rdata = i_rdata_clint;
-        we_clint = '1;
+        src_clint = '1;
+      end
+      LSU_MEM_SRC_UART    : begin
+        mem_rdata = i_rdata_uart;
+        src_uart = '1;
+      end
+      LSU_MEM_SRC_DMEM    : begin
+        mem_rdata = i_rdata_dmem;
+        src_dmem = '1;
       end
       default             : mem_rdata = '0;
     endcase
@@ -89,7 +116,16 @@ module lsu (
   end
 
   always_comb begin
+    re = '0;
+    we = '0;
+
+    o_wdata = i_wdata[XLEN-1:0];
+    o_wstrb = 4'b0000;
+
     unique case (i_op)
+      LSU_LOAD_B, LSU_LOAD_H, LSU_LOAD_W, LSU_LOAD_BU, LSU_LOAD_HU: begin
+        re = '1;
+      end
       LSU_STORE_B : begin
         o_wdata = {{(3*XLEN/4){1'b0}}, i_wdata[XLEN/4-1:0]};
         o_wstrb = 4'b0001;
@@ -105,11 +141,7 @@ module lsu (
         o_wstrb = 4'b1111;
         we = ~i_trap_req;
       end
-      default     : begin
-        o_wdata = i_wdata[XLEN-1:0];
-        o_wstrb = 4'b0000;
-        we = '0;
-      end
+      default     : begin /* NOP */ end
     endcase
   end
 

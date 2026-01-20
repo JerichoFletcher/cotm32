@@ -1,9 +1,11 @@
 #include <iostream>
 
 #include "controllers/dump_controller.hpp"
+#include "controllers/term_controller.hpp"
 #include "controllers/time_controller.hpp"
 #include "drawers/dump_drawer.hpp"
 #include "drawers/sidebar.hpp"
+#include "drawers/term_drawer.hpp"
 #include "drawers/time_drawer.hpp"
 #include "imgui_renderer.hpp"
 #include "load_elf.hpp"
@@ -27,16 +29,22 @@ int main(int argc, char** argv) {
     // Create controllers
     TimeController c_time;
     DumpController c_dump(c_time);
+    TerminalController c_term(80, 25);
     sim.add_update_listener(&c_time);
     sim.add_update_listener(&c_dump);
+    c_time.add_update_listener(&c_term);
+    c_time.add_reset_listener(&c_term);
 
     // Create drawers
     Sidebar d_sidebar;
     TimeDrawer d_time(c_time);
     DumpDrawer d_dump(c_dump);
+    TerminalDrawer d_term(c_term);
+
     sim.add_render_listener(&d_sidebar);
     sim.add_render_listener(&d_time);
     sim.add_render_listener(&d_dump);
+    sim.add_render_listener(&d_term);
 
     // Run simulation
     try {

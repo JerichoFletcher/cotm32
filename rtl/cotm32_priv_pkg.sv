@@ -106,12 +106,4 @@ typedef struct packed {
   logic [2:0] reserved_2_0;
 } zicsr_val_mip_t;
 
-//////////////////////////////// MMR    ////////////////////////////////
-// CLINT memory-mapped register addresses
-typedef enum logic [XLEN-1:0] {
-  CLINT_MMR_ADDR_MSIP     = 32'h02_000000,
-  CLINT_MMR_ADDR_MTIMECMP = 32'h02_004000,
-  CLINT_MMR_ADDR_MTIME    = 32'h02_00BFF8
-} clint_mmr_addr_t;
-
 endpackage : cotm32_priv_pkg
