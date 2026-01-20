@@ -1,96 +1,68 @@
+.include "macros.inc"
+.include "sys.inc"
+
 .globl _start
 .extern _estack
 
-.section .text
-main:
-  j       main
-
-trap_entry:
-  # Establish stack frame and store registers
-  addi    sp, sp, -16
-  sw      ra, 12(sp)
-  sw      t0, 8(sp)
-  sw      t1, 4(sp)
-  sw      t2, 0(sp)
-
-  # Look up the handler in the trap jump table
-  csrr    t0, mcause
-  slli    t0, t0, 2
-  la      t1, trap_table
-  add     t1, t1, t0
-  lw      t2, 0(t1)
-  jalr    t2
-  
-  # Restore registers and tear down stack frame
-  lw      t2, 0(sp)
-  lw      t1, 4(sp)
-  lw      t0, 8(sp)
-  lw      ra, 12(sp)
-  addi    sp, sp, 16
-  mret
-
-trap_handle_inst_addr_misaligned:
-  j       trap_handle_inst_addr_misaligned
-
-trap_handle_inst_access_fault:
-  j       trap_handle_inst_access_fault
-
-trap_handle_illegal_inst:
-  j       trap_handle_illegal_inst
-
-trap_handle_breakpoint:
-  j       trap_handle_breakpoint
-
-trap_handle_load_addr_misaligned:
-  j       trap_handle_load_addr_misaligned
-
-trap_handle_load_access_fault:
-  j       trap_handle_load_access_fault
-
-trap_handle_store_addr_misaligned:
-  j       trap_handle_store_addr_misaligned
-
-trap_handle_store_access_fault:
-  j       trap_handle_store_access_fault
-
-trap_handle_ecall_m:
-  # TODO: Inspect a7 and handle
-  mv      a0, a7
-
-  # Advance MEPC by 4
-  csrr    t0, mepc
-  addi    t0, t0, 4
-  csrw    mepc, t0
-  ret
-
-trap_handle_reserved:
-  j       trap_handle_reserved
+.equ mtime,     0x0200bff8
+.equ mtimecmp,  0x02004000
 
 .section .text.init
 _start:
-  la      sp, _estack
-  la      t0, trap_entry
-  andi    t0, t0, -4
-  csrw    mtvec, t0
+    # Set stack pointer
+    la          sp, _estack
 
-test:
-  li      t0, 72
-  li      t1, 5
-  mul     a7, t0, t1
-  ecall
-  j       main
+    # Set trap vector
+    la          t0, trap_entry
+    andi        t0, t0, -4
+    csrw        mtvec, t0
 
-.section .rodata
-trap_table:
-  .word   trap_handle_inst_addr_misaligned
-  .word   trap_handle_inst_access_fault
-  .word   trap_handle_illegal_inst
-  .word   trap_handle_breakpoint
-  .word   trap_handle_load_addr_misaligned
-  .word   trap_handle_load_access_fault
-  .word   trap_handle_store_addr_misaligned
-  .word   trap_handle_store_access_fault
-  .word   trap_handle_reserved
-  .word   trap_handle_reserved
-  .word   trap_handle_reserved
-  .word   trap_handle_ecall_m
+    # Set mie.MTIE
+    li          t0, (1 << 7)
+    csrs        mie, t0
+
+    # Set mtimecmp
+    li          t0, mtimecmp
+    li          t1, 0x0000ffff
+    sw          t1, 4(t0)
+    li          t1, 0xffffffff
+    sw          t1, 0(t0)
+
+    # Set mstatus.MIE
+    csrsi       mstatus, (1 << 3)
+
+    call        main
+1:
+    j           1b
+
+.section .text
+main:
+    SYS_getc
+    SYS_putc
+    j           main
+
+trap_entry:
+    # Establish stack frame and store registers
+    PUSH4       ra, t0, t1, t2
+
+    # Branch off between exceptions and interrupts
+    csrr        t0, mcause
+    bltz        t0, interr_handle
+    j           exc_handle
+
+exc_handle:
+    slli        t0, t0, 2
+    T_LOOKUP    t1, t0, exc_table
+    jalr        t1
+    j           trap_exit
+
+interr_handle:
+    slli        t0, t0, 2
+    T_LOOKUP    t1, t0, interr_table
+    jalr        t1
+    j           trap_exit
+
+trap_exit:
+    # Restore registers and tear down stack frame
+    POP4        t2, t1, t0, ra
+    mret

@@ -1,13 +1,27 @@
 #pragma once
 
 #include <chrono>
+#include <vector>
 
 #include "simulator.hpp"
+
+struct PerTickUpdateListener {
+    virtual void per_tick_update(Simulator& sim) = 0;
+    virtual ~PerTickUpdateListener() = default;
+};
+
+struct ResetListener {
+    virtual void reset(Simulator& sim) = 0;
+    virtual ~ResetListener() = default;
+};
 
 class TimeController : public SimulatorUpdateListener {
 public:
     TimeController();
     void update(Simulator& sim) override;
+
+    void add_update_listener(PerTickUpdateListener* listener);
+    void add_reset_listener(ResetListener* listener);
 
     inline bool is_auto() const { return this->m_is_auto; }
     inline bool is_prev_auto() const { return this->m_is_prev_auto; }
@@ -41,4 +55,10 @@ private:
     clock::time_point m_prev_time;
     double m_accumulator;
     int m_exec_step;
+
+    std::vector<PerTickUpdateListener*> m_l_update;
+    std::vector<ResetListener*> m_l_reset;
+
+    void tick_update(Simulator& sim);
+    void reset(Simulator& sim);
 };

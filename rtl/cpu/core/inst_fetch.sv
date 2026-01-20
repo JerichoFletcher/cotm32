@@ -2,7 +2,10 @@ import cotm32_pkg::XLEN;
 import cotm32_priv_pkg::MXLEN;
 
 // Instruction fetch unit
-module inst_fetch #(
+module inst_fetch
+  import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
+#(
   parameter RESET_VECTOR = '0
 ) (
   input logic i_clk,
@@ -14,7 +17,7 @@ module inst_fetch #(
 
   input logic i_trap_mret,
   input logic i_trap_req,
-  input logic [MXLEN-1:0] i_mtvec,
+  input zicsr_val_mtvec_t i_mtvec,
   input logic [MXLEN-1:0] i_mepc,
 
   output logic [XLEN-1:0] o_addr,
@@ -24,9 +27,6 @@ module inst_fetch #(
   output logic o_t_inst_access_fault
 );
 
-  import cotm32_pkg::*;
-  import cotm32_priv_pkg::*;
-
   ifu_pc_sel_t pc_sel;
   wire [XLEN-1:0] pc_mux_vals [0:IFU_PC_VALCOUNT-1];
   wire [XLEN-1:0] pc_mux_out;
@@ -35,7 +35,7 @@ module inst_fetch #(
 
   assign pc_mux_vals[IFU_PC_PC4] = o_addr_4;
   assign pc_mux_vals[IFU_PC_BRANCH] = i_new_addr;
-  assign pc_mux_vals[IFU_PC_MTVEC] = i_mtvec;
+  assign pc_mux_vals[IFU_PC_MTVEC] = {i_mtvec.addr_base, 2'b00};
   assign pc_mux_vals[IFU_PC_MEPC] = i_mepc;
 
   mux #(

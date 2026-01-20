@@ -41,7 +41,7 @@ void CsrDrawer::render(const Simulator& sim) {
                 ImGui::TableSetupColumn("Hex");
                 ImGui::TableHeadersRow();
 
-                for (int i = 0; i < NUM_CSR; i++) {
+                for (int i = 0; i < CSR_IDS.size(); i++) {
                     auto csr_id = CSR_IDS[i];
 
                     ImGui::TableNextRow();

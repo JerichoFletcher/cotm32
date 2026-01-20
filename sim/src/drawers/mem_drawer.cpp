@@ -41,18 +41,6 @@ void MemDrawer::render(const Simulator& sim) {
             int offset_max;
 
             switch (this->m_mem_sec_curr) {
-                // case 0:
-                //     mem_src_size = INST_MEM_SIZE;
-                //     mem_src_start = INST_MEM_START;
-                //     mem_src_end = INST_MEM_END;
-                //     offset_max = INST_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
-                //     break;
-                // case 1:
-                //     mem_src_size = ROM_MEM_SIZE;
-                //     mem_src_start = ROM_MEM_START;
-                //     mem_src_end = ROM_MEM_END;
-                //     offset_max = ROM_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
-                //     break;
                 case 0:
                     mem_src_size = BOOTROM_MEM_SIZE;
                     mem_src_start = BOOTROM_MEM_START;

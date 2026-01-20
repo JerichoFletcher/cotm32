@@ -1,21 +1,21 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 
 static constexpr inline int NUM_REGS = 32;
-static constexpr inline int NUM_CSR = 4;
 
-// static constexpr inline int INST_MEM_SIZE = 1024;
-// static constexpr inline int ROM_MEM_SIZE = 1024;
 static constexpr inline int BOOTROM_MEM_SIZE = 4096;
+static constexpr inline int CLINT_MEM_SIZE = 65536;
+static constexpr inline int UART_MEM_SIZE = 256;
 static constexpr inline int DATA_MEM_SIZE = 4096;
 
-// static constexpr inline uint32_t INST_MEM_START = 0x0000'0000;
-// static constexpr inline uint32_t INST_MEM_END = (INST_MEM_START + INST_MEM_SIZE - 1);
-// static constexpr inline uint32_t ROM_MEM_START = 0x0001'0000;
-// static constexpr inline uint32_t ROM_MEM_END = (ROM_MEM_START + ROM_MEM_SIZE - 1);
 static constexpr inline uint32_t BOOTROM_MEM_START = 0x0000'0000;
 static constexpr inline uint32_t BOOTROM_MEM_END = (BOOTROM_MEM_START + BOOTROM_MEM_SIZE - 1);
+static constexpr inline uint32_t CLINT_MEM_START = 0x0200'0000;
+static constexpr inline uint32_t CLINT_MEM_END = (CLINT_MEM_START + CLINT_MEM_SIZE - 1);
+static constexpr inline uint32_t UART_MEM_START = 0x1000'0000;
+static constexpr inline uint32_t UART_MEM_END = (UART_MEM_START + UART_MEM_SIZE - 1);
 static constexpr inline uint32_t DATA_MEM_START = 0x8000'0000;
 static constexpr inline uint32_t DATA_MEM_END = (DATA_MEM_START + DATA_MEM_SIZE - 1);
 
@@ -55,15 +55,15 @@ typedef enum {
 } AluPortB;
 
 typedef enum {
-    NONE,
-    LOAD_B,
-    LOAD_H,
-    LOAD_W,
-    LOAD_BU,
-    LOAD_HU,
-    STORE_B,
-    STORE_H,
-    STORE_W
+    LsuLoadStoreOp_NONE,
+    LsuLoadStoreOp_LOAD_B,
+    LsuLoadStoreOp_LOAD_H,
+    LsuLoadStoreOp_LOAD_W,
+    LsuLoadStoreOp_LOAD_BU,
+    LsuLoadStoreOp_LOAD_HU,
+    LsuLoadStoreOp_STORE_B,
+    LsuLoadStoreOp_STORE_H,
+    LsuLoadStoreOp_STORE_W
 } LsuLoadStoreOp;
 
 typedef enum {
@@ -76,16 +76,22 @@ typedef enum {
 } RegWritebackSrc;
 
 typedef enum {
+    CsrId_MSTATUS = 0x300,
+    CsrId_MIE = 0x304,
     CsrId_MTVEC = 0x305,
     CsrId_MEPC = 0x341,
     CsrId_MCAUSE = 0x342,
     CsrId_MTVAL = 0x343,
+    CsrId_MIP = 0x344,
 } CsrId;
-static constexpr CsrId CSR_IDS[4] = {
+static constexpr std::array<CsrId, 7> CSR_IDS = {
+    CsrId_MSTATUS,
+    CsrId_MIE,
     CsrId_MTVEC,
     CsrId_MEPC,
     CsrId_MCAUSE,
     CsrId_MTVAL,
+    CsrId_MIP,
 };
 
 typedef enum {

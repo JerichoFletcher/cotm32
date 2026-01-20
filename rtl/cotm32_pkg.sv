@@ -2,6 +2,8 @@
 
 package cotm32_pkg;
 
+parameter CLK_FREQ = 1_000_000_000;
+
 // Sizes
 parameter BYTE_WIDTH = 8;
 parameter INST_WIDTH = 32;
@@ -15,13 +17,16 @@ parameter NUM_REGS = 32;
 parameter PC_RESET_VECTOR = 32'h0000_0000;
 
 parameter BOOTROM_MEM_SIZE  = 4096;
-// parameter CLINT_MEM_SIZE    = 65536;
+parameter CLINT_MEM_SIZE    = 65536;
+parameter UART_MEM_SIZE     = 256;
 parameter DATA_MEM_SIZE     = 4096;
 
 parameter BOOTROM_MEM_START = 32'h0000_0000;
 parameter BOOTROM_MEM_END   = 32'(BOOTROM_MEM_START + BOOTROM_MEM_SIZE - 1);
-// parameter CLINT_MEM_START = 32'h0000_0000;
-// parameter CLINT_MEM_END   = 32'(CLINT_MEM_START + CLINT_MEM_SIZE - 1);
+parameter CLINT_MEM_START   = 32'h0200_0000;
+parameter CLINT_MEM_END     = 32'(CLINT_MEM_START + CLINT_MEM_SIZE - 1);
+parameter UART_MEM_START    = 32'h1000_0000;
+parameter UART_MEM_END      = 32'(UART_MEM_START + UART_MEM_SIZE - 1);
 parameter DATA_MEM_START    = 32'h8000_0000;
 parameter DATA_MEM_END      = 32'(DATA_MEM_START + DATA_MEM_SIZE - 1);
 
@@ -106,9 +111,11 @@ typedef enum logic [$clog2(9)-1:0] {
 } lsu_ls_t;
 
 // LSU memory source
-typedef enum logic [$clog2(3)-1:0] {
+typedef enum logic [$clog2(5)-1:0] {
   LSU_MEM_SRC_UNKNOWN,
   LSU_MEM_SRC_BOOTROM,
+  LSU_MEM_SRC_CLINT,
+  LSU_MEM_SRC_UART,
   LSU_MEM_SRC_DMEM
 } lsu_mem_src_t;
 
@@ -202,5 +209,19 @@ typedef enum logic [9:0] {
   MU_F7F3_REM     = 10'b0000001_110,
   MU_F7F3_REMU    = 10'b0000001_111
 } mu_f7_f3_t;
+
+//////////////////////////////// MMR    ////////////////////////////////
+// CLINT memory-mapped register addresses
+typedef enum logic [XLEN-1:0] {
+  CLINT_MMR_ADDR_MSIP     = 32'h02_000000,
+  CLINT_MMR_ADDR_MTIMECMP = 32'h02_004000,
+  CLINT_MMR_ADDR_MTIME    = 32'h02_00BFF8
+} clint_mmr_addr_t;
+
+typedef enum logic [XLEN-1:0] {
+  UART_MMR_ADDR_TERM_TXDATA = 32'h100000_00,
+  UART_MMR_ADDR_TERM_RXDATA = 32'h100000_04,
+  UART_MMR_ADDR_TERM_STATUS = 32'h100000_08
+} uart_mmr_addr_t;
 
 endpackage : cotm32_pkg

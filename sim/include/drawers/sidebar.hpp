@@ -1,5 +1,6 @@
 #pragma once
 
+#include "drawers/clint_drawer.hpp"
 #include "drawers/csr_drawer.hpp"
 #include "drawers/fwd_drawer.hpp"
 #include "drawers/mem_drawer.hpp"
@@ -20,4 +21,5 @@ private:
     TrapDrawer m_trap_drawer;
     PipelineRegsDrawer m_pipeline_regs_drawer;
     FwdDrawer m_fwd_drawer;
+    ClintDrawer m_clint_drawer;
 };
