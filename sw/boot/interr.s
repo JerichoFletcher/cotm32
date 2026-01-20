@@ -1,6 +1,7 @@
 .globl interr_table
 
 .section .rodata
+.align 2
 interr_table:
     .word       handle_reserved
     .word       handle_reserved

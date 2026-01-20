@@ -3,6 +3,7 @@
 .globl exc_table
 
 .section .rodata
+.align 2
 exc_table:
     .word       handle_inst_addr_misaligned
     .word       handle_inst_access_fault

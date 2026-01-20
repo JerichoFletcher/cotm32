@@ -15,13 +15,11 @@ module rom #(
   
   always_comb begin
     for (int i = 0; i < N_READ_PORTS; i++) begin
-      logic [XLEN-1:0] addr = {i_addr[i][XLEN-1:2], 2'b0};
-
-        if (addr >= MEM_SIZE) begin
-          o_rdata[i] = '0;
-        end else begin
-          o_rdata[i] = {mem_bytes[addr+3], mem_bytes[addr+2], mem_bytes[addr+1], mem_bytes[addr]};
+      for (int j = 0; j < XLEN/BYTE_WIDTH; j++) begin
+        if (i_addr[i] + j < MEM_SIZE) begin
+          o_rdata[i][j*BYTE_WIDTH+:BYTE_WIDTH] = mem_bytes[i_addr[i] + j];
         end
+      end
     end
   end
 

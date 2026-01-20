@@ -3,13 +3,18 @@
 .equ UART_term, 0x10000000
 
 .section .rodata
+.align 2
 sys_table:
-    .word       0
+    .word       dummy
     .word       putc
     .word       getc
 
 ########## SYSCALL HANDLERS ##########
 .section .text
+# Dummy handler for syscall code 0
+dummy:
+    ret
+
 # putc -- Writes a character to the terminal
 # Params:
 #   a0 -- A character

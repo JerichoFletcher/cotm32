@@ -10,11 +10,11 @@ find_package(VERILATOR REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
 find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
-find_program(RISCV_OBJCOPY  riscv64-unknown-elf-objcopy REQUIRED)
 
 # Bootloader
 set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/boot/boot.s
+  ${CMAKE_SOURCE_DIR}/sw/boot/trap.s
   ${CMAKE_SOURCE_DIR}/sw/boot/sys.s
   ${CMAKE_SOURCE_DIR}/sw/boot/exc.s
   ${CMAKE_SOURCE_DIR}/sw/boot/interr.s
@@ -22,10 +22,9 @@ set(BOOT_SRC
 set(BOOT_INC  ${CMAKE_SOURCE_DIR}/sw/include)
 set(BOOT_LD   ${CMAKE_SOURCE_DIR}/sw/boot/boot.ld)
 set(BOOT_ELF  ${CMAKE_BINARY_DIR}/boot.elf)
-set(BOOT_BIN  ${CMAKE_BINARY_DIR}/boot.bin)
 
 add_custom_command(
-  OUTPUT ${BOOT_BIN}
+  OUTPUT ${BOOT_ELF}
   COMMAND ${RISCV_GCC}
     -march=rv32im_zicsr
     -mabi=ilp32
@@ -34,10 +33,6 @@ add_custom_command(
     -T ${BOOT_LD}
     -o ${BOOT_ELF}
     ${BOOT_SRC}
-  COMMAND ${RISCV_OBJCOPY}
-    -O binary
-    ${BOOT_ELF}
-    ${BOOT_BIN}
   DEPENDS
     ${BOOT_SRC}
     ${BOOT_INC}
@@ -46,7 +41,7 @@ add_custom_command(
 )
 
 add_custom_target(bootloader ALL
-  DEPENDS ${BOOT_BIN}
+  DEPENDS ${BOOT_ELF}
 )
 
 # Verilator model
