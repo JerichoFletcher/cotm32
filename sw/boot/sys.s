@@ -9,12 +9,6 @@ sys_table:
     .word       getc
 
 ########## SYSCALL HANDLERS ##########
-.macro MEPC_add4
-    csrr        t0, mepc
-    addi        t0, t0, 4
-    csrw        mepc, t0
-.endm
-
 .section .text
 # putc -- Writes a character to the terminal
 # Params:
@@ -28,10 +22,8 @@ putc:
     bnez        t1, 1b
 
     sb          a0, 0(t0)
-    MEPC_add4
     ret
 
-.section .text
 # getc -- Reads a character from the terminal
 # Returns:
 #   a0 -- A character
@@ -44,5 +36,4 @@ getc:
     beqz        t1, 1b
 
     lb          a0, 4(t0)
-    MEPC_add4
     ret
