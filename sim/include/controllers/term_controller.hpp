@@ -21,6 +21,8 @@ public:
     inline void enqueue_char(char c) { this->m_rx_queue.push(c); }
 
 private:
+    static inline constexpr size_t TAB_WIDTH = 4;
+
     size_t m_bufw;
     size_t m_bufh;
 

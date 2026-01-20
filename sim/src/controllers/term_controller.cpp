@@ -17,11 +17,26 @@ void TerminalController::per_tick_update(Simulator& sim) {
 
     if (uart->tx_valid && !this->m_prev_tx_valid) {
         char c = uart->tx_data;
+        size_t next_tab = ((this->m_curx / TAB_WIDTH) + 1) * TAB_WIDTH;
 
         switch (c) {
+            case '\r': this->m_curx = 0; break;
             case '\n':
                 this->m_curx = 0;
                 this->cursor_newline();
+                break;
+            case '\b':
+                if (this->m_curx > 0) {
+                    this->m_curx--;
+                }
+                break;
+            case '\t':
+                if (next_tab < this->m_bufw) {
+                    this->m_curx = next_tab;
+                } else {
+                    this->m_curx = 0;
+                    this->cursor_newline();
+                }
                 break;
             default:
                 this->m_buf[this->get_cursor_idx()] = c;
@@ -57,7 +72,7 @@ void TerminalController::cursor_newline() {
 
     if (this->m_cury >= this->m_bufh) {
         std::rotate(this->m_buf.begin(), this->m_buf.begin() + this->m_bufw, this->m_buf.end());
-        for (auto v = this->m_buf.rbegin(); v != this->m_buf.rbegin() - this->m_bufw; v++) {
+        for (auto v = this->m_buf.rbegin(); v != this->m_buf.rbegin() + this->m_bufw; v++) {
             *v = ' ';
         }
         this->m_cury = this->m_bufh - 1;
