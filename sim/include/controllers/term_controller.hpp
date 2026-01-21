@@ -1,10 +1,10 @@
 #pragma once
 
 #include <queue>
-#include <vector>
 
 #include "controllers/time_controller.hpp"
 #include "simulator.hpp"
+#include "struct/ring_buffer.hpp"
 
 struct Symbol {
     char glyph;
@@ -14,20 +14,22 @@ struct Symbol {
 
 class TerminalController : public PerTickUpdateListener, public ResetListener {
 public:
-    TerminalController(size_t w, size_t h, ImU32 fg_color, ImU32 bg_color);
-    TerminalController(size_t w, size_t h);
+    TerminalController(size_t w, size_t h, size_t buf_size, ImU32 fg_color, ImU32 bg_color);
+    TerminalController(size_t w, size_t h, size_t buf_size);
 
     void per_tick_update(Simulator& sim) override;
     void reset(Simulator& sim) override;
 
-    bool symbol_at(size_t row, size_t col, Symbol* s);
+    void scroll(int delta) { delta < 0 ? this->scroll_up(-delta) : this->scroll_down(delta); }
+    void scroll_up(size_t delta);
+    void scroll_down(size_t delta);
+    bool symbol_at_viewport(size_t row, size_t col, Symbol* s);
 
-    inline size_t buf_width() const { return this->m_bufw; }
-    inline size_t buf_height() const { return this->m_bufh; }
-    inline size_t cursor_col() const { return this->m_curx; }
-    inline size_t cursor_row() const { return this->m_cury; }
+    inline size_t buf_width() const { return this->m_viewport_w; }
+    inline size_t buf_height() const { return this->m_viewport_h; }
+    inline size_t cursor_col() const { return this->m_cursor_col; }
+    inline size_t cursor_row() const { return this->m_cursor_row; }
 
-    inline const std::vector<Symbol>& buf() const { return this->m_buf; }
     inline size_t input_queue_size() const { return this->m_rx_queue.size(); }
 
     inline void enqueue_char(char c) { this->m_rx_queue.push(c); }
@@ -35,20 +37,22 @@ public:
 private:
     static inline constexpr size_t TAB_WIDTH = 4;
 
-    size_t m_bufw;
-    size_t m_bufh;
+    size_t m_viewport_w;
+    size_t m_viewport_h;
 
-    size_t m_curx;
-    size_t m_cury;
+    size_t m_cursor_row;
+    size_t m_cursor_col;
     ImU32 m_fg_color;
     ImU32 m_bg_color;
 
-    std::vector<Symbol> m_buf;
+    RingBuffer<std::vector<Symbol>> m_buf;
+    size_t m_buf_size;
+    size_t m_viewport_top_row;
+
     std::queue<uint8_t> m_rx_queue;
 
     bool m_prev_tx_valid;
 
-    inline size_t get_cursor_idx() const { return this->m_cury * this->m_bufw + this->m_curx; }
     inline Symbol create_symbol(char c) const {
         Symbol s;
         s.glyph = c;

@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
     // Create controllers
     TimeController c_time;
     DumpController c_dump(c_time);
-    TerminalController c_term(80, 25);
+    TerminalController c_term(80, 25, 256);
     sim.add_update_listener(&c_time);
     sim.add_update_listener(&c_dump);
     c_time.add_update_listener(&c_term);

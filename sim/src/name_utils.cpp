@@ -108,9 +108,9 @@ static const StringMap<FwdSrc> fwd_src_names = {
     {FwdSrc::FwdSrc_MEMWB, "MEM/WB"},
 };
 
-template <typename T, std::size_t size>
-inline bool in_bounds(int i, const std::array<T, size>& arr) {
-    return 0 <= i && i < size;
+template <typename T, std::size_t cap>
+inline bool in_bounds(int i, const std::array<T, cap>& arr) {
+    return 0 <= i && i < cap;
 }
 
 template <typename T>

@@ -39,10 +39,14 @@ void TerminalDrawer::render(const Simulator& sim) {
                 );
 
                 Symbol sym;
-                if (this->m_ctrl.symbol_at(row, col, &sym)) {
+                ImU32 prev_col;
+                if (this->m_ctrl.symbol_at_viewport(row, col, &sym)) {
                     auto text = fmt::format("{:c}", sym.glyph);
                     draw_list->AddRectFilled(curr_pos, curr_pos_max, sym.bg_color);
                     draw_list->AddText(curr_pos, sym.fg_color, text.c_str());
+                    prev_col = sym.bg_color;
+                } else {
+                    draw_list->AddRectFilled(curr_pos, curr_pos_max, prev_col);
                 }
             }
         }
@@ -61,6 +65,12 @@ void TerminalDrawer::render(const Simulator& sim) {
 
         if (ImGui::IsWindowFocused()) {
             auto& io = ImGui::GetIO();
+
+            int scroll = -(int)io.MouseWheel;
+            if (scroll != 0) {
+                this->m_ctrl.scroll(scroll);
+            }
+
             if (ImGui::IsKeyPressed(ImGuiKey_Enter)) {
                 this->m_ctrl.enqueue_char('\n');
             }
