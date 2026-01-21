@@ -3,7 +3,7 @@
 TimeController::TimeController()
     : m_is_auto(false),
       m_is_prev_auto(false),
-      m_clk_hz(50.0f),
+      m_clk_hz(10'000.0f),
       m_step_req(false),
       m_rst_req(false),
       m_accumulator(0.0f),

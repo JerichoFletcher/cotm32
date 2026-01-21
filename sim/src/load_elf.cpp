@@ -21,12 +21,7 @@ void load_elf(const char* path, VerilatedContainer& v) {
         throw std::runtime_error("File is not ELF32");
     }
 
-    std::cout << "Loaded ELF at " << path << '\n';
-    std::cout << "Program header count: " << eh.e_phnum << '\n';
-    std::cout << "Section header count: " << eh.e_shnum << std::endl;
-
     f.seekg(eh.e_phoff);
-
     for (int i = 0; i < eh.e_phnum; i++) {
         Elf32_Phdr ph;
         f.read(reinterpret_cast<char*>(&ph), sizeof(ph));
@@ -41,7 +36,10 @@ void load_elf(const char* path, VerilatedContainer& v) {
 
         uint32_t addr = ph.p_vaddr;
         std::cout << fmt::format(
-                         "Read segment [{:08x}:{:08x}]", ph.p_vaddr, ph.p_vaddr + ph.p_memsz - 1
+                         "Read segment [{:08x}:{:08x}] ({:d} bytes)",
+                         ph.p_vaddr,
+                         ph.p_vaddr + ph.p_memsz - 1,
+                         ph.p_memsz
                      )
                   << std::endl;
 

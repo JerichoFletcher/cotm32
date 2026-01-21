@@ -1,44 +1,45 @@
-.globl sys_table
+.include "macros.inc"
 
-.equ UART_term, 0x10000000
+.globl sys_table
 
 .section .rodata
 .align 2
 sys_table:
-    .word       dummy
-    .word       putc
-    .word       getc
+    .word       sys_dummy
+    .word       sys_putc
+    .word       sys_getc
+    .word       sys_puts
 
 ########## SYSCALL HANDLERS ##########
 .section .text
 # Dummy handler for syscall code 0
-dummy:
+sys_dummy:
     ret
 
-# putc -- Writes a character to the terminal
+# sys_putc -- Writes a character to the terminal
 # Params:
 #   a0 -- A character
-putc:
-    li          t0, UART_term
-
-1:  # Wait until UART TX is ready (status[0] = 0)
-    lb          t1, 8(t0)
-    andi        t1, t1, 0x1
-    bnez        t1, 1b
-
-    sb          a0, 0(t0)
+sys_putc:
+    PUSH1       ra
+    call        k_putc
+    POP1        ra
     ret
 
-# getc -- Reads a character from the terminal
+# sys_getc -- Reads a character from the terminal
 # Returns:
 #   a0 -- A character
-getc:
-    li          t0, UART_term
+sys_getc:
+    PUSH1       ra
+    call        k_getc
+    POP1        ra
+    ret
 
-1:  # Block until UART RX has data (status[1] = 1)
-    lb          t1, 8(t0)
-    andi        t1, t1, 0x2
-    beqz        t1, 1b
-
-    lb          a0, 4(t0)
+# sys_puts -- Writes a string to the terminal
+# Params:
+#   a0 -- A pointer to the beginning of the string
+#   a1 -- The length of the string
+sys_puts:
+    PUSH1       ra
+    call        k_puts
+    POP1        ra
     ret

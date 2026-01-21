@@ -10,7 +10,9 @@ MEMORY {
 SECTIONS {
   . = ORIGIN(BOOTROM);
   .text   : {
+    . = ALIGN(4);
     *(.text.init)
+    . = ALIGN(4);
     *(.text*)
   } > BOOTROM
 

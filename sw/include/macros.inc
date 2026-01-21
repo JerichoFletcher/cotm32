@@ -53,7 +53,7 @@
 
 .macro POP2 reg0, reg1
 .ifnc \reg0, zero
-    lw          \re0, 8(sp)
+    lw          \reg0, 8(sp)
 .endif
 .ifnc \reg1, zero
     lw          \reg1, 12(sp)
@@ -63,7 +63,7 @@
 
 .macro POP3 reg0, reg1, reg2
 .ifnc \reg0, zero
-    lw          \re0, 4(sp)
+    lw          \reg0, 4(sp)
 .endif
 .ifnc \reg1, zero
     lw          \reg1, 8(sp)

@@ -10,9 +10,8 @@
 
 using cotm32::draw_utils::draw_signal;
 
-// static const char* mem_src_options[3] = {"IMEM", "ROM", "DMEM"};
 static const char* mem_src_options[2] = {"BOOTROM", "DMEM"};
-static const char* mem_disp_w_options[3] = {"Byte", "Half (2 bytes)", "Word (4 bytes)"};
+static const char* mem_disp_w_options[4] = {"Byte", "Half (2 bytes)", "Word (4 bytes)", "ASCII"};
 
 MemDrawer::MemDrawer() : m_mem_sec_curr(0), m_mem_offset(0), m_mem_disp_w(0) {}
 
@@ -67,6 +66,7 @@ void MemDrawer::render(const Simulator& sim) {
                 case 0: disp_w = 1; break;
                 case 1: disp_w = 2; break;
                 case 2: disp_w = 4; break;
+                case 3: disp_w = 1; break;
             }
 
             if (ImGui::SliderInt(
@@ -107,23 +107,33 @@ void MemDrawer::render(const Simulator& sim) {
                         uint32_t addr =
                             mem_src_start + this->m_mem_offset + r * DISPLAY_WINDOW_W + c;
 
+                        uint8_t val8;
+                        uint16_t val16;
+                        uint32_t val32;
                         switch (this->m_mem_disp_w) {
                             case 0:
-                                uint8_t val8;
                                 if (view.read_byte(addr, val8)) {
                                     ImGui::Text("%02x", val8);
                                 }
                                 break;
                             case 1:
-                                uint16_t val16;
                                 if (view.read_half(addr, val16)) {
                                     ImGui::Text("%04x", val16);
                                 }
                                 break;
                             case 2:
-                                uint32_t val32;
                                 if (view.read_word(addr, val32)) {
                                     ImGui::Text("%08x", val32);
+                                }
+                                break;
+                            case 3:
+                                if (view.read_byte(addr, val8)) {
+                                    if (0 < val8 && val8 < 0x10000) {
+                                        ImGui::Text("%c", val8);
+                                    } else {
+                                        ImGui::TextUnformatted(".");
+                                    }
+                                    break;
                                 }
                                 break;
                         }

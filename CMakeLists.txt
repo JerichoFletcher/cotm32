@@ -14,6 +14,7 @@ find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
 # Bootloader
 set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/boot/boot.s
+  ${CMAKE_SOURCE_DIR}/sw/boot/func.s
   ${CMAKE_SOURCE_DIR}/sw/boot/trap.s
   ${CMAKE_SOURCE_DIR}/sw/boot/sys.s
   ${CMAKE_SOURCE_DIR}/sw/boot/exc.s
@@ -35,7 +36,6 @@ add_custom_command(
     ${BOOT_SRC}
   DEPENDS
     ${BOOT_SRC}
-    ${BOOT_INC}
     ${BOOT_LD}
   COMMENT "Building RISC-V bootloader"
 )

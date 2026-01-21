@@ -25,10 +25,6 @@ interr_handle:
     j           trap_exit
 
 trap_exit:
-    csrr        t0, mepc
-    addi        t0, t0, 4
-    csrw        mepc, t0
-
     # Restore registers and tear down stack frame
     POP4        t2, t1, t0, ra
     mret

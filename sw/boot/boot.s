@@ -32,16 +32,13 @@ _start:
 
 .section .text
 main:
-    la          t0, str_welcome
-1:  lb          t1, 0(t0)
-    beqz        t1, 2f
-    SYS_putc    t1
-    addi        t0, t0, 1
-    j           1b
-2:  SYS_getc
+    la          a0, str_welcome
+    li          a1, 14
+    call        k_puts
+1:  SYS_getc
     SYS_putc
-    j           2b
+    j           1b
 
 .section .rodata
 str_welcome:
-    .asciz      "Hello, World!\n"
+    .ascii      "Hello, World!\n"   # 14
