@@ -9,10 +9,5 @@ public:
     void render(const Simulator& sim) override;
 
 private:
-    static constexpr inline size_t BUF_SIZE = 256;
-
     TerminalController& m_ctrl;
-    char m_buf[BUF_SIZE];
-
-    void send_input();
 };
