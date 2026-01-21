@@ -3,14 +3,20 @@
 #include <algorithm>
 
 #include "Vtop_uart_term.h"
+#include "colors.hpp"
 
-TerminalController::TerminalController(size_t w, size_t h)
+TerminalController::TerminalController(size_t w, size_t h, ImU32 fg_color, ImU32 bg_color)
     : m_bufw(w),
       m_bufh(h),
       m_curx(0),
       m_cury(0),
-      m_buf(w * h, ' '),
-      m_prev_tx_valid(false) {}
+      m_fg_color(fg_color),
+      m_bg_color(bg_color),
+      m_prev_tx_valid(false),
+      m_buf(w * h, this->create_symbol(' ')) {}
+
+TerminalController::TerminalController(size_t w, size_t h)
+    : TerminalController(w, h, cotm32::colors::TERM_BRIGHT_WHITE, cotm32::colors::TERM_BLACK) {}
 
 void TerminalController::per_tick_update(Simulator& sim) {
     auto* uart = sim.v().top()->cotm32->uart_term;
@@ -39,7 +45,7 @@ void TerminalController::per_tick_update(Simulator& sim) {
                 }
                 break;
             default:
-                this->m_buf[this->get_cursor_idx()] = c;
+                this->m_buf[this->get_cursor_idx()] = this->create_symbol(c);
                 this->cursor_adv();
                 break;
         }
@@ -54,9 +60,18 @@ void TerminalController::per_tick_update(Simulator& sim) {
 }
 
 void TerminalController::reset(Simulator& sim) {
-    std::fill(this->m_buf.begin(), this->m_buf.end(), ' ');
+    Symbol sym_fill = this->create_symbol(' ');
+    std::fill(this->m_buf.begin(), this->m_buf.end(), sym_fill);
     this->m_curx = 0;
     this->m_cury = 0;
+}
+
+bool TerminalController::symbol_at(size_t row, size_t col, Symbol* s) {
+    if (row < this->m_bufh && col < this->m_bufw) {
+        *s = this->m_buf[row * this->m_bufw + col];
+        return true;
+    }
+    return false;
 }
 
 void TerminalController::cursor_adv() {
@@ -72,8 +87,10 @@ void TerminalController::cursor_newline() {
 
     if (this->m_cury >= this->m_bufh) {
         std::rotate(this->m_buf.begin(), this->m_buf.begin() + this->m_bufw, this->m_buf.end());
+
+        auto sym_fill = this->create_symbol(' ');
         for (auto v = this->m_buf.rbegin(); v != this->m_buf.rbegin() + this->m_bufw; v++) {
-            *v = ' ';
+            *v = sym_fill;
         }
         this->m_cury = this->m_bufh - 1;
     }
