@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     // Set up simulator and link to renderer
     VerilatedContainer v(argc, argv);
     Simulator sim(v);
-    window.add_update_litener(&sim);
+    window.add_update_listener(&sim);
     imgui.add_drawer(&sim);
 
     // Create controllers

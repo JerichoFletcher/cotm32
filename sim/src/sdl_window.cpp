@@ -17,7 +17,9 @@ SdlWindow::SdlWindow() {
     );
     this->m_gl = SDL_GL_CreateContext(this->m_window);
     SDL_GL_MakeCurrent(this->m_window, this->m_gl);
-    SDL_GL_SetSwapInterval(1);
+    if (SDL_GL_SetSwapInterval(-1) == -1) {
+        SDL_GL_SetSwapInterval(1);
+    }
 }
 
 SdlWindow::~SdlWindow() {
@@ -29,7 +31,7 @@ void SdlWindow::add_event_listener(SdlWindowEventListener* listener) {
     this->m_l_evt.push_back(listener);
 }
 
-void SdlWindow::add_update_litener(SdlWindowUpdateListener* listener) {
+void SdlWindow::add_update_listener(SdlWindowUpdateListener* listener) {
     this->m_l_update.push_back(listener);
 }
 

@@ -41,7 +41,7 @@ public:
     inline void request_reset() { this->m_rst_req = true; }
 
 private:
-    static constexpr int MAX_STEPS_PER_FRAME = 200'000;
+    static constexpr int MAX_STEPS_PER_FRAME = 100'000;
 
     using clock = std::chrono::steady_clock;
 

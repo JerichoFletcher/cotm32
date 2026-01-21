@@ -30,7 +30,7 @@ public:
     inline SDL_GLContext gl() const { return this->m_gl; }
 
     void add_event_listener(SdlWindowEventListener* listener);
-    void add_update_litener(SdlWindowUpdateListener* listener);
+    void add_update_listener(SdlWindowUpdateListener* listener);
     void add_render_listener(SdlWindowRenderListener* listener);
     void run();
 
