@@ -28,6 +28,11 @@ public:
     inline size_t viewport_width() const { return this->m_viewport_w; }
     inline size_t viewport_height() const { return this->m_viewport_h; }
     inline size_t viewport_start_row() const { return this->m_viewport_start_line; }
+    inline size_t active_row() const { return this->m_viewport_start_line + this->m_cursor_row; }
+    inline size_t viewport_to_buf_row(size_t viewport_row) {
+        return this->m_viewport_start_line + viewport_row;
+    }
+
     inline size_t cursor_col() const { return this->m_cursor_col; }
     inline size_t cursor_row() const { return this->m_cursor_row; }
 
@@ -39,6 +44,16 @@ public:
 
 private:
     static inline constexpr size_t TAB_WIDTH = 4;
+
+    typedef enum {
+        ReadState_GROUND,
+        ReadState_ESCAPE,
+        ReadState_SEQ_CSI,
+    } ReadState;
+
+    ReadState m_state;
+    std::vector<size_t> m_ansi_args;
+    std::queue<char> m_ansi_arg_chars;
 
     size_t m_viewport_w;
     size_t m_viewport_h;
@@ -70,6 +85,9 @@ private:
         this->m_viewport_start_line =
             this->m_buf.size() > this->m_viewport_h ? this->m_buf.size() - this->m_viewport_h : 0;
     }
+
+    void push_blank_row();
+    void clear_buffer();
 
     void cursor_adv();
     void cursor_newline();
