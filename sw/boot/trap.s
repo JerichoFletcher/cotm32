@@ -4,8 +4,8 @@
 
 .section .text
 trap_entry:
-    # Establish stack frame and store registers
-    PUSH4       ra, t0, t1, t2
+    # Trap handler MUST store all used registers
+    PUSH3       ra, t0, t1
 
     # Branch off between exceptions and interrupts
     csrr        t0, mcause
@@ -25,6 +25,5 @@ interr_handle:
     j           trap_exit
 
 trap_exit:
-    # Restore registers and tear down stack frame
-    POP4        t2, t1, t0, ra
+    POP3        t1, t0, ra
     mret

@@ -35,8 +35,8 @@ main:
     la          a0, str_welcome
     li          a1, 14
     call        k_puts
-1:  SYS_getc
-    SYS_putc
+1:  call        k_getc
+    call        k_putc
     j           1b
 
 .section .rodata

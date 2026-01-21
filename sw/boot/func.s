@@ -14,8 +14,8 @@ k_putc:
     lb          t1, 8(t0)
     andi        t1, t1, 0x1
     bnez        t1, 1b
-
     sb          a0, 0(t0)
+
     ret
 
 # k_getc -- Reads a character from the terminal
@@ -29,8 +29,8 @@ k_getc:
     lb          t1, 8(t0)
     andi        t1, t1, 0x2
     beqz        t1, 1b
-
     lb          a0, 4(t0)
+
     ret
 
 # k_puts -- Writes a string to the terminal
@@ -39,23 +39,18 @@ k_getc:
 #   a1 -- The length of the string
 .globl k_puts
 k_puts:
-    PUSH2       s0, s1
-    li          s0, UART_term
+    PUSH4       ra, s0, s1, s2
+    mv          s0, a0
     li          s1, 0
+    mv          s2, a1
 
-1:  # Load the next character
-    beq         s1, a1, 3f
-    add         t0, a0, s1
-    lb          t2, 0(t0)
-
-2:  # Wait until UART TX is ready (status[0] = 0)
-    lb          t1, 8(s0)
-    andi        t1, t1, 0x1
-    bnez        t1, 2b
-
-    sb          t2, 0(s0)
+1:  # Write the next character
+    beq         s1, s2, 2f
+    add         t0, s0, s1
+    lb          a0, 0(t0)
+    call        k_putc
     addi        s1, s1, 1
     j           1b
 
-3:  POP2        s1, s0
+2:  POP4        s2, s1, s0, ra
     ret
