@@ -16,7 +16,7 @@ module exmem_reg(
   input logic i_t_inst_access_fault,
   input logic i_t_illegal_inst,
   input logic i_t_ebreak,
-  input logic i_t_ecall_m,
+  input logic i_t_ecall,
 
   input logic i_trap_mret,
 
@@ -28,7 +28,7 @@ module exmem_reg(
   output logic o_t_inst_access_fault,
   output logic o_t_illegal_inst,
   output logic o_t_ebreak,
-  output logic o_t_ecall_m,
+  output logic o_t_ecall,
 
   output logic o_trap_mret
 );
@@ -52,7 +52,7 @@ module exmem_reg(
       o_t_inst_access_fault <= '0;
       o_t_illegal_inst <= '0;
       o_t_ebreak <= '0;
-      o_t_ecall_m <= '0;
+      o_t_ecall <= '0;
 
       o_trap_mret <= '0;
     end else if (!i_stall) begin
@@ -63,7 +63,7 @@ module exmem_reg(
       o_t_inst_access_fault <= i_t_inst_access_fault;
       o_t_illegal_inst <= i_t_illegal_inst;
       o_t_ebreak <= i_t_ebreak;
-      o_t_ecall_m <= i_t_ecall_m;
+      o_t_ecall <= i_t_ecall;
 
       o_trap_mret <= i_trap_mret;
     end

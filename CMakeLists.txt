@@ -61,6 +61,7 @@ set(CXX_SOURCES
   sim/src/views/pipeline_regs_view.cpp
   sim/src/views/fwd_view.cpp
   sim/src/views/clint_view.cpp
+  sim/src/views/status_view.cpp
 
   sim/src/drawers/draw_utils.cpp
   sim/src/drawers/sidebar.cpp
@@ -74,6 +75,7 @@ set(CXX_SOURCES
   sim/src/drawers/pipeline_regs_drawer.cpp
   sim/src/drawers/fwd_drawer.cpp
   sim/src/drawers/clint_drawer.cpp
+  sim/src/drawers/status_drawer.cpp
 
   sim/src/controllers/time_controller.cpp
   sim/src/controllers/dump_controller.cpp
@@ -103,6 +105,7 @@ set(RTL_SOURCES
   
   rtl/cpu/core/mu.sv
 
+  rtl/cpu/priv/priv_control.sv
   rtl/cpu/priv/csr_file.sv
   rtl/cpu/priv/exception_dispatch.sv
   rtl/cpu/priv/interrupt_dispatch.sv

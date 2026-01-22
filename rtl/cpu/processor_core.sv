@@ -173,13 +173,13 @@ module processor_core
   wire id_t_inst_access_fault;
   wire id_t_illegal_inst;
   wire id_t_ebreak;
-  wire id_t_ecall_m;
+  wire id_t_ecall;
 
   wire ex_t_inst_addr_misaligned;
   wire ex_t_inst_access_fault;
   wire ex_t_illegal_inst;
   wire ex_t_ebreak;
-  wire ex_t_ecall_m;
+  wire ex_t_ecall;
 
   wire mem_t_inst_addr_misaligned;
   wire mem_t_inst_access_fault;
@@ -190,9 +190,12 @@ module processor_core
   wire mem_t_load_access_fault;
   wire mem_t_store_addr_misaligned;
   wire mem_t_store_access_fault;
-  wire mem_t_ecall_m;
+  wire mem_t_ecall;
 
   wire trap_mode /* verilator public */;
+
+  // Privilege mode
+  priv_mode_t priv_mode /* verilator public */;
 
   // CSR wires
   wire id_csr_we /* verilator public */;
@@ -279,10 +282,20 @@ module processor_core
   //////////////////////////////// BOOT   ////////////////////////////////
   rom #(
     .N_READ_PORTS(2),
-    .MEM_SIZE(BOOTROM_MEM_SIZE)
+    .MEM_SIZE(IMEM_MEM_SIZE)
   ) bootrom(
     .i_addr('{if_pc, mem_lsu_addr}),
     .o_rdata('{if_inst, mem_rom_rdata})
+  );
+
+  //////////////////////////////// PRIV   ////////////////////////////////
+  priv_control priv(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_trap_req(trap_req),
+    .i_trap_mret(trap_mret),
+    .i_mstatus(mem_csr_mstatus),
+    .o_priv_mode(priv_mode)
   );
 
   //////////////////////////////// IF     ////////////////////////////////
@@ -329,6 +342,7 @@ module processor_core
   // CU
   cu cu(
     .i_inst(id_inst),
+    .i_priv_mode(priv_mode),
     .i_trap_mode(trap_mode),
 
     .o_alu_op(id_alu_op),
@@ -354,7 +368,7 @@ module processor_core
 
     .o_t_illegal_inst(id_t_illegal_inst),
     .o_t_ebreak(id_t_ebreak),
-    .o_t_ecall_m(id_t_ecall_m),
+    .o_t_ecall(id_t_ecall),
     .o_trap_mret(id_trap_mret)
   );
 
@@ -414,7 +428,7 @@ module processor_core
     .i_t_inst_access_fault(id_t_inst_access_fault),
     .i_t_illegal_inst(id_t_illegal_inst),
     .i_t_ebreak(id_t_ebreak),
-    .i_t_ecall_m(id_t_ecall_m),
+    .i_t_ecall(id_t_ecall),
     .i_trap_mret(id_trap_mret),
     .o_data('{
       ex_alu_op,
@@ -446,7 +460,7 @@ module processor_core
     .o_t_inst_access_fault(ex_t_inst_access_fault),
     .o_t_illegal_inst(ex_t_illegal_inst),
     .o_t_ebreak(ex_t_ebreak),
-    .o_t_ecall_m(ex_t_ecall_m),
+    .o_t_ecall(ex_t_ecall),
     .o_trap_mret(ex_trap_mret)
   );
 
@@ -549,7 +563,7 @@ module processor_core
     .i_t_inst_access_fault(ex_t_inst_access_fault),
     .i_t_illegal_inst(ex_t_illegal_inst),
     .i_t_ebreak(ex_t_ebreak),
-    .i_t_ecall_m(ex_t_ecall_m),
+    .i_t_ecall(ex_t_ecall),
     .i_trap_mret(ex_trap_mret),
     .o_data('{
       mem_alu_out,
@@ -574,7 +588,7 @@ module processor_core
     .o_t_inst_access_fault(mem_t_inst_access_fault),
     .o_t_illegal_inst(mem_t_illegal_inst),
     .o_t_ebreak(mem_t_ebreak),
-    .o_t_ecall_m(mem_t_ecall_m),
+    .o_t_ecall(mem_t_ecall),
     .o_trap_mret(mem_trap_mret)
   );
 
@@ -597,11 +611,14 @@ module processor_core
     .i_op(mem_lsu_ls_op),
     .i_addr(mem_alu_out),
     .i_wdata(mem_rs2),
-    .i_rdata_bootrom(mem_rom_rdata),
+    .i_rdata_imem(mem_rom_rdata),
     .i_rdata_clint(i_clint_rdata),
     .i_rdata_uart(i_uart_rdata),
     .i_rdata_dmem(mem_dmem_rdata),
+    
+    .i_priv_mode(priv_mode),
     .i_trap_req(trap_req),
+
     .o_addr(mem_lsu_addr),
     .o_wdata(mem_lsu_wdata),
     .o_rdata(mem_lsu_rdata),
@@ -638,6 +655,7 @@ module processor_core
     .i_addr(mem_csr_addr),
     .i_wdata(mem_csr_wdata),
     .i_pc(mem_pc),
+    .i_priv_mode(priv_mode),
 
     .i_trap_mret(trap_mret),
     .i_trap_req(trap_req),
@@ -668,9 +686,11 @@ module processor_core
 
   // Exception dispatch
   exception_dispatch exc_d(
+    .i_valid(exmem_valid),
     .i_pc(mem_pc),
     .i_inst(mem_inst),
     .i_ls_addr(mem_alu_out),
+    .i_priv_mode(priv_mode),
     .i_inst_addr_misaligned(mem_t_inst_addr_misaligned),
     .i_inst_access_fault(mem_t_inst_access_fault),
     .i_illegal_inst(mem_t_illegal_inst || mem_t_illegal_inst_csr),
@@ -679,7 +699,7 @@ module processor_core
     .i_load_access_fault(mem_t_load_access_fault),
     .i_store_addr_misaligned(mem_t_store_addr_misaligned),
     .i_store_access_fault(mem_t_store_access_fault),
-    .i_ecall_m(mem_t_ecall_m),
+    .i_ecall(mem_t_ecall),
     .o_exception_req(exception_req),
     .o_exception_cause(exception_cause),
     .o_exception_tval(exception_tval)
@@ -687,6 +707,7 @@ module processor_core
 
   // Interrupt dispatch
   interrupt_dispatch interr_d(
+    .i_valid(exmem_valid),
     .i_mstatus(mem_csr_mstatus),
     .i_mie(mem_csr_mie),
     .i_mip(mem_csr_mip),

@@ -82,6 +82,11 @@ static const StringMap<MuOp> mu_op_names = {
     {MuOp::MuOp_REMU,   "REMU"  },
 };
 
+static const StringMap<PrivMode> priv_mode_names = {
+    {PrivMode::PrivMode_U, "User"   },
+    {PrivMode::PrivMode_M, "Machine"},
+};
+
 static const StringMap<CsrId> csr_names = {
     {CsrId::CsrId_MSTATUS, "mstatus"},
     {CsrId::CsrId_MIE,     "mie"    },
@@ -142,6 +147,10 @@ const std::string& reg_wb_name(RegWritebackSrc reg_wb_sel) {
 }
 
 const std::string& mu_op_name(MuOp mu_op) { return get_or_empty(mu_op_names, mu_op); }
+
+const std::string& priv_mode_name(PrivMode priv_mode) {
+    return get_or_empty(priv_mode_names, priv_mode);
+}
 
 const std::string& csr_name(CsrId csr_id) { return get_or_empty(csr_names, csr_id); }
 

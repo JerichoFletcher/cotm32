@@ -1,17 +1,17 @@
-import cotm32_pkg::BYTE_WIDTH;
-import cotm32_pkg::XLEN;
-import cotm32_pkg::lsu_ls_t;
-
 // Load-store unit
-module lsu (
+module lsu
+  import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
+(
   input lsu_ls_t i_op,
   input logic [XLEN-1:0] i_addr,
   input logic [XLEN-1:0] i_wdata,
-  input logic [XLEN-1:0] i_rdata_bootrom,
+  input logic [XLEN-1:0] i_rdata_imem,
   input logic [XLEN-1:0] i_rdata_clint,
   input logic [XLEN-1:0] i_rdata_uart,
   input logic [XLEN-1:0] i_rdata_dmem,
 
+  input priv_mode_t i_priv_mode,
   input logic i_trap_req,
 
   output logic [XLEN-1:0] o_addr,
@@ -36,18 +36,6 @@ module lsu (
   lsu_mem_src_t mem_src;
   logic [XLEN-1:0] mem_rdata;
 
-  lsu_mem_src_t valid_load_src[4] = '{
-    LSU_MEM_SRC_BOOTROM,
-    LSU_MEM_SRC_CLINT,
-    LSU_MEM_SRC_UART,
-    LSU_MEM_SRC_DMEM
-  };
-  lsu_mem_src_t valid_store_src[3] = '{
-    LSU_MEM_SRC_CLINT,
-    LSU_MEM_SRC_UART,
-    LSU_MEM_SRC_DMEM
-  };
-
   logic re;
   logic we;
   logic src_dmem;
@@ -61,9 +49,9 @@ module lsu (
   assign o_we_clint = we && src_clint;
 
   always_comb begin
-    if ((BOOTROM_MEM_START == 0 || BOOTROM_MEM_START <= i_addr) && i_addr <= BOOTROM_MEM_END) begin
-      mem_src = LSU_MEM_SRC_BOOTROM;
-      o_addr = i_addr - BOOTROM_MEM_START;
+    if ((IMEM_MEM_START == 0 || IMEM_MEM_START <= i_addr) && i_addr <= IMEM_MEM_END) begin
+      mem_src = LSU_MEM_SRC_IMEM;
+      o_addr = i_addr - IMEM_MEM_START;
     end else if ((CLINT_MEM_START == 0 || CLINT_MEM_START <= i_addr) && i_addr <= CLINT_MEM_END) begin
       mem_src = LSU_MEM_SRC_CLINT;
       o_addr = i_addr - CLINT_MEM_START;
@@ -85,8 +73,8 @@ module lsu (
     src_clint = '0;
 
     unique case (mem_src)
-      LSU_MEM_SRC_BOOTROM : begin
-        mem_rdata = i_rdata_bootrom;
+      LSU_MEM_SRC_IMEM : begin
+        mem_rdata = i_rdata_imem;
       end
       LSU_MEM_SRC_CLINT   : begin
         mem_rdata = i_rdata_clint;
@@ -180,14 +168,34 @@ module lsu (
 
     unique case (i_op)
       LSU_LOAD_B, LSU_LOAD_BU, LSU_LOAD_H, LSU_LOAD_HU, LSU_LOAD_W: begin
-        if (!(mem_src inside {valid_load_src})) begin
-          o_t_load_access_fault = '1;
-        end
+        unique case (i_priv_mode)
+          PRIV_M: begin
+            if (!(mem_src inside {LSU_MEM_SRC_IMEM, LSU_MEM_SRC_CLINT, LSU_MEM_SRC_UART, LSU_MEM_SRC_DMEM})) begin
+              o_t_load_access_fault = '1;
+            end
+          end
+          PRIV_U: begin
+            if (!(mem_src inside {LSU_MEM_SRC_IMEM, LSU_MEM_SRC_DMEM})) begin
+              o_t_load_access_fault = '1;
+            end
+          end
+          default: o_t_load_access_fault = '1;
+        endcase
       end
       LSU_STORE_B, LSU_STORE_H, LSU_STORE_W: begin
-        if (!(mem_src inside {valid_store_src})) begin
-          o_t_store_access_fault = '1;
-        end
+        unique case (i_priv_mode)
+          PRIV_M: begin
+            if (!(mem_src inside {LSU_MEM_SRC_CLINT, LSU_MEM_SRC_UART, LSU_MEM_SRC_DMEM})) begin
+              o_t_store_access_fault = '1;
+            end
+          end
+          PRIV_U: begin
+            if (!(mem_src inside {LSU_MEM_SRC_DMEM})) begin
+              o_t_store_access_fault = '1;
+            end
+          end
+          default: o_t_store_access_fault = '1;
+        endcase
       end
       default: begin /* NOP */ end
     endcase

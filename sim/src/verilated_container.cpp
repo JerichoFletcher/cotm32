@@ -90,8 +90,8 @@ void VerilatedContainer::stop_trace_dump() {
 }
 
 bool VerilatedContainer::read_byte(uint32_t addr, uint8_t* out) const {
-    if (BOOTROM_MEM_START <= addr && addr <= BOOTROM_MEM_END) {
-        *out = this->m_top->cotm32->core->bootrom__DOT__mem_bytes[addr - BOOTROM_MEM_START];
+    if (IMEM_MEM_START <= addr && addr <= IMEM_MEM_END) {
+        *out = this->m_top->cotm32->core->bootrom__DOT__mem_bytes[addr - IMEM_MEM_START];
     } else if (CLINT_MEM_START <= addr && addr <= CLINT_MEM_END) {
         auto& mem = this->m_top->cotm32->clint->mem;
         auto addr_base = addr - CLINT_MEM_START;
@@ -110,8 +110,8 @@ bool VerilatedContainer::read_byte(uint32_t addr, uint8_t* out) const {
 }
 
 bool VerilatedContainer::write_byte(uint32_t addr, uint8_t val) {
-    if (BOOTROM_MEM_START <= addr && addr <= BOOTROM_MEM_END) {
-        this->m_top->cotm32->core->bootrom__DOT__mem_bytes[addr - BOOTROM_MEM_START] = val;
+    if (IMEM_MEM_START <= addr && addr <= IMEM_MEM_END) {
+        this->m_top->cotm32->core->bootrom__DOT__mem_bytes[addr - IMEM_MEM_START] = val;
     } else if (CLINT_MEM_START <= addr && addr <= CLINT_MEM_END) {
         auto& mem = this->m_top->cotm32->clint->mem;
         auto addr_base = addr - CLINT_MEM_START;

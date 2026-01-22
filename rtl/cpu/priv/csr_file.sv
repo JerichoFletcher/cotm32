@@ -9,6 +9,7 @@ module csr_file
   input zicsr_csr_addr_t i_addr,
   input logic [MXLEN-1:0] i_wdata,
   input logic [MXLEN-1:0] i_pc,
+  input priv_mode_t i_priv_mode,
 
   input logic i_trap_mret,
   input logic i_trap_req,
@@ -57,7 +58,7 @@ module csr_file
     o_t_illegal_inst = '0;
 
     if (i_op != ZICSR_CSR_OP_NONE) begin
-      if (mem.exists(i_addr) == 0) begin
+      if (!csr_accessible(i_addr, i_priv_mode, i_we)) begin
         o_t_illegal_inst = '1;
       end
     end
@@ -89,12 +90,12 @@ module csr_file
         
         mstatus.mpie  <= mstatus.mie;
         mstatus.mie   <= '0;
-        mstatus.mpp   <= 2'b11; // TODO: Should be current privilege mode
+        mstatus.mpp   <= i_priv_mode;
       end else if (i_trap_mret) begin
         mstatus.mie   <= mstatus.mpie;
         mstatus.mpie  <= '1;
-        mstatus.mpp   <= 2'b11; // TODO: Should be least-privileged mode
-      end else if (i_we && mem.exists(i_addr) == 1) begin
+        mstatus.mpp   <= PRIV_U;
+      end else if (i_we && csr_accessible(i_addr, i_priv_mode, i_we)) begin
         unique case (i_addr)
           ZICSR_CSR_MSTATUS : mstatus <= wval;
           ZICSR_CSR_MIE     : mie     <= wval;
@@ -110,5 +111,16 @@ module csr_file
       mip.mtip <= i_mtip;
     end
   end
+
+  function automatic logic csr_accessible(
+    input zicsr_csr_addr_t addr,
+    priv_mode_t priv_mode,
+    logic write
+  );
+    if (mem.exists(addr) == 0) return '0;
+    if (addr[9:8] > priv_mode) return '0;
+    if (write && addr[11:10] == 2'b11) return '0;
+    return '1;
+  endfunction
 
 endmodule

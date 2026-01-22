@@ -15,6 +15,8 @@ const std::string& reg_wb_name(RegWritebackSrc reg_wb_sel);
 
 const std::string& mu_op_name(MuOp mu_op);
 
+const std::string& priv_mode_name(PrivMode priv_mode);
+
 const std::string& csr_name(CsrId csr_id);
 const std::string& csr_write_name(CsrWriteSrc csr_write);
 const std::string& csr_op_name(CsrOp csr_op);

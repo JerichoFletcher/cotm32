@@ -76,6 +76,6 @@ This produces the following in the `build` directory:
     - RV32I (Base Integer Instruction Set)
     - M (Integer Multiplication and Division)
     - Zicsr (Control and Status Registers)
-- The project currently runs entirely in M-mode. Future support for U- and S-mode is planned.
+- The project currently runs in M- and U-mode. Future support for S-mode is planned along with a built-in operating system.
 - The simulator uses OpenGL via SDL, and thus requires a working graphics stack.
 - Running on Windows requires WSL (Windows Subsystem for Linux), along with a windowing setup that supports OpenGL (e.g. WSLg or X/Wayland).

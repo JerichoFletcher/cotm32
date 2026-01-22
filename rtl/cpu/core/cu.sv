@@ -1,23 +1,10 @@
-import cotm32_pkg::INST_WIDTH;
-import cotm32_pkg::NUM_REGS;
-import cotm32_pkg::alu_op_t;
-import cotm32_pkg::alu_a_sel_t;
-import cotm32_pkg::alu_b_sel_t;
-import cotm32_pkg::bu_op_t;
-import cotm32_pkg::imm_t;
-import cotm32_pkg::lsu_ls_t;
-import cotm32_pkg::reg_wb_sel_t;
-
-import cotm32_pkg::mu_op_t;
-
-import cotm32_priv_pkg::MXLEN;
-import cotm32_priv_pkg::zicsr_data_sel_t;
-import cotm32_priv_pkg::zicsr_csr_addr_t;
-import cotm32_priv_pkg::zicsr_csr_op_t;
-
 // Control unit
-module cu (
+module cu
+  import cotm32_pkg::*;
+  import cotm32_priv_pkg::*;
+(
   input logic [INST_WIDTH-1:0] i_inst,
+  input priv_mode_t i_priv_mode,
   input logic i_trap_mode,
 
   output alu_op_t o_alu_op,
@@ -42,7 +29,7 @@ module cu (
   output logic [MXLEN-1:0] o_csr_zimm,
 
   output logic o_t_illegal_inst,
-  output logic o_t_ecall_m,
+  output logic o_t_ecall,
   output logic o_t_ebreak,
   output logic o_trap_mret
 );
@@ -74,7 +61,7 @@ module cu (
     o_mu_op = MU_NOP;
 
     o_t_illegal_inst = '0;
-    o_t_ecall_m = '0;
+    o_t_ecall = '0;
     o_t_ebreak = '0;
     o_trap_mret = '0;
 
@@ -231,14 +218,14 @@ module cu (
         unique case (i_inst)
           INST_EXACT_ECALL: begin
             // Dispatch an ecall trap request
-            o_t_ecall_m = '1;
+            o_t_ecall = '1;
           end
           INST_EXACT_EBREAK: begin
             // Dispatch an ebreak trap request
             o_t_ebreak = '1;
           end
           INST_EXACT_MRET: begin
-            if (i_trap_mode) begin
+            if (i_priv_mode == PRIV_M) begin
               o_trap_mret = '1;
             end else begin
               o_t_illegal_inst = '1;

@@ -6,6 +6,7 @@ Sidebar::Sidebar()
     : m_reg_drawer(),
       m_csr_drawer(),
       m_mem_drawer(),
+      m_status_drawer(),
       m_trap_drawer(),
       m_pipeline_regs_drawer(),
       m_fwd_drawer(),
@@ -30,6 +31,7 @@ void Sidebar::render(const Simulator& sim) {
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Privilege")) {
+                this->m_status_drawer.render(sim);
                 this->m_trap_drawer.render(sim);
                 this->m_csr_drawer.render(sim);
                 this->m_clint_drawer.render(sim);

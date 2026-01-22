@@ -16,13 +16,13 @@ parameter NUM_REGS = 32;
 
 parameter PC_RESET_VECTOR = 32'h0000_0000;
 
-parameter BOOTROM_MEM_SIZE  = 4096;
+parameter IMEM_MEM_SIZE  = 4096;
 parameter CLINT_MEM_SIZE    = 65536;
 parameter UART_MEM_SIZE     = 256;
 parameter DATA_MEM_SIZE     = 4096;
 
-parameter BOOTROM_MEM_START = 32'h0000_0000;
-parameter BOOTROM_MEM_END   = 32'(BOOTROM_MEM_START + BOOTROM_MEM_SIZE - 1);
+parameter IMEM_MEM_START = 32'h0000_0000;
+parameter IMEM_MEM_END   = 32'(IMEM_MEM_START + IMEM_MEM_SIZE - 1);
 parameter CLINT_MEM_START   = 32'h0200_0000;
 parameter CLINT_MEM_END     = 32'(CLINT_MEM_START + CLINT_MEM_SIZE - 1);
 parameter UART_MEM_START    = 32'h1000_0000;
@@ -113,7 +113,7 @@ typedef enum logic [$clog2(9)-1:0] {
 // LSU memory source
 typedef enum logic [$clog2(5)-1:0] {
   LSU_MEM_SRC_UNKNOWN,
-  LSU_MEM_SRC_BOOTROM,
+  LSU_MEM_SRC_IMEM,
   LSU_MEM_SRC_CLINT,
   LSU_MEM_SRC_UART,
   LSU_MEM_SRC_DMEM

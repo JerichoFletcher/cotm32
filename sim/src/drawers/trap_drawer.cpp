@@ -17,6 +17,7 @@ static constexpr inline uint32_t TRAP_CAUSE_LOAD_ADDR_MISALIGNED = 4;
 static constexpr inline uint32_t TRAP_CAUSE_LOAD_ACCESS_FAULT = 5;
 static constexpr inline uint32_t TRAP_CAUSE_STORE_ADDR_MISALIGNED = 6;
 static constexpr inline uint32_t TRAP_CAUSE_STORE_ACCESS_FAULT = 7;
+static constexpr inline uint32_t TRAP_CAUSE_ECALL_U = 8;
 static constexpr inline uint32_t TRAP_CAUSE_ECALL_M = 11;
 
 static constexpr inline uint32_t TRAP_CAUSE_M_SOFTWARE_INTERRUPT = 3 | 0x8000'0000;
@@ -83,6 +84,10 @@ void TrapDrawer::render(const Simulator& sim) {
                     case TRAP_CAUSE_STORE_ACCESS_FAULT:
                         msg = "Store access fault";
                         desc = fmt::format("-> 0x{:08x}", trap_val).c_str();
+                        break;
+                    case TRAP_CAUSE_ECALL_U:
+                        msg = "U-mode environment call";
+                        desc = fmt::format("a7 = 0x{:08x}", trap.reg_a7()).c_str();
                         break;
                     case TRAP_CAUSE_ECALL_M:
                         msg = "M-mode environment call";

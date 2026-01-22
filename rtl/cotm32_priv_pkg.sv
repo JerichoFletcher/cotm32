@@ -8,6 +8,11 @@ parameter MXLEN = 32;
 
 parameter ZICSR_CSR_ADDR_WIDTH = 12;
 
+typedef enum logic [1:0] {
+  PRIV_U  = 2'b00,
+  PRIV_M  = 2'b11
+} priv_mode_t;
+
 //////////////////////////////// CSR    ////////////////////////////////
 // Trap cause
 typedef enum logic [MXLEN-1:0] {
@@ -19,6 +24,7 @@ typedef enum logic [MXLEN-1:0] {
   TRAP_CAUSE_LOAD_ACCESS_FAULT      = {1'b0, 31'd5},
   TRAP_CAUSE_STORE_ADDR_MISALIGNED  = {1'b0, 31'd6},
   TRAP_CAUSE_STORE_ACCESS_FAULT     = {1'b0, 31'd7},
+  TRAP_CAUSE_ECALL_U                = {1'b0, 31'd8},
   TRAP_CAUSE_ECALL_M                = {1'b0, 31'd11},
   TRAP_CAUSE_M_SOFTWARE_INTERRUPT   = {1'b1, 31'd3},
   TRAP_CAUSE_M_TIMER_INTERRUPT      = {1'b1, 31'd7},
@@ -64,7 +70,7 @@ typedef enum logic [2:0] {
 // mstatus bits
 typedef struct packed {
   logic [31:13] reserved_31_13;
-  logic [12:11] mpp;
+  priv_mode_t mpp;
   logic [10:8] reserved_10_8;
   logic mpie;
   logic [6:4] reserved_6_4;

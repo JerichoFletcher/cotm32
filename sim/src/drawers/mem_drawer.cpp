@@ -10,7 +10,7 @@
 
 using cotm32::draw_utils::draw_signal;
 
-static const char* mem_src_options[2] = {"BOOTROM", "DMEM"};
+static const char* mem_src_options[2] = {"IMEM", "DMEM"};
 static const char* mem_disp_w_options[4] = {"Byte", "Half (2 bytes)", "Word (4 bytes)", "ASCII"};
 
 MemDrawer::MemDrawer() : m_mem_sec_curr(0), m_mem_offset(0), m_mem_disp_w(0) {}
@@ -41,10 +41,10 @@ void MemDrawer::render(const Simulator& sim) {
 
             switch (this->m_mem_sec_curr) {
                 case 0:
-                    mem_src_size = BOOTROM_MEM_SIZE;
-                    mem_src_start = BOOTROM_MEM_START;
-                    mem_src_end = BOOTROM_MEM_END;
-                    offset_max = BOOTROM_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
+                    mem_src_size = IMEM_MEM_SIZE;
+                    mem_src_start = IMEM_MEM_START;
+                    mem_src_end = IMEM_MEM_END;
+                    offset_max = IMEM_MEM_SIZE - DISPLAY_WINDOW_W * DISPLAY_WINDOW_H;
                     break;
                 case 1:
                     mem_src_size = DATA_MEM_SIZE;
