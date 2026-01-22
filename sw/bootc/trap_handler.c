@@ -7,11 +7,14 @@
 #include "bool.h"
 #include "int.h"
 
-void trap_halt() {
+__attribute__((noreturn))
+void panic() {
     while (TRUE);
 }
 
 void trap_handler(TrapFrame* frame) {
+    asm volatile("":::"memory");
+    
     TrapCause cause = frame->mcause;
     if ((int32_t)cause < 0) {
         // Interrupt
@@ -30,15 +33,13 @@ void trap_handler(TrapFrame* frame) {
             case TrapCause_LOAD_ADDR_MISALIGNED:
             case TrapCause_STORE_ADDR_MISALIGNED: {
                 k_puts("Panic: address misaligned", 25);
-                trap_halt();
-                break;
+                panic();
             }
             case TrapCause_INST_ACCESS_FAULT:
             case TrapCause_LOAD_ACCESS_FAULT:
             case TrapCause_STORE_ACCESS_FAULT: {
                 k_puts("Panic: access fault", 19);
-                trap_halt();
-                break;
+                panic();
             }
             case TrapCause_ECALL_U:
             case TrapCause_ECALL_M: {
@@ -46,7 +47,7 @@ void trap_handler(TrapFrame* frame) {
                 frame->mepc += 4;
                 break;
             }
-            default: trap_halt();
+            default: panic();
         }
     }
 }

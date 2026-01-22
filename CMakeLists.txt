@@ -15,8 +15,10 @@ find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
 set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/bootc/entry.s
   ${CMAKE_SOURCE_DIR}/sw/bootc/trap_entry.s
+
   ${CMAKE_SOURCE_DIR}/sw/bootc/main.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/trap_handler.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/priv/priv.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys_dispatch.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/user/main.c
