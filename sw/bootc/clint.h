@@ -2,8 +2,6 @@
 
 #include "int.h"
 
-#define TIME_SLICE 10000
-
 #define MTIMECMP    (volatile uint32_t*)0x02004000
 #define MTIMECMPH   (volatile uint32_t*)0x02004004
 

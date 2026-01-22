@@ -125,9 +125,7 @@ void TerminalController::per_tick_update(Simulator& sim) {
 
                         size_t n = el_or_default(this->m_ansi_args, 0, 1);
                         this->m_cursor_row = MIN(this->m_cursor_row + n, this->m_viewport_h - 1);
-                        if (this->active_row() >= this->m_buf.size()) {
-                            this->push_blank_row();
-                        }
+                        this->push_blank_until(this->active_row() + 1);
 
                         this->m_state = ReadState_GROUND;
                         break;
@@ -166,14 +164,7 @@ void TerminalController::per_tick_update(Simulator& sim) {
                         size_t m = el_or_default(this->m_ansi_args, 1, 1) - 1;
                         size_t new_row = MIN(n, this->m_viewport_h - 1);
                         size_t new_col = MIN(m, this->m_viewport_w - 1);
-
-                        if (new_row > this->m_cursor_row) {
-                            for (size_t r = this->active_row() + 1;
-                                 r <= this->viewport_to_buf_row(new_row);
-                                 r++) {
-                                this->push_blank_row();
-                            }
-                        }
+                        this->push_blank_until(this->viewport_to_buf_row(new_row) + 1);
 
                         this->m_cursor_row = new_row;
                         this->m_cursor_col = new_col;
@@ -305,6 +296,12 @@ void TerminalController::push_blank_row() {
     this->m_buf.push_back(std::move(row));
 }
 
+void TerminalController::push_blank_until(size_t target_size) {
+    while (this->m_buf.size() < target_size && !this->m_buf.full()) {
+        this->push_blank_row();
+    }
+}
+
 void TerminalController::clear_buffer() {
     this->m_buf.clear();
     this->m_viewport_start_line = 0;
@@ -322,7 +319,7 @@ void TerminalController::cursor_newline() {
     this->m_cursor_row++;
 
     if (this->active_row() >= this->m_buf.size()) {
-        this->push_blank_row();
+        this->push_blank_until(this->active_row() + 1);
         this->restore_viewport();
     }
 

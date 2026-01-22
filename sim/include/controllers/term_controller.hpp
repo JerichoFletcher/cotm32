@@ -87,6 +87,7 @@ private:
     }
 
     void push_blank_row();
+    void push_blank_until(size_t target_row);
     void clear_buffer();
 
     void cursor_adv();

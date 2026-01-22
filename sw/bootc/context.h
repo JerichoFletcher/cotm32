@@ -11,3 +11,6 @@ typedef struct Context {
 } Context;
 
 void copy_context(Context* to, Context* from);
+
+__attribute__((noreturn))
+extern void mret_to_context(Context* ctx);

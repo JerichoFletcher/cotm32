@@ -21,13 +21,10 @@ void trap_handler(TrapFrame* frame) {
         // Interrupt
         switch (cause) {
             case TrapCause_INTERR_M_TIMER: {
-                copy_context(&current_task()->ctx, &frame->ctx);
-                schedule();
-
+                k_yield(&frame->ctx);
+                
                 uint64_t t = get_time();
-                set_timecmp(t + TIME_SLICE);
-
-                copy_context(&frame->ctx, &current_task()->ctx);
+                set_timecmp(t + 10000);
                 break;
             }
             default: break;
@@ -50,7 +47,6 @@ void trap_handler(TrapFrame* frame) {
             case TrapCause_ECALL_U:
             case TrapCause_ECALL_M: {
                 dispatch_syscall(&frame->ctx);
-                frame->ctx.pc += 4;
                 break;
             }
             default: panic();
