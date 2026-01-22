@@ -31,6 +31,9 @@ module inst_fetch
   wire [XLEN-1:0] pc_mux_vals [0:IFU_PC_VALCOUNT-1];
   wire [XLEN-1:0] pc_mux_out;
 
+  logic stall;
+  assign stall = i_stall && pc_sel == IFU_PC_PC4;
+
   assign o_addr_4 = o_addr + 'd4;
 
   assign pc_mux_vals[IFU_PC_PC4] = o_addr_4;
@@ -65,7 +68,7 @@ module inst_fetch
   always_ff @(posedge i_clk) begin
     if (i_rst) begin
       o_addr <= RESET_VECTOR;
-    end else if (!i_stall) begin
+    end else if (!stall) begin
       o_addr <= pc_mux_out;
     end
   end
