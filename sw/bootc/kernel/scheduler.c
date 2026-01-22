@@ -1,35 +1,26 @@
 #include "kernel/scheduler.h"
 #include "kernel/task.h"
-#include "bool.h"
+#include "int.h"
 
-Task tasks[MAX_TASKS];
-size_t n_task = 0;
+Task tasks[MAX_TASKS] = {0};
 size_t current_tid = 0;
 
-bool_t create_task(size_t* out_tid, void (*entrypoint)(void), size_t stack_base, size_t stack_size) {
-    if (n_task >= MAX_TASKS) {
-        return FALSE;
+size_t n_task = 0;
+size_t unused_tid = 0;
+
+Task* alloc_new_task(void) {
+    for (size_t tid = 0; tid < MAX_TASKS; tid++) {
+        if (tasks[tid].state == TaskState_NOT_CREATED) {
+            Task* task = &tasks[tid];
+            task->id = unused_tid++;
+            task->state = TaskState_READY;
+            n_task++;
+
+            return task;
+        }
     }
 
-    size_t tid = n_task++;
-    Task* task = &tasks[tid];
-
-    task->id = tid;
-    task->state = TaskState_READY;
-    task->stack_base = stack_base;
-    task->stack_size = stack_size;
-
-    for (size_t i = 0; i < 32; i++) {
-        task->ctx.regs[i] = 0;
-    }
-    task->ctx.pc = (size_t)entrypoint;
-    task->ctx.regs[2] = stack_base + stack_size;
-    task->ctx.mstatus = 0x00000088;
-
-    if (!!out_tid) {
-        *out_tid = tid;
-    }
-    return TRUE;
+    return NULL;
 }
 
 void schedule(void) {
