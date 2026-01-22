@@ -3,37 +3,45 @@
 #include "int.h"
 #include "sys/enums.h"
 
+#define SYSCALL_CLOBBER_LIST \
+    "t0", "t1", "t2", "t3", "t4", "t5", "t6", \
+    "memory"
+
 static inline void putc(char c) {
+    register uint32_t a0 asm("a0") = c;
+    register uint32_t a7 asm("a7") = SyscallCode_PUTC;
+
     asm volatile(
-        "li a7, %0  \n"
-        "mv a0, %1  \n"
-        "ecall      \n" ::"i"(SyscallCode_PUTC),
-        "r"(c)
-        : "a0", "a7"
+        "ecall"
+        :
+        :"r"(a0), "r"(a7)
+        :SYSCALL_CLOBBER_LIST
     );
 }
 
 static inline char getc(void) {
-    char c;
+    register uint32_t a0 asm("a0");
+    register uint32_t a7 asm("a7") = SyscallCode_GETC;
+
     asm volatile(
-        "li a7, %1  \n"
-        "ecall      \n"
-        "mv %0, a0  \n"
-        : "=r"(c)
-        : "i"(SyscallCode_GETC)
-        : "a7"
+        "ecall"
+        :"=r"(a0)
+        :"r"(a7)
+        :SYSCALL_CLOBBER_LIST
     );
-    return c;
+
+    return (char)a0;
 }
 
 static inline void puts(const char* s, size_t len) {
+    register uint32_t a0 asm("a0") = (uint32_t)s;
+    register uint32_t a1 asm("a1") = len;
+    register uint32_t a7 asm("a7") = SyscallCode_PUTS;
+
     asm volatile(
-        "li a7, %0  \n"
-        "mv a0, %1  \n"
-        "mv a1, %2  \n"
-        "ecall      \n" ::"i"(SyscallCode_PUTS),
-        "r"(s),
-        "r"(len)
-        : "a0", "a1", "a7"
+        "ecall"
+        :
+        :"r"(a0), "r"(a1), "r"(a7)
+        :SYSCALL_CLOBBER_LIST
     );
 }
