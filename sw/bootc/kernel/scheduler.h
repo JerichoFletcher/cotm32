@@ -1,7 +1,6 @@
 #pragma once
 
 #include "kernel/task.h"
-#include "bool.h"
 #include "int.h"
 
 #define MAX_TASKS 8

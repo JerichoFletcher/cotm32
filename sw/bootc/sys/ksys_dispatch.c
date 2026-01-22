@@ -4,6 +4,10 @@
 
 void dispatch_syscall(Context* ctx) {
     switch ((SyscallCode)ctx->regs[17]) {
+        case SyscallCode_EXIT: {
+            k_exit(ctx);
+            break;
+        }
         case SyscallCode_YIELD: {
             ctx->pc += 4;
             k_yield(ctx);

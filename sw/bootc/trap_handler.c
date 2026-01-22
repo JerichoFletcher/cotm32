@@ -5,12 +5,11 @@
 #include "kernel/scheduler.h"
 
 #include "clint.h"
-#include "bool.h"
 #include "int.h"
 
 __attribute__((noreturn))
 void panic() {
-    while (TRUE);
+    for (;;);
 }
 
 void trap_handler(TrapFrame* frame) {

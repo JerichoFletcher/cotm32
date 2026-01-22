@@ -6,6 +6,12 @@
 #define UART_TERM_RXDATA (volatile char*)0x10000004
 #define UART_TERM_STATUS (volatile uint8_t*)0x10000008
 
+void k_exit(Context* ctx) {
+    terminate_task(current_task());
+    schedule();
+    copy_context(ctx, &current_task()->ctx);
+}
+
 void k_yield(Context* ctx) {
     copy_context(&current_task()->ctx, ctx);
     schedule();

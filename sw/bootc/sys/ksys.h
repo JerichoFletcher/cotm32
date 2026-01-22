@@ -3,6 +3,7 @@
 #include "context.h"
 #include "int.h"
 
+void k_exit(Context* ctx);
 void k_yield(Context* ctx);
 void k_putc(char c);
 char k_getc(void);
