@@ -16,13 +16,13 @@ parameter NUM_REGS = 32;
 
 parameter PC_RESET_VECTOR = 32'h0000_0000;
 
-parameter IMEM_MEM_SIZE  = 4096;
+parameter IMEM_MEM_SIZE     = 4096;
 parameter CLINT_MEM_SIZE    = 65536;
 parameter UART_MEM_SIZE     = 256;
-parameter DATA_MEM_SIZE     = 4096;
+parameter DATA_MEM_SIZE     = 65536;
 
-parameter IMEM_MEM_START = 32'h0000_0000;
-parameter IMEM_MEM_END   = 32'(IMEM_MEM_START + IMEM_MEM_SIZE - 1);
+parameter IMEM_MEM_START    = 32'h0000_0000;
+parameter IMEM_MEM_END      = 32'(IMEM_MEM_START + IMEM_MEM_SIZE - 1);
 parameter CLINT_MEM_START   = 32'h0200_0000;
 parameter CLINT_MEM_END     = 32'(CLINT_MEM_START + CLINT_MEM_SIZE - 1);
 parameter UART_MEM_START    = 32'h1000_0000;

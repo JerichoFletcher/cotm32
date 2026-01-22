@@ -2,6 +2,7 @@
 #include "trap/frame.h"
 #include "sys/ksys.h"
 #include "sys/ksys_dispatch.h"
+#include "kernel/scheduler.h"
 
 #include "clint.h"
 #include "bool.h"
@@ -13,15 +14,20 @@ void panic() {
 }
 
 void trap_handler(TrapFrame* frame) {
-    asm volatile("":::"memory");
+    asm volatile("" : : : "memory");
     
     TrapCause cause = frame->mcause;
     if ((int32_t)cause < 0) {
         // Interrupt
         switch (cause) {
             case TrapCause_INTERR_M_TIMER: {
-                uint64_t t = get_timecmp();
-                set_timecmp(t + 100000);
+                copy_context(&current_task()->ctx, &frame->ctx);
+                schedule();
+
+                uint64_t t = get_time();
+                set_timecmp(t + TIME_SLICE);
+
+                copy_context(&frame->ctx, &current_task()->ctx);
                 break;
             }
             default: break;
@@ -43,8 +49,8 @@ void trap_handler(TrapFrame* frame) {
             }
             case TrapCause_ECALL_U:
             case TrapCause_ECALL_M: {
-                dispatch_syscall(frame);
-                frame->mepc += 4;
+                dispatch_syscall(&frame->ctx);
+                frame->ctx.pc += 4;
                 break;
             }
             default: panic();

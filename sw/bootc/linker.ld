@@ -10,18 +10,28 @@ MEMORY {
 SECTIONS {
   . = ORIGIN(IMEM);
   .text   : {
-    . = ALIGN(4);
     *(.text.init)
-    . = ALIGN(4);
     *(.text*)
   } > IMEM
 
-  . = ALIGN(4);
   .rodata : {
     *(.rodata*)
   } > IMEM
   
   _etext = .;
+
+  . = ORIGIN(RAM);
+  .data   : {
+    *(.data*)
+  } > RAM
+
+  __bss_start = .;
+  .bss    : {
+    *(.bss*)
+    *(.sbss*)
+    *(COMMON)
+  } > RAM
+  __bss_end = .;
 
   _estack = ORIGIN(RAM) + LENGTH(RAM);
 }

@@ -2,10 +2,11 @@
 
 .section .text
 trap_entry:
+    csrrw   sp, mscratch, sp
     addi    sp, sp, -144
-    sw      x0, 0(sp)
+    
+    # Save registers (except sp)
     sw      x1, 4(sp)
-    sw      x2, 8(sp)
     sw      x3, 12(sp)
     sw      x4, 16(sp)
     sw      x5, 20(sp)
@@ -36,30 +37,35 @@ trap_entry:
     sw      x30, 120(sp)
     sw      x31, 124(sp)
 
+    # Save old sp from mscratch
+    csrr    t0, mscratch
+    sw      t0, 8(sp)
+
     csrr    t0, mepc
     sw      t0, 128(sp)
 
-    csrr    t0, mcause
+    csrr    t0, mstatus
     sw      t0, 132(sp)
 
-    csrr    t0, mstatus
-    sw      t0, 140(sp)
+    csrr    t0, mcause
+    sw      t0, 136(sp)
 
+    # Trap frame is located at sp
     mv      a0, sp
     call    trap_handler
+
+    # Set return sp
+    lw      t0, 8(sp)
+    csrw    mscratch, t0
 
     lw      t0, 128(sp)
     csrw    mepc, t0
 
     lw      t0, 132(sp)
-    csrw    mcause, t0
-
-    lw      t0, 140(sp)
     csrw    mstatus, t0
 
-    lw      x0, 0(sp)
+    # Restore registers (except sp)
     lw      x1, 4(sp)
-    lw      x2, 8(sp)
     lw      x3, 12(sp)
     lw      x4, 16(sp)
     lw      x5, 20(sp)
@@ -91,4 +97,5 @@ trap_entry:
     lw      x31, 124(sp)
 
     addi    sp, sp, 144
+    csrrw   sp, mscratch, sp
     mret

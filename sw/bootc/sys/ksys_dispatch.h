@@ -1,5 +1,5 @@
 #include "sys/enums.h"
-#include "trap/frame.h"
+#include "context.h"
 #include "int.h"
 
-void dispatch_syscall(TrapFrame* frame);
+void dispatch_syscall(Context* frame);

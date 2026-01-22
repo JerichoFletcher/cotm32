@@ -4,5 +4,7 @@
 __attribute__((noreturn))
 int user_main(void) {
     puts("Hello, World!", 13);
-    while (TRUE);
+    while (TRUE) {
+        yield();
+    }
 }

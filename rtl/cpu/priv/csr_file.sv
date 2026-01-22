@@ -31,6 +31,7 @@ module csr_file
   zicsr_val_mstatus_t mstatus;
   zicsr_val_mie_t mie;
   zicsr_val_mtvec_t mtvec;
+  logic [MXLEN-1:0] mscratch;
   logic [MXLEN-1:0] mepc;
   logic [MXLEN-1:0] mcause;
   logic [MXLEN-1:0] mtval;
@@ -39,13 +40,14 @@ module csr_file
   logic [MXLEN-1:0] mem [zicsr_csr_addr_t] /* verilator public */;
   logic [MXLEN-1:0] wval;
 
-  assign mem[ZICSR_CSR_MSTATUS] = mstatus;
-  assign mem[ZICSR_CSR_MIE]     = mie;
-  assign mem[ZICSR_CSR_MTVEC]   = mtvec;
-  assign mem[ZICSR_CSR_MEPC]    = mepc;
-  assign mem[ZICSR_CSR_MCAUSE]  = mcause;
-  assign mem[ZICSR_CSR_MTVAL]   = mtval;
-  assign mem[ZICSR_CSR_MIP]     = mip;
+  assign mem[ZICSR_CSR_MSTATUS]   = mstatus;
+  assign mem[ZICSR_CSR_MIE]       = mie;
+  assign mem[ZICSR_CSR_MTVEC]     = mtvec;
+  assign mem[ZICSR_CSR_MSCRATCH]  = mscratch;
+  assign mem[ZICSR_CSR_MEPC]      = mepc;
+  assign mem[ZICSR_CSR_MCAUSE]    = mcause;
+  assign mem[ZICSR_CSR_MTVAL]     = mtval;
+  assign mem[ZICSR_CSR_MIP]       = mip;
 
   assign o_rdata    = mem[i_addr];
   assign o_mstatus  = mstatus;
@@ -75,13 +77,14 @@ module csr_file
 
   always_ff @(posedge i_clk) begin
     if (i_rst) begin
-      mstatus <= '0;
-      mie     <= '0;
-      mtvec   <= '0;
-      mepc    <= '0;
-      mcause  <= '0;
-      mtval   <= '0;
-      mip     <= '0;
+      mstatus   <= '0;
+      mie       <= '0;
+      mtvec     <= '0;
+      mscratch  <= '0;
+      mepc      <= '0;
+      mcause    <= '0;
+      mtval     <= '0;
+      mip       <= '0;
     end else begin
       if (i_trap_req) begin
         mepc    <= i_pc;
@@ -97,13 +100,14 @@ module csr_file
         mstatus.mpp   <= PRIV_U;
       end else if (i_we && csr_accessible(i_addr, i_priv_mode, i_we)) begin
         unique case (i_addr)
-          ZICSR_CSR_MSTATUS : mstatus <= wval;
-          ZICSR_CSR_MIE     : mie     <= wval;
-          ZICSR_CSR_MTVEC   : mtvec   <= wval;
-          ZICSR_CSR_MEPC    : mepc    <= wval;
-          ZICSR_CSR_MCAUSE  : mcause  <= wval;
-          ZICSR_CSR_MTVAL   : mtval   <= wval;
-          ZICSR_CSR_MIP     : mip     <= wval;
+          ZICSR_CSR_MSTATUS : mstatus   <= wval;
+          ZICSR_CSR_MIE     : mie       <= wval;
+          ZICSR_CSR_MTVEC   : mtvec     <= wval;
+          ZICSR_CSR_MSCRATCH: mscratch  <= wval;
+          ZICSR_CSR_MEPC    : mepc      <= wval;
+          ZICSR_CSR_MCAUSE  : mcause    <= wval;
+          ZICSR_CSR_MTVAL   : mtval     <= wval;
+          ZICSR_CSR_MIP     : mip       <= wval;
           default: begin /* NOP */ end
         endcase
       end

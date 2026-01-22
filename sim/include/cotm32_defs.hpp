@@ -8,7 +8,7 @@ static constexpr inline int NUM_REGS = 32;
 static constexpr inline int IMEM_MEM_SIZE = 4096;
 static constexpr inline int CLINT_MEM_SIZE = 65536;
 static constexpr inline int UART_MEM_SIZE = 256;
-static constexpr inline int DATA_MEM_SIZE = 4096;
+static constexpr inline int DATA_MEM_SIZE = 65536;
 
 static constexpr inline uint32_t IMEM_MEM_START = 0x0000'0000;
 static constexpr inline uint32_t IMEM_MEM_END = (IMEM_MEM_START + IMEM_MEM_SIZE - 1);
@@ -79,15 +79,17 @@ typedef enum {
     CsrId_MSTATUS = 0x300,
     CsrId_MIE = 0x304,
     CsrId_MTVEC = 0x305,
+    CsrId_MSCRATCH = 0x340,
     CsrId_MEPC = 0x341,
     CsrId_MCAUSE = 0x342,
     CsrId_MTVAL = 0x343,
     CsrId_MIP = 0x344,
 } CsrId;
-static constexpr std::array<CsrId, 7> CSR_IDS = {
+static constexpr std::array<CsrId, 8> CSR_IDS = {
     CsrId_MSTATUS,
     CsrId_MIE,
     CsrId_MTVEC,
+    CsrId_MSCRATCH,
     CsrId_MEPC,
     CsrId_MCAUSE,
     CsrId_MTVAL,

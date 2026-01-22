@@ -1,10 +1,9 @@
 #pragma once
 
+#include "context.h"
 #include "int.h"
 
 typedef struct TrapFrame {
-    uint32_t regs[32];
-    uint32_t mepc;
-    uint32_t mcause;
-    uint32_t mstatus;
+    Context ctx;
+    size_t mcause;
 } TrapFrame;

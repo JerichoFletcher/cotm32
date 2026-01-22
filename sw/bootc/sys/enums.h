@@ -1,7 +1,9 @@
 #pragma once
 
 typedef enum SyscallCode {
-    SyscallCode_PUTC = 1,
-    SyscallCode_GETC = 2,
-    SyscallCode_PUTS = 3,
+    SyscallCode_EXIT    = 1,
+    SyscallCode_YIELD   = 2,
+    SyscallCode_PUTC    = 32,
+    SyscallCode_GETC    = 33,
+    SyscallCode_PUTS    = 34,
 } SyscallCode;

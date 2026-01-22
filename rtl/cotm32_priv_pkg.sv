@@ -33,13 +33,14 @@ typedef enum logic [MXLEN-1:0] {
 
 // Zicsr CSR address
 typedef enum logic [ZICSR_CSR_ADDR_WIDTH-1:0] {
-  ZICSR_CSR_MSTATUS = 12'h300,
-  ZICSR_CSR_MIE     = 12'h304,
-  ZICSR_CSR_MTVEC   = 12'h305,
-  ZICSR_CSR_MEPC    = 12'h341,
-  ZICSR_CSR_MCAUSE  = 12'h342,
-  ZICSR_CSR_MTVAL   = 12'h343,
-  ZICSR_CSR_MIP     = 12'h344
+  ZICSR_CSR_MSTATUS   = 12'h300,
+  ZICSR_CSR_MIE       = 12'h304,
+  ZICSR_CSR_MTVEC     = 12'h305,
+  ZICSR_CSR_MSCRATCH  = 12'h340,
+  ZICSR_CSR_MEPC      = 12'h341,
+  ZICSR_CSR_MCAUSE    = 12'h342,
+  ZICSR_CSR_MTVAL     = 12'h343,
+  ZICSR_CSR_MIP       = 12'h344
 } zicsr_csr_addr_t;
 
 // Zicsr CSR operation

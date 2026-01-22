@@ -15,13 +15,16 @@ find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
 set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/bootc/entry.s
   ${CMAKE_SOURCE_DIR}/sw/bootc/trap_entry.s
-
+  ${CMAKE_SOURCE_DIR}/sw/bootc/context.s
+  
   ${CMAKE_SOURCE_DIR}/sw/bootc/main.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/trap_handler.c
-  ${CMAKE_SOURCE_DIR}/sw/bootc/priv/priv.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/context.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys_dispatch.c
-  ${CMAKE_SOURCE_DIR}/sw/bootc/user/main.c
+
+  ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/kernel.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/scheduler.c
 )
 set(BOOT_INC  ${CMAKE_SOURCE_DIR}/sw/bootc)
 set(BOOT_LD   ${CMAKE_SOURCE_DIR}/sw/bootc/linker.ld)

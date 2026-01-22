@@ -88,13 +88,14 @@ static const StringMap<PrivMode> priv_mode_names = {
 };
 
 static const StringMap<CsrId> csr_names = {
-    {CsrId::CsrId_MSTATUS, "mstatus"},
-    {CsrId::CsrId_MIE,     "mie"    },
-    {CsrId::CsrId_MTVEC,   "mtvec"  },
-    {CsrId::CsrId_MEPC,    "mepc"   },
-    {CsrId::CsrId_MCAUSE,  "mcause" },
-    {CsrId::CsrId_MTVAL,   "mtval"  },
-    {CsrId::CsrId_MIP,     "mip"    },
+    {CsrId::CsrId_MSTATUS,  "mstatus" },
+    {CsrId::CsrId_MIE,      "mie"     },
+    {CsrId::CsrId_MTVEC,    "mtvec"   },
+    {CsrId::CsrId_MSCRATCH, "mscratch"},
+    {CsrId::CsrId_MEPC,     "mepc"    },
+    {CsrId::CsrId_MCAUSE,   "mcause"  },
+    {CsrId::CsrId_MTVAL,    "mtval"   },
+    {CsrId::CsrId_MIP,      "mip"     },
 };
 static const StringMap<CsrWriteSrc> csr_write_names = {
     {CsrWriteSrc::CsrWriteSrc_RS1, "RS1"},
