@@ -1,0 +1,22 @@
+#pragma once
+
+#include "bool.h"
+#include "int.h"
+#include "trap/enums.h"
+
+static inline void set_interrupt(Interrupt interr, bool_t enable) {
+    if (enable) {
+        uint32_t flag = 1 << interr;
+        asm volatile("csrs mie, %0" ::"r"(flag));
+    } else {
+        uint32_t mask = ~(1 << interr);
+        asm volatile("csrc mie, %0" ::"r"(mask));
+    }
+}
+
+static inline void set_trap_entry(void* addr) {
+    asm volatile(
+        "andi   %0, %0, ~3  \n"
+        "csrw   mtvec, %0   \n" ::"r"(addr)
+    );
+}

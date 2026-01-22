@@ -13,29 +13,41 @@ find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
 
 # Bootloader
 set(BOOT_SRC
-  ${CMAKE_SOURCE_DIR}/sw/boot/boot.s
-  ${CMAKE_SOURCE_DIR}/sw/boot/func.s
-  ${CMAKE_SOURCE_DIR}/sw/boot/trap.s
-  ${CMAKE_SOURCE_DIR}/sw/boot/sys.s
-  ${CMAKE_SOURCE_DIR}/sw/boot/exc.s
-  ${CMAKE_SOURCE_DIR}/sw/boot/interr.s
+  ${CMAKE_SOURCE_DIR}/sw/bootc/entry.s
+  ${CMAKE_SOURCE_DIR}/sw/bootc/trap_entry.s
+  ${CMAKE_SOURCE_DIR}/sw/bootc/main.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/trap_handler.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys_dispatch.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/user/main.c
 )
-set(BOOT_INC  ${CMAKE_SOURCE_DIR}/sw/include)
-set(BOOT_LD   ${CMAKE_SOURCE_DIR}/sw/boot/boot.ld)
+set(BOOT_INC  ${CMAKE_SOURCE_DIR}/sw/bootc)
+set(BOOT_LD   ${CMAKE_SOURCE_DIR}/sw/bootc/linker.ld)
 set(BOOT_ELF  ${CMAKE_BINARY_DIR}/boot.elf)
+
+file(GLOB_RECURSE BOOT_INC_FILES CONFIGURE_DEPENDS
+  "${BOOT_INC}/*.h"
+)
 
 add_custom_command(
   OUTPUT ${BOOT_ELF}
   COMMAND ${RISCV_GCC}
     -march=rv32im_zicsr
     -mabi=ilp32
+    -ffreestanding
+    -fno-builtin
+    -fno-stack-protector
+    -nostartfiles
     -nostdlib
+    -O2
+    -Wall -Wextra
     -I ${BOOT_INC}
     -T ${BOOT_LD}
     -o ${BOOT_ELF}
     ${BOOT_SRC}
   DEPENDS
     ${BOOT_SRC}
+    ${BOOT_INC_FILES}
     ${BOOT_LD}
   COMMENT "Building RISC-V bootloader"
 )
