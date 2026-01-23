@@ -5,8 +5,8 @@
 
 #define SYSCALL_CLOBBER_LIST "t0", "t1", "t2", "t3", "t4", "t5", "t6", "memory"
 
-__attribute__((noreturn))
-static inline void exit(void) {
+/// @brief Exits the current task.
+__attribute__((noreturn)) static inline void exit(void) {
     register size_t a7 asm("a7") = SyscallCode_EXIT;
 
     asm volatile(
@@ -18,6 +18,7 @@ static inline void exit(void) {
     for (;;);
 }
 
+/// @brief Yields execution of the current task. 
 static inline void yield(void) {
     register size_t a7 asm("a7") = SyscallCode_YIELD;
 
@@ -29,6 +30,8 @@ static inline void yield(void) {
     );
 }
 
+/// @brief Puts a character to the terminal.
+/// @param c The character.
 static inline void putc(char c) {
     register size_t a0 asm("a0") = c;
     register size_t a7 asm("a7") = SyscallCode_PUTC;
@@ -41,6 +44,8 @@ static inline void putc(char c) {
     );
 }
 
+/// @brief Reads a character from the terminal.
+/// @return A character.
 static inline char getc(void) {
     register size_t a0 asm("a0");
     register size_t a7 asm("a7") = SyscallCode_GETC;
@@ -55,6 +60,9 @@ static inline char getc(void) {
     return (char)a0;
 }
 
+/// @brief Writes a string to the terminal.
+/// @param s The string buffer.
+/// @param len The length of the string.
 static inline void puts(const char* s, size_t len) {
     register size_t a0 asm("a0") = (size_t)s;
     register size_t a1 asm("a1") = len;

@@ -1,5 +1,6 @@
 #pragma once
 
+/// @brief The value of `mcause` when entering a trap.
 typedef enum TrapCause {
     TrapCause_INST_ADDR_MISALIGNED = 0,
     TrapCause_INST_ACCESS_FAULT = 1,
@@ -17,6 +18,7 @@ typedef enum TrapCause {
     TrapCause_INTERR_M_EXTERNAL = 11 | 0x80000000,
 } TrapCause;
 
+/// @brief Identifiers for exceptions.
 typedef enum Exception {
     Exception_INST_ADDR_MISALIGNED = 0,
     Exception_INST_ACCESS_FAULT = 1,
@@ -30,6 +32,7 @@ typedef enum Exception {
     Exception_ECALL_M = 11,
 } Exception;
 
+/// @brief Identifiers for interrupts.
 typedef enum Interrupt {
     Interrupt_M_SOFTWARE = 3,
     Interrupt_M_TIMER = 7,

@@ -1,5 +1,6 @@
 #pragma once
 
+/// @brief Various codes for system calls.
 typedef enum SyscallCode {
     SyscallCode_EXIT    = 1,
     SyscallCode_YIELD   = 2,

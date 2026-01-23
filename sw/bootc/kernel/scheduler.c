@@ -166,7 +166,7 @@ void schedule(void) {
                 current_tid = task->id;
                 task->state = TaskState_RUNNING;
                 if (task->time_slice == 0) {
-                    task->time_slice = TIME_SLICE_BASE + task->priority * TIME_SLICE_PRIO_SCL;
+                    task->time_slice = SCHED_QUANTUM_TICKS + task->priority * SCHED_PRIORITY_BONUS_TICKS;
                 }
 
                 // Include all requested interrupts in mie

@@ -37,5 +37,5 @@ void dispatch_syscall(Context* ctx) {
         ctx->pc += 4;
     } else if (status == SyscallStatus_BLOCKED) {
         k_yield(ctx);
-    }
+    } // On RETRY, do not advance PC and do not yield execution
 }

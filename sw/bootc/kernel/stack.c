@@ -5,7 +5,7 @@
 #define STACK_SIZE          0x1000
 
 typedef struct StackSlot {
-    Stack stack;
+    StackDescriptor stack;
     size_t owner_tid;
     bool_t allocated;
 } StackSlot;
@@ -13,7 +13,7 @@ typedef struct StackSlot {
 StackSlot slots[MAX_STACK_SLOT] = {0};
 size_t n_slot;
 
-Stack* alloc_stack(size_t owner_tid) {
+StackDescriptor* alloc_stack(size_t owner_tid) {
     if (n_slot == MAX_STACK_SLOT) return FALSE;
 
     for (size_t i = 0; i < MAX_STACK_SLOT; i++) {
@@ -22,7 +22,7 @@ Stack* alloc_stack(size_t owner_tid) {
             slot->allocated = TRUE;
             slot->owner_tid = owner_tid;
 
-            Stack* stack = &slot->stack;
+            StackDescriptor* stack = &slot->stack;
             stack->base = STACK_BASE_ADDR + i * STACK_SIZE;
             stack->size = STACK_SIZE;
             n_slot++;
