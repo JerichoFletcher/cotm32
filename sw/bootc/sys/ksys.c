@@ -3,6 +3,8 @@
 #include "trap/trap.h"
 #include "bool.h"
 
+#define MAX_SPIN_ITER 1024
+
 #define UART_TERM_TXDATA (volatile char*)0x10000000
 #define UART_TERM_RXDATA (volatile char*)0x10000004
 #define UART_TERM_STATUS (volatile uint8_t*)0x10000008
@@ -22,15 +24,17 @@ SyscallStatus k_yield(Context* ctx) {
 }
 
 SyscallStatus k_putc(char c) {
-    while (*UART_TERM_STATUS & 1);
+    for (size_t i = 0; i <= MAX_SPIN_ITER; i++) {
+        if (i == MAX_SPIN_ITER) return SyscallStatus_RETRY;
+        if (!(*UART_TERM_STATUS & 1)) break;
+    }
     *UART_TERM_TXDATA = c;
     return SyscallStatus_DONE;
 }
 
-SyscallStatus k_getc(Context* ctx, char* out_c) {
+SyscallStatus k_getc(char* out_c) {
     if (!(*UART_TERM_STATUS & 2)) {
         block_task_irq(current_task(), Interrupt_M_EXTERNAL);
-        k_yield(ctx);
         return SyscallStatus_BLOCKED;
     }
 
