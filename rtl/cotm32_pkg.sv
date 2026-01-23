@@ -16,7 +16,7 @@ parameter NUM_REGS = 32;
 
 parameter PC_RESET_VECTOR = 32'h0000_0000;
 
-parameter IMEM_MEM_SIZE     = 4096;
+parameter IMEM_MEM_SIZE     = 8192;
 parameter CLINT_MEM_SIZE    = 65536;
 parameter UART_MEM_SIZE     = 256;
 parameter DATA_MEM_SIZE     = 65536;

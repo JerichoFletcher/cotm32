@@ -5,6 +5,5 @@ void copy_context(Context* to, Context* from) {
         to->regs[i] = from->regs[i];
     }
     to->mstatus = from->mstatus;
-    to->mie = from->mie;
     to->pc = from->pc;
 }

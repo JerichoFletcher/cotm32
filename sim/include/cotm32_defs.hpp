@@ -5,7 +5,7 @@
 
 static constexpr inline int NUM_REGS = 32;
 
-static constexpr inline int IMEM_MEM_SIZE = 4096;
+static constexpr inline int IMEM_MEM_SIZE = 8192;
 static constexpr inline int CLINT_MEM_SIZE = 65536;
 static constexpr inline int UART_MEM_SIZE = 256;
 static constexpr inline int DATA_MEM_SIZE = 65536;

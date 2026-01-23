@@ -1,14 +1,11 @@
-.global mret_to_context
+.global enter_context
 
 # a0 -- Pointer to a context
-mret_to_context:
+enter_context:
     lw      t0, 128(a0)
     csrw    mstatus, t0
 
     lw      t0, 132(a0)
-    csrw    mie, t0
-
-    lw      t0, 136(a0)
     csrw    mepc, t0
 
     lw      x1, 4(a0)

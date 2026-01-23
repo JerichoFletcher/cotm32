@@ -5,6 +5,7 @@
 #include "clint.h"
 #include "csr.h"
 #include "int.h"
+#include "panic.h"
 
 extern void entry(void);
 
@@ -22,15 +23,13 @@ void kernel_main(void) {
     Task* t_idle = create_task(idle, 0, PrivMode_M);
     if (t_idle) {
         task_set_mpie(t_idle, TRUE);
-        task_set_interr(t_idle, Interrupt_M_SOFTWARE, TRUE);
-        task_set_interr(t_idle, Interrupt_M_EXTERNAL, TRUE);
 
         Task* t_entry = create_task(entry, 100, PrivMode_U);
     
         sp_to_mscratch();
         start_schedule(t_entry);
     } else {
-        k_puts("Failed to create task!\n", 23);
-        for (;;);
+        k_puts("Panic: failed to create task\n", 29);
+        panic();
     }
 }

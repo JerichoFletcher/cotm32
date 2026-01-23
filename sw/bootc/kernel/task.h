@@ -20,13 +20,9 @@ typedef struct Task {
     size_t id;
     size_t priority;
     TaskState state;
-    size_t wait_irq_mask;
 } Task;
 
 Task* create_task(void (*entry)(void), size_t priority, PrivMode priv);
 
 void task_set_mpie(Task* task, bool_t mpie);
-void task_set_interr(Task* task, Interrupt interr, bool_t enable);
-
-void block_task_irq(Task* task, Interrupt interr);
 void terminate_task(Task* task);

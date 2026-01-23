@@ -16,6 +16,7 @@ static inline Task* current_task(void) {
 __attribute__((noreturn))
 void start_schedule(Task* entrypoint);
 
-Task* alloc_new_task(void);
+Task* alloc_new_task(size_t priority);
 void schedule(void);
+void block_task_irq(Task* task, Interrupt interr);
 size_t wake_irq_tasks(Interrupt interr);

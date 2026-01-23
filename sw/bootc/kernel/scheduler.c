@@ -2,6 +2,7 @@
 #include "kernel/task.h"
 #include "kernel/stack.h"
 #include "trap/trap.h"
+#include "csr.h"
 #include "context.h"
 #include "bool.h"
 
@@ -12,6 +13,73 @@ Task tasks[MAX_TASKS] = {0};
 size_t current_tid = 0;
 size_t n_task = 0;
 
+typedef struct TaskReadyEntry {
+    Task* task;
+    struct TaskReadyEntry* prev;
+    struct TaskReadyEntry* next;
+} TaskReadyEntry;
+
+TaskReadyEntry qready[MAX_TASKS] = {0};
+TaskReadyEntry* qready_head = NULL;
+size_t n_ready = 0;
+
+typedef struct TaskBlockedEntry {
+    Task* task;
+    size_t wait_irq_mask;
+    bool_t blocked;
+} TaskBlockedEntry;
+
+TaskBlockedEntry qblocked[MAX_TASKS] = {0};
+size_t n_blocked = 0;
+
+bool_t push(TaskReadyEntry* entr) {
+    if (entr == NULL) return FALSE;
+    if (n_ready == MAX_TASKS) return FALSE;
+
+    if (n_ready == 0 || entr->task->priority > qready_head->task->priority) {
+        entr->prev = NULL;
+        entr->next = qready_head;
+        qready_head = entr;
+    } else {
+        TaskReadyEntry* prev = qready_head;
+        TaskReadyEntry* next = prev->next;
+
+        // Search prev and next such that PRIO(prev) >= PRIO(curr) > PRIO(next)
+        while (next != NULL && next->task->priority >= entr->task->priority) {
+            prev = next;
+            next = prev->next;
+        }
+
+        // Link with the prev and next entry
+        entr->prev = prev;
+        entr->next = next;
+
+        prev->next = entr;
+        if (next != NULL) next->prev = entr;
+    }
+    n_ready++;
+    return TRUE;
+}
+
+bool_t remove(TaskReadyEntry* entr) {
+    if (entr == NULL) return FALSE;
+
+    if (entr->prev != NULL) {
+        entr->prev->next = entr->next;
+    } else if (entr == qready_head) {
+        qready_head = qready_head->next;
+    }
+
+    if (entr->next != NULL) {
+        entr->next->prev = entr->prev;
+    }
+
+    entr->prev = NULL;
+    entr->next = NULL;
+    n_ready--;
+    return TRUE;
+}
+
 void start_schedule(Task* entrypoint) {
     if (entrypoint == NULL ||
         entrypoint->state != TaskState_READY ||
@@ -21,61 +89,108 @@ void start_schedule(Task* entrypoint) {
         panic();
     }
     current_tid = entrypoint->id;
-    mret_to_context(&entrypoint->ctx);
+    entrypoint->state = TaskState_RUNNING;
+    remove(&qready[entrypoint->id]);
+    enter_context(&entrypoint->ctx);
 }
 
-Task* alloc_new_task(void) {
-    for (size_t tid = 0; tid < MAX_TASKS; tid++) {
+Task* alloc_new_task(size_t priority) {
+    if (n_task == MAX_TASKS) return NULL;
+    
+    // Find an unallocated task entry
+    Task* task = NULL;
+    size_t tid;
+    for (tid = 0; tid < MAX_TASKS; tid++) {
         if (tasks[tid].state == TaskState_NOT_CREATED) {
-            Task* task = &tasks[tid];
-            task->id = tid;
-            task->state = TaskState_READY;
-            n_task++;
-
-            return task;
+            task = &tasks[tid];
+            break;
         }
     }
+    if (!task) return NULL;
+    
+    task->id = tid;
+    task->priority = priority;
 
-    return NULL;
+    // Push task into the ready queue
+    TaskReadyEntry* curr = &qready[tid];
+    curr->task = task;
+    if (!push(curr)) return NULL;
+
+    task->state = TaskState_READY;
+    n_task++;
+    return task;
 }
 
 void clear_task(Task* task) {
-    free_stack(task->id);
-    task->state = TaskState_NOT_CREATED;
-    n_task--;
+    if (task->state != TaskState_NOT_CREATED) {
+        free_stack(task->id);
+        task->state = TaskState_NOT_CREATED;
+        n_task--;
+    }
 }
 
 void schedule(void) {
-    if (tasks[current_tid].state == TaskState_RUNNING) {
-        tasks[current_tid].state = TaskState_READY;
+    if (current_task()->state == TaskState_RUNNING) {
+        current_task()->state = TaskState_READY;
+    }
+    
+    if (current_task()->state == TaskState_TERMINATED) {
+        clear_task(current_task());
+    } else if (current_task()->state == TaskState_READY) {
+        if (!push(&qready[current_task()->id])) {
+            k_puts("Panic: Failed to push task into queue\n", 38);
+            panic();
+        }
     }
 
-    Task* next = NULL;
-    bool_t want_swap = FALSE;
+    if (n_ready > 0) {
+        TaskReadyEntry* curr = qready_head;
+        size_t count = 0;
 
-    for (size_t i = 0; i < MAX_TASKS; i++) {
-        size_t next_tid = (current_tid + i) % MAX_TASKS;
-        
-        if (tasks[next_tid].state == TaskState_READY) {
-            if (next == NULL ||
-                next->priority < tasks[next_tid].priority ||
-                (want_swap && next->priority == tasks[next_tid].priority && next_tid != current_tid)
-            ) {
-                want_swap = next_tid == current_tid;
-                next = &tasks[next_tid];
+        while (curr != NULL) {
+            if (curr->task->state == TaskState_READY) {
+                if (!remove(curr)) {
+                    k_puts("Panic: failed to remove task from queue\n", 40);
+                    panic();
+                }
+
+                current_tid = curr->task->id;
+                curr->task->state = TaskState_RUNNING;
+
+                // Include all requested interrupts in mie
+                size_t mie = bits_interr(Interrupt_M_TIMER);
+                for (size_t i = 0; i < MAX_TASKS; i++) {
+                    TaskBlockedEntry* b = &qblocked[i];
+                    if (b->blocked) {
+                        mie |= b->wait_irq_mask;
+                    }
+                }
+                assign_mie(mie);
+                return;
+            }
+            curr = curr->next;
+            count++;
+
+            if (count > MAX_TASKS) {
+                k_puts("Panic: any task in queue inspected more than once\n", 51);
+                panic();
             }
         }
-    }
-
-    if (next != NULL) {
-        if (tasks[current_tid].state == TaskState_TERMINATED) {
-            clear_task(&tasks[current_tid]);
-        }
-        current_tid = next->id;
-        tasks[current_tid].state = TaskState_RUNNING;
+        k_puts("Panic: ran out of tasks\n", 24);
+        panic();
     } else {
+        k_puts("Panic: invalid task queue state\n", 26);
         panic();
     }
+}
+
+void block_task_irq(Task* task, Interrupt interr) {
+    TaskBlockedEntry* entr = &qblocked[task->id];
+    entr->blocked = TRUE;
+    entr->task = task;
+
+    task->state = TaskState_BLOCKED_IRQ;
+    entr->wait_irq_mask |= bits_interr(interr);
 }
 
 size_t wake_irq_tasks(Interrupt interr) {
@@ -83,17 +198,21 @@ size_t wake_irq_tasks(Interrupt interr) {
     size_t num_awaken = 0;
 
     for (size_t i = 0; i < MAX_TASKS; i++) {
-        Task* task = &tasks[i];
-        if (task->state == TaskState_BLOCKED_IRQ && !!(task->wait_irq_mask & interr_bit)) {
-            task->state = TaskState_READY;
-            
-            for (size_t i = 0; i < 8 * sizeof(size_t); i++) {
-                size_t interr_bit = (task->wait_irq_mask >> i) & 1;
-                if (interr_bit) {
-                    task_set_interr(task, (Interrupt)i, FALSE);
-                }
-            }
-            task->wait_irq_mask = 0;
+        TaskBlockedEntry* entr = &qblocked[i];
+        if (!entr->blocked) continue;
+
+        if (entr->task->state != TaskState_BLOCKED_IRQ) {
+            k_puts("Panic: non-blocked task in block queue: ", 40);
+            panic();
+        }
+
+        if (entr->wait_irq_mask & interr_bit) {
+            entr->wait_irq_mask = 0;
+            entr->blocked = FALSE;
+
+            entr->task->state = TaskState_READY;
+            push(&qready[entr->task->id]);
+
             num_awaken++;
         }
     }

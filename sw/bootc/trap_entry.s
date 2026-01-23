@@ -44,14 +44,11 @@ trap_entry:
     csrr    t0, mstatus
     sw      t0, 128(sp)
 
-    csrr    t0, mie
+    csrr    t0, mepc
     sw      t0, 132(sp)
 
-    csrr    t0, mepc
-    sw      t0, 136(sp)
-
     csrr    t0, mcause
-    sw      t0, 140(sp)
+    sw      t0, 136(sp)
 
     # Trap frame is located at sp
     mv      a0, sp
@@ -65,9 +62,6 @@ trap_entry:
     csrw    mstatus, t0
 
     lw      t0, 132(sp)
-    csrw    mie, t0
-
-    lw      t0, 136(sp)
     csrw    mepc, t0
 
     # Restore registers (except sp)
