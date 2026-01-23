@@ -4,6 +4,10 @@
 #include "int.h"
 #include "trap/enums.h"
 
+static inline void wait_until_interrupt(void) {
+    asm volatile("wfi" : : : "memory");
+}
+
 static inline void set_interrupt(Interrupt interr, bool_t enable) {
     if (enable) {
         size_t flag = 1 << interr;

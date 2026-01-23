@@ -148,9 +148,10 @@ module processor_core
     wb_reg_wb_vals[REG_WB_CSR] = wb_csr_rdata;
   end
 
-  // Trap signals
+  // Control signals
   logic trap_mret /* verilator public */;
   logic trap_req /* verilator public */;
+  logic sleep /* verilator public */;
 
   trap_cause_t trap_cause;
   logic [MXLEN-1:0] trap_tval;
@@ -165,6 +166,10 @@ module processor_core
   wire id_trap_mret;
   wire ex_trap_mret;
   wire mem_trap_mret;
+
+  wire id_wfi_req;
+  wire ex_wfi_req;
+  wire mem_wfi_req;
 
   wire if_t_inst_addr_misaligned;
   wire if_t_inst_access_fault;
@@ -254,12 +259,14 @@ module processor_core
   wire idex_flush_hu;
   wire exmem_flush_hu;
 
-  assign ifid_stall = ifid_stall_hu;
-  assign idex_stall = idex_stall_hu;
+  assign ifid_stall = ifid_stall_hu || sleep;
+  assign idex_stall = idex_stall_hu || sleep;
+  assign exmem_stall = sleep;
 
   assign ifid_flush = ifid_flush_hu || trap_req || trap_mret;
   assign idex_flush = idex_flush_hu || trap_req || trap_mret;
   assign exmem_flush = exmem_flush_hu || trap_req || trap_mret;
+  assign memwb_flush = sleep;
 
   forward_src_t forward_a /* verilator public */;
   forward_src_t forward_b /* verilator public */;
@@ -369,7 +376,8 @@ module processor_core
     .o_t_illegal_inst(id_t_illegal_inst),
     .o_t_ebreak(id_t_ebreak),
     .o_t_ecall(id_t_ecall),
-    .o_trap_mret(id_trap_mret)
+    .o_trap_mret(id_trap_mret),
+    .o_wfi_req(id_wfi_req)
   );
 
   // Immediate sign extender
@@ -430,6 +438,7 @@ module processor_core
     .i_t_ebreak(id_t_ebreak),
     .i_t_ecall(id_t_ecall),
     .i_trap_mret(id_trap_mret),
+    .i_wfi_req(id_wfi_req),
     .o_data('{
       ex_alu_op,
       ex_alu_a_sel,
@@ -461,7 +470,8 @@ module processor_core
     .o_t_illegal_inst(ex_t_illegal_inst),
     .o_t_ebreak(ex_t_ebreak),
     .o_t_ecall(ex_t_ecall),
-    .o_trap_mret(ex_trap_mret)
+    .o_trap_mret(ex_trap_mret),
+    .o_wfi_req(ex_wfi_req)
   );
 
   //////////////////////////////// EX     ////////////////////////////////
@@ -565,6 +575,7 @@ module processor_core
     .i_t_ebreak(ex_t_ebreak),
     .i_t_ecall(ex_t_ecall),
     .i_trap_mret(ex_trap_mret),
+    .i_wfi_req(ex_wfi_req),
     .o_data('{
       mem_alu_out,
       mem_rs1,
@@ -589,7 +600,8 @@ module processor_core
     .o_t_illegal_inst(mem_t_illegal_inst),
     .o_t_ebreak(mem_t_ebreak),
     .o_t_ecall(mem_t_ecall),
-    .o_trap_mret(mem_trap_mret)
+    .o_trap_mret(mem_trap_mret),
+    .o_wfi_req(mem_wfi_req)
   );
 
   //////////////////////////////// MEM    ////////////////////////////////
@@ -740,6 +752,16 @@ module processor_core
     .i_trap_req(trap_req),
     .o_trap_mode(trap_mode),
     .o_trap_mret(trap_mret)
+  );
+
+  // WFI sleep
+  wfi wfi(
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_wfi_req(mem_wfi_req),
+    .i_trap_req(trap_req),
+    .i_interrupt_req(interrupt_req),
+    .o_sleep(sleep)
   );
 
   //////////////////////////////// MEM/WB ////////////////////////////////

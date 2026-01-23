@@ -123,7 +123,6 @@ set(RTL_SOURCES
   rtl/cpu/core/lsu.sv
   rtl/cpu/core/rom.sv
   rtl/cpu/core/sign_ext.sv
-  
   rtl/cpu/core/mu.sv
 
   rtl/cpu/priv/priv_control.sv
@@ -131,6 +130,7 @@ set(RTL_SOURCES
   rtl/cpu/priv/exception_dispatch.sv
   rtl/cpu/priv/interrupt_dispatch.sv
   rtl/cpu/priv/trap_control.sv
+  rtl/cpu/priv/wfi.sv
 
   rtl/cpu/pipeline/ifid_reg.sv
   rtl/cpu/pipeline/idex_reg.sv

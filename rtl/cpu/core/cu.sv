@@ -31,7 +31,8 @@ module cu
   output logic o_t_illegal_inst,
   output logic o_t_ecall,
   output logic o_t_ebreak,
-  output logic o_trap_mret
+  output logic o_trap_mret,
+  output logic o_wfi_req
 );
 
   import cotm32_pkg::*;
@@ -64,6 +65,7 @@ module cu
     o_t_ecall = '0;
     o_t_ebreak = '0;
     o_trap_mret = '0;
+    o_wfi_req = '0;
 
     unique case (opcode)
       OP_CREG   : begin
@@ -223,6 +225,13 @@ module cu
           INST_EXACT_EBREAK: begin
             // Dispatch an ebreak trap request
             o_t_ebreak = '1;
+          end
+          INST_EXACT_WFI: begin
+            if (i_priv_mode == PRIV_M) begin
+              o_wfi_req = '1;
+            end else begin
+              o_t_illegal_inst = '1;
+            end
           end
           INST_EXACT_MRET: begin
             if (i_priv_mode == PRIV_M) begin

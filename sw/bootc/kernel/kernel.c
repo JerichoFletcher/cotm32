@@ -13,9 +13,9 @@ extern void task1(void);
 extern void task2(void);
 
 void idle(void) {
+    yield();
     for (;;) {
-        yield();
-        // asm volatile("wfi");
+        wait_until_interrupt();
     }
 }
 

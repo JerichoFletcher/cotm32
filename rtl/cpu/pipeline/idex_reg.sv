@@ -19,6 +19,7 @@ module idex_reg(
   input logic i_t_ecall,
 
   input logic i_trap_mret,
+  input logic i_wfi_req,
 
   // EX
   output idex_data_t o_data,
@@ -30,7 +31,8 @@ module idex_reg(
   output logic o_t_ebreak,
   output logic o_t_ecall,
 
-  output logic o_trap_mret
+  output logic o_trap_mret,
+  output logic o_wfi_req
 );
 
   import cotm32_pkg::*;
@@ -55,6 +57,7 @@ module idex_reg(
       o_t_ecall <= '0;
 
       o_trap_mret <= '0;
+      o_wfi_req <= '0;
     end else if (!i_stall) begin
       o_valid <= i_valid;
       o_data <= i_data;
@@ -66,6 +69,7 @@ module idex_reg(
       o_t_ecall <= i_t_ecall;
 
       o_trap_mret <= i_trap_mret;
+      o_wfi_req <= i_wfi_req;
     end
     // Use latched values when stalled
   end
