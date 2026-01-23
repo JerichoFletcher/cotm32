@@ -2,6 +2,8 @@
 
 #include "int.h"
 
+#define TICK_LENGTH 10
+
 #define MTIMECMP    (volatile uint32_t*)0x02004000
 #define MTIMECMPH   (volatile uint32_t*)0x02004004
 

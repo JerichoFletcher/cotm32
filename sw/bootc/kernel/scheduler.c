@@ -148,14 +148,26 @@ void schedule(void) {
         size_t count = 0;
 
         while (curr != NULL) {
-            if (curr->task->state == TaskState_READY) {
+            if (curr->task == current_task()) {
+                // Prefer another task if available to prevent starving
+                if (curr->next != NULL) {
+                    curr = curr->next;
+                    count++;
+                }
+            }
+
+            Task* task = curr->task;
+            if (task->state == TaskState_READY) {
                 if (!remove(curr)) {
                     k_puts("Panic: failed to remove task from queue\n", 40);
                     panic();
                 }
 
-                current_tid = curr->task->id;
-                curr->task->state = TaskState_RUNNING;
+                current_tid = task->id;
+                task->state = TaskState_RUNNING;
+                if (task->time_slice == 0) {
+                    task->time_slice = TIME_SLICE_BASE + task->priority * TIME_SLICE_PRIO_SCL;
+                }
 
                 // Include all requested interrupts in mie
                 size_t mie = bits_interr(Interrupt_M_TIMER);

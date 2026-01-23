@@ -4,7 +4,7 @@
 #include "trap/enums.h"
 #include "int.h"
 
-#define MAX_TASKS 8
+#define MAX_TASKS   8
 
 extern Task tasks[];
 extern size_t current_tid;

@@ -16,6 +16,7 @@ Task* create_task(void (*entry)(void), size_t priority, PrivMode priv) {
     t->stack_base = s->base;
     t->stack_size = s->size;
     t->priority = priority;
+    t->time_slice = TIME_SLICE_BASE + priority * TIME_SLICE_PRIO_SCL;
     
     for (size_t i = 0; i < 32; i++) {
         t->ctx.regs[i] = 0;

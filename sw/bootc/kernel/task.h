@@ -5,6 +5,9 @@
 #include "trap/trap.h"
 #include "bool.h"
 
+#define TIME_SLICE_BASE     10
+#define TIME_SLICE_PRIO_SCL 1
+
 typedef enum TaskState {
     TaskState_NOT_CREATED = 0,
     TaskState_READY,
@@ -15,10 +18,11 @@ typedef enum TaskState {
 
 typedef struct Task {
     Context ctx;
+    size_t id;
     size_t stack_base;
     size_t stack_size;
-    size_t id;
     size_t priority;
+    size_t time_slice;
     TaskState state;
 } Task;
 
