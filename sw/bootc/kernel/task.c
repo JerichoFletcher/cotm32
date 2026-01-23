@@ -3,7 +3,7 @@
 #include "kernel/stack.h"
 #include "csr.h"
 
-Task* create_task(void (*entry)(void), size_t priority, PrivMode priv, bool_t mie) {
+Task* create_task(void (*entry)(void), size_t priority, PrivMode priv, bool_t enable_interrupts) {
     Task* t = alloc_new_task();
     if (!t) {
         return NULL;
@@ -21,7 +21,7 @@ Task* create_task(void (*entry)(void), size_t priority, PrivMode priv, bool_t mi
         t->ctx.regs[i] = 0;
     }
     t->ctx.pc = (size_t)entry;
-    t->ctx.mstatus = bits_mpp(priv) | bits_mpie(mie);
+    t->ctx.mstatus = bits_mpp(priv) | bits_mpie(enable_interrupts);
     t->ctx.regs[2] = s->base + s->size;
 
     return t;

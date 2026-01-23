@@ -10,6 +10,7 @@ module uart_term
   input logic [$clog2(UART_MEM_SIZE)-1:0] i_addr,
   input logic [XLEN-1:0] i_wdata,
 
+  output logic o_meip,
   output logic [XLEN-1:0] o_rdata
 );
 
@@ -29,6 +30,8 @@ module uart_term
   logic we;
   assign re = i_re && i_addr inside {ADDR_TXDATA, ADDR_RXDATA, ADDR_STATUS};
   assign we = i_we && i_addr inside {ADDR_TXDATA, ADDR_RXDATA, ADDR_STATUS};
+
+  assign o_meip = rx_valid;
 
   always_ff @(posedge i_clk) begin
     if (i_rst) begin

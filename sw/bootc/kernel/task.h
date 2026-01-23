@@ -20,5 +20,5 @@ typedef struct Task {
     TaskState state;
 } Task;
 
-Task* create_task(void (*entry)(void), size_t priority, PrivMode priv, bool_t mie);
+Task* create_task(void (*entry)(void), size_t priority, PrivMode priv, bool_t enable_interrupts);
 void terminate_task(Task* task);

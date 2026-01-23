@@ -16,6 +16,7 @@ module processor_core
 
   // UARTs
   input logic [XLEN-1:0] i_uart_rdata,
+  input logic i_uart_meip,
 
   output logic o_uart_re,
   output logic o_uart_we,
@@ -675,6 +676,7 @@ module processor_core
     .i_trap_tval(trap_tval),
 
     .i_mtip(i_clint_mtip),
+    .i_meip(i_uart_meip),
 
     .o_rdata(mem_csr_rdata),
     .o_mstatus(mem_csr_mstatus),

@@ -20,6 +20,7 @@ module cotm32
   logic [$clog2(UART_MEM_SIZE)-1:0] uart_addr /* verilator public */;
   logic [XLEN-1:0] uart_wdata /* verilator public */;
   logic [XLEN-1:0] uart_rdata /* verilator public */;
+  logic uart_meip /* verilator public */;
 
   // Cores
   processor_core core(
@@ -33,6 +34,7 @@ module cotm32
     .o_clint_wdata(clint_wdata),
 
     .i_uart_rdata(uart_rdata),
+    .i_uart_meip(uart_meip),
     .o_uart_re(uart_re),
     .o_uart_we(uart_we),
     .o_uart_addr(uart_addr),
@@ -58,6 +60,7 @@ module cotm32
     .i_we(uart_we),
     .i_addr(uart_addr),
     .i_wdata(uart_wdata),
+    .o_meip(uart_meip),
     .o_rdata(uart_rdata)
   );
 

@@ -22,6 +22,7 @@ void idle(void) {
 __attribute__((noreturn))
 void kernel_main(void) {
     set_interrupt(Interrupt_M_TIMER, TRUE);
+    set_interrupt(Interrupt_M_EXTERNAL, TRUE);
 
     uint64_t t = get_time();
     set_timecmp(t + 10000);

@@ -17,6 +17,7 @@ module csr_file
   input logic [MXLEN-1:0] i_trap_tval,
 
   input logic i_mtip,
+  input logic i_meip,
 
   output logic [MXLEN-1:0] o_rdata,
   output zicsr_val_mstatus_t o_mstatus,
@@ -113,6 +114,7 @@ module csr_file
       end
 
       mip.mtip <= i_mtip;
+      mip.meip <= i_meip;
     end
   end
 
