@@ -39,5 +39,5 @@ static inline void sp_to_mscratch(void) {
 }
 
 static inline void assign_mepc(void (*f)(void)) {
-    asm volatile("csrw mepc, %0\n" : : "r"(f) : "memory");
+    asm volatile("csrw mepc, %0" : : "r"(f) : "memory");
 }

@@ -28,7 +28,7 @@ set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/stack.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/task.c
 
-  ${CMAKE_SOURCE_DIR}/sw/bootc/user/user.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/user/entry.c
 )
 set(BOOT_INC  ${CMAKE_SOURCE_DIR}/sw/bootc)
 set(BOOT_LD   ${CMAKE_SOURCE_DIR}/sw/bootc/linker.ld)

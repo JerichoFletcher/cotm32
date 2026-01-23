@@ -2,13 +2,15 @@
 
 #include "context.h"
 #include "priv/enums.h"
+#include "trap/trap.h"
 #include "bool.h"
 
 typedef enum TaskState {
-    TaskState_NOT_CREATED   = 0,
-    TaskState_READY         = 1,
-    TaskState_RUNNING       = 2,
-    TaskState_TERMINATED    = 3,
+    TaskState_NOT_CREATED = 0,
+    TaskState_READY,
+    TaskState_RUNNING,
+    TaskState_BLOCKED_IRQ,
+    TaskState_TERMINATED,
 } TaskState;
 
 typedef struct Task {
@@ -18,7 +20,13 @@ typedef struct Task {
     size_t id;
     size_t priority;
     TaskState state;
+    size_t wait_irq_mask;
 } Task;
 
-Task* create_task(void (*entry)(void), size_t priority, PrivMode priv, bool_t enable_interrupts);
+Task* create_task(void (*entry)(void), size_t priority, PrivMode priv);
+
+void task_set_mpie(Task* task, bool_t mpie);
+void task_set_interr(Task* task, Interrupt interr, bool_t enable);
+
+void block_task_irq(Task* task, Interrupt interr);
 void terminate_task(Task* task);

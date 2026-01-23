@@ -41,6 +41,10 @@ public:
     inline size_t input_queue_size() const { return this->m_rx_queue.size(); }
 
     inline void enqueue_char(char c) { this->m_rx_queue.push(c); }
+    inline void reset() {
+        while (!this->m_rx_queue.empty()) this->m_rx_queue.pop();
+        this->clear_buffer();
+    }
 
 private:
     static inline constexpr size_t TAB_WIDTH = 4;

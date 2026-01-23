@@ -258,6 +258,7 @@ void TerminalController::reset(Simulator& sim) {
     this->m_fg_color = this->m_fg_color_init;
     this->m_bg_color = this->m_bg_color_init;
 
+    while (!this->m_rx_queue.empty()) this->m_rx_queue.pop();
     this->clear_buffer();
     this->push_blank_row();
 }

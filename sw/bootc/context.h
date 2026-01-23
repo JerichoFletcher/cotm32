@@ -6,8 +6,9 @@
 
 typedef struct Context {
     size_t regs[NUM_REGS];
-    size_t pc;
     size_t mstatus;
+    size_t mie;
+    size_t pc;
 } Context;
 
 void copy_context(Context* to, Context* from);
