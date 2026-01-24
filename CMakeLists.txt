@@ -17,7 +17,7 @@ set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/bootc/trap_entry.s
   ${CMAKE_SOURCE_DIR}/sw/bootc/context.s
   
-  ${CMAKE_SOURCE_DIR}/sw/bootc/main.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/entry.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/trap_handler.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/context.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys.c
@@ -29,6 +29,7 @@ set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/task.c
 
   ${CMAKE_SOURCE_DIR}/sw/bootc/user/entry.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/user/syscall.c
 )
 set(BOOT_INC  ${CMAKE_SOURCE_DIR}/sw/bootc)
 set(BOOT_LD   ${CMAKE_SOURCE_DIR}/sw/bootc/linker.ld)
@@ -43,6 +44,7 @@ add_custom_command(
   COMMAND ${RISCV_GCC}
     -march=rv32im_zicsr
     -mabi=ilp32
+    -fanalyzer
     -ffreestanding
     -fno-builtin
     -fno-stack-protector

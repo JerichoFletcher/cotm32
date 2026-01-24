@@ -1,44 +1,44 @@
 #include "kernel/stack.h"
+#include "bool.h"
 
-#define MAX_STACK_SLOT      8
-#define STACK_BASE_ADDR     0x80001000
-#define STACK_SIZE          0x1000
+extern char stackalloc_start;
+
+#define STACK_BASE_ADDR     (void*)(&stackalloc_start)
+#define STACK_SPACE_END     (void*)((size_t)STACK_BASE_ADDR + MAX_STACK_SLOT * STACK_SIZE)
 
 typedef struct StackSlot {
     StackDescriptor stack;
-    size_t owner_tid;
     bool_t allocated;
 } StackSlot;
 
 StackSlot slots[MAX_STACK_SLOT] = {0};
-size_t n_slot;
+size_t n_slot = 0;
 
-StackDescriptor* alloc_stack(size_t owner_tid) {
-    if (n_slot == MAX_STACK_SLOT) return FALSE;
-
+StackDescriptor* alloc_stack(void) {
+    if (n_slot == MAX_STACK_SLOT) return NULL;
+    
     for (size_t i = 0; i < MAX_STACK_SLOT; i++) {
         StackSlot* slot = &slots[i];
         if (!slot->allocated) {
             slot->allocated = TRUE;
-            slot->owner_tid = owner_tid;
-
-            StackDescriptor* stack = &slot->stack;
-            stack->base = STACK_BASE_ADDR + i * STACK_SIZE;
-            stack->size = STACK_SIZE;
-            n_slot++;
             
+            StackDescriptor* stack = &slot->stack;
+            stack->base = (char*)STACK_BASE_ADDR + i * STACK_SIZE;
+            stack->size = STACK_SIZE;
+            
+            n_slot++;
             return stack;
         }
     }
     return NULL;
 }
 
-void free_stack(size_t owner_tid) {
+void free_stack(StackDescriptor* stack) {
     if (n_slot == 0) return;
 
     for (size_t i = 0; i < MAX_STACK_SLOT; i++) {
         StackSlot* slot = &slots[i];
-        if (slot->owner_tid == owner_tid) {
+        if (stack == &slot->stack) {
             slot->allocated = FALSE;
             n_slot--;
             return;

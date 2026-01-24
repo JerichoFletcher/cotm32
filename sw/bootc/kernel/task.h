@@ -1,6 +1,7 @@
 #pragma once
 
 #include "context.h"
+#include "kernel/stack.h"
 #include "priv/enums.h"
 #include "trap/trap.h"
 #include "bool.h"
@@ -38,11 +39,8 @@ typedef struct Task {
     /// @brief The ID of this task.
     size_t id;
 
-    /// @brief The base address of the stack space.
-    size_t stack_base;
-
-    /// @brief The size of the stack space.
-    size_t stack_size;
+    /// @brief The descriptor for the stack allocated to this task.
+    StackDescriptor* stack;
 
     /// @brief The priority of the task.
     /// @brief Higher-priority tasks are executed before lower-priority ones.

@@ -7,7 +7,7 @@
 #include "int.h"
 #include "panic.h"
 
-extern void entry(void);
+extern void user_entry(void);
 
 void idle(void) {
     for (;;) {
@@ -18,7 +18,7 @@ void idle(void) {
 __attribute__((noreturn))
 void kernel_main(void) {
     Task* t_idle = create_task(idle, 0, PrivMode_M);
-    Task* t_entry = create_task(entry, 10, PrivMode_U);
+    Task* t_entry = create_task(user_entry, 50, PrivMode_U);
     
     if (t_idle && t_entry) {
         uint64_t time = get_time();

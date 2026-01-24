@@ -26,5 +26,6 @@ static inline void assign_mie(size_t mie) {
 
 /// @brief Stores the current `sp` to `mscratch`.
 static inline void sp_to_mscratch(void) {
-    asm volatile("csrw mscratch, sp" : : : "memory");
+    register size_t sp asm("sp");
+    asm volatile("csrw mscratch, %0" : : "r"(sp) : "memory");
 }

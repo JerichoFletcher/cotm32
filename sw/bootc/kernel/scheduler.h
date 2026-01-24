@@ -5,7 +5,7 @@
 #include "int.h"
 
 /// @brief The maximum number of tasks the kernel can keep track of.
-#define MAX_TASKS   8
+#define MAX_TASKS 8U
 
 extern Task tasks[];
 extern size_t current_tid;

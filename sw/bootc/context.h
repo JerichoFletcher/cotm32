@@ -5,7 +5,7 @@
 #define NUM_REGS 32
 
 /// @brief A snapshot of the execution context.
-/// @brief Holds all states necessary to restore an execution.
+/// @brief Holds all the necessary states to restore an execution.
 typedef struct Context {
     /// @brief The values of general-purpose registers (GPRs).
     size_t regs[NUM_REGS];

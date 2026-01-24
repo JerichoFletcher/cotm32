@@ -5,23 +5,19 @@
 
 Task* create_task(void (*entry)(void), size_t priority, PrivMode priv) {
     Task* t = alloc_new_task(priority);
-    if (!t) {
-        return NULL;
-    }
+    if (!t) return NULL;
 
-    StackDescriptor* s = alloc_stack(t->id);
-    if (!s) {
-        return NULL;
-    }
-    t->stack_base = s->base;
-    t->stack_size = s->size;
+    StackDescriptor* s = alloc_stack();
+    if (!s) return NULL;
+
+    t->stack = s;
     t->priority = priority;
     t->time_slice = SCHED_QUANTUM_TICKS + priority * SCHED_PRIORITY_BONUS_TICKS;
     
     for (size_t i = 0; i < 32; i++) {
         t->ctx.regs[i] = 0;
     }
-    t->ctx.regs[2] = s->base + s->size;
+    t->ctx.regs[2] = (size_t)s->base + s->size;
     
     t->ctx.mstatus = bits_mpp(priv) | bits_mpie(TRUE);
     t->ctx.pc = (size_t)entry;

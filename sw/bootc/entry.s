@@ -12,5 +12,5 @@ _start:
     sw      zero, 0(t0)
     addi    t0, t0, 4
     j       1b
-2:  call    main
+2:  call    entry
     j       .

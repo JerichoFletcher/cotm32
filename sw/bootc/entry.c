@@ -6,7 +6,7 @@
 extern void trap_entry(void);
 extern void kernel_main(void);
 
-void main(void) {
+void entry(void) {
     set_trap_entry(trap_entry);
     kernel_main();
 }

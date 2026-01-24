@@ -32,7 +32,7 @@ typedef struct TaskBlockedEntry {
 TaskBlockedEntry qblocked[MAX_TASKS] = {0};
 size_t n_blocked = 0;
 
-bool_t push(TaskReadyEntry* entr) {
+bool_t push_ready_task(TaskReadyEntry* entr) {
     if (entr == NULL) return FALSE;
     if (n_ready == MAX_TASKS) return FALSE;
 
@@ -61,7 +61,7 @@ bool_t push(TaskReadyEntry* entr) {
     return TRUE;
 }
 
-bool_t remove(TaskReadyEntry* entr) {
+bool_t remove_ready_task(TaskReadyEntry* entr) {
     if (entr == NULL) return FALSE;
 
     if (entr->prev != NULL) {
@@ -85,12 +85,16 @@ void start_schedule(Task* entrypoint) {
         entrypoint->state != TaskState_READY ||
         entrypoint != &tasks[entrypoint->id]
     ) {
-        k_puts("Invalid entrypoint task\n", 24);
+        k_puts("Panic: invalid entrypoint task\n", 31);
         panic();
     }
     current_tid = entrypoint->id;
     entrypoint->state = TaskState_RUNNING;
-    remove(&qready[entrypoint->id]);
+
+    if (!remove_ready_task(&qready[entrypoint->id])) {
+        k_puts("Panic: failed to remove task from queue\n", 40);
+        panic();
+    }
     enter_context(&entrypoint->ctx);
 }
 
@@ -114,7 +118,7 @@ Task* alloc_new_task(size_t priority) {
     // Push task into the ready queue
     TaskReadyEntry* curr = &qready[tid];
     curr->task = task;
-    if (!push(curr)) return NULL;
+    if (!push_ready_task(curr)) return NULL;
 
     task->state = TaskState_READY;
     n_task++;
@@ -123,7 +127,7 @@ Task* alloc_new_task(size_t priority) {
 
 void clear_task(Task* task) {
     if (task->state != TaskState_NOT_CREATED) {
-        free_stack(task->id);
+        free_stack(task->stack);
         task->state = TaskState_NOT_CREATED;
         n_task--;
     }
@@ -137,7 +141,7 @@ void schedule(void) {
     if (current_task()->state == TaskState_TERMINATED) {
         clear_task(current_task());
     } else if (current_task()->state == TaskState_READY) {
-        if (!push(&qready[current_task()->id])) {
+        if (!push_ready_task(&qready[current_task()->id])) {
             k_puts("Panic: Failed to push task into queue\n", 38);
             panic();
         }
@@ -158,7 +162,7 @@ void schedule(void) {
 
             Task* task = curr->task;
             if (task->state == TaskState_READY) {
-                if (!remove(curr)) {
+                if (!remove_ready_task(curr)) {
                     k_puts("Panic: failed to remove task from queue\n", 40);
                     panic();
                 }
@@ -223,7 +227,7 @@ size_t wake_irq_tasks(Interrupt interr) {
             entr->blocked = FALSE;
 
             entr->task->state = TaskState_READY;
-            push(&qready[entr->task->id]);
+            push_ready_task(&qready[entr->task->id]);
 
             num_awaken++;
         }

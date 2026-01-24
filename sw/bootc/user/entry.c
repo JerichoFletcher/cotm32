@@ -1,18 +1,25 @@
 #include "user/syscall.h"
 
+static inline void newline(void) {
+    puts(" \n# _\b", 6);
+}
+
+static inline void backspace(void) {
+    puts(" \b\b_\b", 5);
+}
+
 __attribute__((noreturn))
-void entry(void) {
-    puts("# _", 3);
+void user_entry(void) {
+    puts("# _\b", 4);
     for (;;) {
         char c = getc();
         if (c == '\n') {
-            puts("\b \n# _", 6);
+            newline();
         } else if (c == '\b') {
-            puts("\b \b\b_", 5);
+            backspace();
         } else {
-            putc('\b');
             putc(c);
-            putc('_');
+            puts("_\b", 2);
         }
     }
 }
