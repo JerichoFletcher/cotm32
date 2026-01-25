@@ -3,10 +3,9 @@
 # a0 -- Pointer to a context
 enter_context:
     lw      t0, 128(a0)
+    lw      t1, 132(a0)
+    csrw    mepc, t1
     csrw    mstatus, t0
-
-    lw      t0, 132(a0)
-    csrw    mepc, t0
 
     lw      x1, 4(a0)
     lw      x2, 8(a0)
