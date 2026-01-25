@@ -1,11 +1,6 @@
 #include "kernel/stack.h"
 #include "bool.h"
 
-extern char stackalloc_start;
-
-#define STACK_BASE_ADDR     (void*)(&stackalloc_start)
-#define STACK_SPACE_END     (void*)((size_t)STACK_BASE_ADDR + MAX_STACK_SLOT * STACK_SIZE)
-
 typedef struct StackSlot {
     StackDescriptor stack;
     bool_t allocated;
@@ -23,7 +18,7 @@ StackDescriptor* alloc_stack(void) {
             slot->allocated = TRUE;
             
             StackDescriptor* stack = &slot->stack;
-            stack->base = (char*)STACK_BASE_ADDR + i * STACK_SIZE;
+            stack->base = (char*)STACK_SPACE_START + i * STACK_SIZE;
             stack->size = STACK_SIZE;
             
             n_slot++;

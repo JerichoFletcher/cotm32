@@ -13,3 +13,5 @@ typedef unsigned long long uint64_t;
 typedef uint32_t size_t;
 
 #define NULL (void*)0
+
+#define ALIGN_UP(x, y) (((x + y - 1) / y) * y)

@@ -18,6 +18,14 @@ void dispatch_syscall(Context* ctx) {
             adv_pc = FALSE;
             break;
         }
+        case SyscallCode_FREE: {
+            status = k_free((void*)ctx->regs[10]);
+            break;
+        }
+        case SyscallCode_MALLOC: {
+            status = k_malloc(ctx->regs[10], (void*)&ctx->regs[10]);
+            break;
+        }
         case SyscallCode_PUTC: {
             status = k_putc(ctx->regs[10]);
             break;

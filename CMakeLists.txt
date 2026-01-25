@@ -20,13 +20,15 @@ set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/bootc/entry.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/trap_handler.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/context.c
+
   ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/sys/ksys_dispatch.c
 
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/kernel.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/task.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/scheduler.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/stack.c
-  ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/task.c
+  ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/heap.c
 
   ${CMAKE_SOURCE_DIR}/sw/bootc/user/entry.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/user/syscall.c

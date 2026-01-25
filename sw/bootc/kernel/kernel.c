@@ -1,5 +1,7 @@
 #include "kernel/task.h"
 #include "kernel/scheduler.h"
+#include "kernel/stack.h"
+#include "kernel/heap.h"
 #include "trap/trap.h"
 #include "sys/ksys.h"
 #include "clint.h"
@@ -23,8 +25,9 @@ void kernel_main(void) {
     if (t_idle && t_entry) {
         uint64_t time = get_time();
         set_timecmp(time + TICK_LENGTH);
-
         sp_to_mscratch();
+        
+        init_heap(STACK_SPACE_END, 32768U);
         start_schedule(t_entry);
     } else {
         k_puts("Panic: failed to create task\n", 29);

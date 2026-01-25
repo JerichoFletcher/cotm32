@@ -1,5 +1,6 @@
 #include "sys/ksys.h"
 #include "kernel/scheduler.h"
+#include "kernel/heap.h"
 #include "trap/trap.h"
 #include "bool.h"
 
@@ -20,6 +21,16 @@ SyscallStatus k_yield(Context* ctx) {
     copy_context(&current_task()->ctx, ctx);
     schedule();
     copy_context(ctx, &current_task()->ctx);
+    return SyscallStatus_DONE;
+}
+
+SyscallStatus k_free(void* ptr) {
+    if (is_valid_heap_ptr(ptr)) free_heap(ptr);
+    return SyscallStatus_DONE;
+}
+
+SyscallStatus k_malloc(size_t size, void** out_ptr) {
+    *out_ptr = allocate_heap(size);
     return SyscallStatus_DONE;
 }
 

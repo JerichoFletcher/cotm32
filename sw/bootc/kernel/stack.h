@@ -2,10 +2,16 @@
 
 #include "int.h"
 
+extern char stackalloc_start;
+
 /// @brief The maximum number of stack slots that can be allocated.
-#define MAX_STACK_SLOT  8U
+#define MAX_STACK_SLOT      8U
 /// @brief The size of each stack space, in bytes.
-#define STACK_SIZE      1024U
+#define STACK_SIZE          1024U
+/// @brief The lowest address of stack memory.
+#define STACK_SPACE_START   (void*)(&stackalloc_start)
+/// @brief The highest address (non-inclusive) of stack memory.
+#define STACK_SPACE_END     (void*)((size_t)STACK_SPACE_START + MAX_STACK_SLOT * STACK_SIZE)
 
 /// @brief Descriptor for an allocation of stack space for a task.
 typedef struct StackDescriptor {
