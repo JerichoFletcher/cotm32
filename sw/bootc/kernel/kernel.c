@@ -19,15 +19,15 @@ void idle(void) {
 
 __attribute__((noreturn))
 void kernel_main(void) {
-    Task* t_idle = create_task(idle, 0, PrivMode_M);
-    Task* t_entry = create_task(user_entry, 50, PrivMode_U);
+    task_id_t t_idle = spawn_task(idle, PrivMode_M, 0);
+    task_id_t t_entry = spawn_task(user_entry, PrivMode_U, 50);
     
-    if (t_idle && t_entry) {
+    if (t_idle >= 0) {
         uint64_t time = get_time();
         set_timecmp(time + TICK_LENGTH);
-        sp_to_mscratch();
-        
         init_heap(STACK_SPACE_END, 32768U);
+        
+        sp_to_mscratch();
         start_schedule(t_entry);
     } else {
         k_puts("Panic: failed to create task\n", 29);

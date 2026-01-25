@@ -9,12 +9,8 @@
 #include "sys/ksys.h"
 #include "panic.h"
 
-Task tasks[MAX_TASKS] = {0};
-size_t current_tid = 0;
-size_t n_task = 0;
-
 typedef struct TaskReadyEntry {
-    Task* task;
+    task_id_t task_id;
     struct TaskReadyEntry* prev;
     struct TaskReadyEntry* next;
 } TaskReadyEntry;
@@ -24,7 +20,7 @@ TaskReadyEntry* qready_head = NULL;
 size_t n_ready = 0;
 
 typedef struct TaskBlockedEntry {
-    Task* task;
+    task_id_t task_id;
     size_t wait_irq_mask;
     bool_t blocked;
 } TaskBlockedEntry;
@@ -36,18 +32,32 @@ bool_t push_ready_task(TaskReadyEntry* entr) {
     if (entr == NULL) return FALSE;
     if (n_ready == MAX_TASKS) return FALSE;
 
-    if (n_ready == 0 || entr->task->priority > qready_head->task->priority) {
+    size_t entr_prio; get_task_priority(entr->task_id, &entr_prio);
+    size_t head_prio; get_task_priority(qready_head->task_id, &head_prio);
+    if (n_ready == 0 || entr_prio > head_prio) {
         entr->prev = NULL;
         entr->next = qready_head;
         qready_head = entr;
     } else {
         TaskReadyEntry* prev = qready_head;
         TaskReadyEntry* next = prev->next;
-
+        
+        size_t curr_prio;
+        size_t next_prio;
+        get_task_priority(entr->task_id, &curr_prio);
+        if (next != NULL) {
+            get_task_priority(next->task_id, &next_prio);
+        }
+        
         // Search prev and next such that PRIO(prev) >= PRIO(curr) > PRIO(next)
-        while (next != NULL && next->task->priority >= entr->task->priority) {
+        while (next != NULL && next_prio >= curr_prio) {
             prev = next;
             next = prev->next;
+
+            get_task_priority(entr->task_id, &curr_prio);
+            if (next != NULL) {
+                get_task_priority(next->task_id, &next_prio);
+            }
         }
 
         // Link with the prev and next entry
@@ -80,97 +90,79 @@ bool_t remove_ready_task(TaskReadyEntry* entr) {
     return TRUE;
 }
 
-void start_schedule(Task* entrypoint) {
-    if (entrypoint == NULL ||
-        entrypoint->state != TaskState_READY ||
-        entrypoint != &tasks[entrypoint->id]
-    ) {
+bool_t add_task_to_schedule(task_id_t tid) {
+    TaskReadyEntry* curr = &qready[TASK_SLOT(tid)];
+    curr->task_id = tid;
+    return push_ready_task(curr);
+}
+
+void start_schedule(task_id_t tid) {
+    TaskState state;
+    if (!get_task_state(tid, &state) || state != TaskState_READY) {
         k_puts("Panic: invalid entrypoint task\n", 31);
         panic();
     }
-    current_tid = entrypoint->id;
-    entrypoint->state = TaskState_RUNNING;
+    set_current_task(tid);
+    set_task_running(tid);
 
-    if (!remove_ready_task(&qready[entrypoint->id])) {
+    if (!remove_ready_task(&qready[TASK_SLOT(tid)])) {
         k_puts("Panic: failed to remove task from queue\n", 40);
         panic();
     }
-    enter_context(&entrypoint->ctx);
-}
-
-Task* alloc_new_task(size_t priority) {
-    if (n_task == MAX_TASKS) return NULL;
-    
-    // Find an unallocated task entry
-    Task* task = NULL;
-    size_t tid;
-    for (tid = 0; tid < MAX_TASKS; tid++) {
-        if (tasks[tid].state == TaskState_NOT_CREATED) {
-            task = &tasks[tid];
-            break;
-        }
-    }
-    if (!task) return NULL;
-    
-    task->id = tid;
-    task->priority = priority;
-
-    // Push task into the ready queue
-    TaskReadyEntry* curr = &qready[tid];
-    curr->task = task;
-    if (!push_ready_task(curr)) return NULL;
-
-    task->state = TaskState_READY;
-    n_task++;
-    return task;
-}
-
-void clear_task(Task* task) {
-    if (task->state != TaskState_NOT_CREATED) {
-        free_stack(task->stack);
-        task->state = TaskState_NOT_CREATED;
-        n_task--;
-    }
+    enter_task(tid);
 }
 
 void schedule(void) {
-    if (current_task()->state == TaskState_RUNNING) {
-        current_task()->state = TaskState_READY;
+    task_id_t tid_curr = current_task();
+    TaskState state_curr;
+    if (!get_task_state(tid_curr, &state_curr)) {
+        k_puts("Panic: invalid current task detected\n", 37);
+        panic();
+    }
+
+    if (state_curr == TaskState_RUNNING) {
+        set_task_ready(tid_curr);
+        get_task_state(tid_curr, &state_curr);
     }
     
-    if (current_task()->state == TaskState_TERMINATED) {
-        clear_task(current_task());
-    } else if (current_task()->state == TaskState_READY) {
-        if (!push_ready_task(&qready[current_task()->id])) {
+    if (state_curr == TaskState_TERMINATED) {
+        destroy_task(tid_curr);
+    } else if (state_curr == TaskState_READY) {
+        if (!push_ready_task(&qready[TASK_SLOT(tid_curr)])) {
             k_puts("Panic: Failed to push task into queue\n", 38);
             panic();
         }
     }
 
     if (n_ready > 0) {
-        TaskReadyEntry* curr = qready_head;
+        TaskReadyEntry* next = qready_head;
         size_t count = 0;
 
-        while (curr != NULL) {
-            if (curr->task == current_task()) {
+        while (next != NULL) {
+            if (next->task_id == current_task()) {
                 // Prefer another task if available to prevent starving
-                if (curr->next != NULL) {
-                    curr = curr->next;
+                if (next->next != NULL) {
+                    next = next->next;
                     count++;
                 }
             }
 
-            Task* task = curr->task;
-            if (task->state == TaskState_READY) {
-                if (!remove_ready_task(curr)) {
+            task_id_t tid_next = next->task_id;
+            TaskState state_next;
+
+            if (get_task_state(tid_next, &state_next) && state_next == TaskState_READY) {
+                if (!remove_ready_task(next)) {
                     k_puts("Panic: failed to remove task from queue\n", 40);
                     panic();
                 }
 
-                current_tid = task->id;
-                task->state = TaskState_RUNNING;
-                if (task->time_slice == 0) {
-                    task->time_slice = SCHED_QUANTUM_TICKS + task->priority * SCHED_PRIORITY_BONUS_TICKS;
+                set_current_task(tid_next);
+                set_task_running(tid_next);
+                size_t t_time;
+                if (get_task_time_slice(tid_next, &t_time) && t_time == 0) {
+                    size_t t_prio;
+                    get_task_priority(tid_next, &t_prio);
+                    set_task_time_slice(tid_next, SCHED_QUANTUM_TICKS + t_prio * SCHED_PRIORITY_BONUS_TICKS);
                 }
 
                 // Include all requested interrupts in mie
@@ -184,7 +176,7 @@ void schedule(void) {
                 assign_mie(mie);
                 return;
             }
-            curr = curr->next;
+            next = next->next;
             count++;
 
             if (count > MAX_TASKS) {
@@ -195,17 +187,19 @@ void schedule(void) {
         k_puts("Panic: ran out of tasks\n", 24);
         panic();
     } else {
-        k_puts("Panic: invalid task queue state\n", 26);
+        k_puts("Panic: invalid task queue state\n", 32);
         panic();
     }
 }
 
-void block_task_irq(Task* task, Interrupt interr) {
-    TaskBlockedEntry* entr = &qblocked[task->id];
-    entr->blocked = TRUE;
-    entr->task = task;
+void block_task_irq(task_id_t tid, Interrupt interr) {
+    if (!task_exists(tid)) return;
 
-    task->state = TaskState_BLOCKED_IRQ;
+    TaskBlockedEntry* entr = &qblocked[TASK_SLOT(tid)];
+    entr->blocked = TRUE;
+    entr->task_id = tid;
+
+    set_task_blocked_irq(tid);
     entr->wait_irq_mask |= bits_interr(interr);
 }
 
@@ -217,8 +211,10 @@ size_t wake_irq_tasks(Interrupt interr) {
         TaskBlockedEntry* entr = &qblocked[i];
         if (!entr->blocked) continue;
 
-        if (entr->task->state != TaskState_BLOCKED_IRQ) {
-            k_puts("Panic: non-blocked task in block queue: ", 40);
+        TaskState state;
+        get_task_state(entr->task_id, &state);
+        if (state != TaskState_BLOCKED_IRQ) {
+            k_puts("Panic: non-blocked task in block queue\n", 39);
             panic();
         }
 
@@ -226,8 +222,11 @@ size_t wake_irq_tasks(Interrupt interr) {
             entr->wait_irq_mask = 0;
             entr->blocked = FALSE;
 
-            entr->task->state = TaskState_READY;
-            push_ready_task(&qready[entr->task->id]);
+            set_task_ready(entr->task_id);
+            if (!push_ready_task(&qready[TASK_SLOT(entr->task_id)])) {
+                k_puts("Panic: failed to move blocked task into the ready queue\n", 56);
+                panic();
+            }
 
             num_awaken++;
         }

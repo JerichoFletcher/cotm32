@@ -15,10 +15,13 @@ void trap_handler(TrapFrame* frame) {
     if ((int32_t)cause < 0) {
         // Interrupt
         Interrupt interr = (Interrupt)(cause & 0x7fffffff);
+        size_t time_slice;
+        get_task_time_slice(current_task(), &time_slice);
 
         switch (interr) {
             case Interrupt_M_TIMER: {
-                current_task()->time_slice--;
+                time_slice--;
+                set_task_time_slice(current_task(), time_slice);
                 
                 uint64_t t = get_timecmp();
                 set_timecmp(t + TICK_LENGTH);
@@ -28,7 +31,7 @@ void trap_handler(TrapFrame* frame) {
         }
 
         size_t num_awaken = wake_irq_tasks(interr);
-        if (current_task()->time_slice == 0 || num_awaken > 0) {
+        if (time_slice == 0 || num_awaken > 0) {
             k_yield(&frame->ctx);
         }
     } else {

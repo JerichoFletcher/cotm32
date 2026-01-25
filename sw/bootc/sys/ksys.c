@@ -13,14 +13,21 @@
 SyscallStatus k_exit(Context* ctx) {
     terminate_task(current_task());
     schedule();
-    copy_context(ctx, &current_task()->ctx);
+
+    Context* temp; get_task_context(current_task(), &temp);
+    copy_context(ctx, temp);
     return SyscallStatus_DONE;
 }
 
 SyscallStatus k_yield(Context* ctx) {
-    copy_context(&current_task()->ctx, ctx);
+    Context* temp;
+    
+    get_task_context(current_task(), &temp);
+    copy_context(temp, ctx);
     schedule();
-    copy_context(ctx, &current_task()->ctx);
+
+    get_task_context(current_task(), &temp);
+    copy_context(ctx, temp);
     return SyscallStatus_DONE;
 }
 
