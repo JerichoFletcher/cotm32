@@ -2,40 +2,32 @@
 
 #define BUF_MAX 64U
 
-static inline void newline(void) {
-    puts(" \n# _\b", 6);
-}
-
-static inline void backspace(void) {
-    puts(" \b\b_\b", 5);
-}
-
 __attribute__((noreturn))
 void user_entry(void) {
-    char* buf = malloc(sizeof(char) * BUF_MAX);
+    char* buf = (char*)malloc(sizeof(char) * BUF_MAX);
     size_t n_buf = 0;
 
     if (!buf) {
-        puts("Failed to allocate buffer!\n", 27);
+        puts("Failed to allocate buffer!");
         exit();
     }
 
-    puts("# _\b", 4);
+    putc('_'); putc('\b');
     for (;;) {
         char c = getc();
         if (c == '\n') {
-            puts(" \n", 2);
+            puts(" ");
+            buf[n_buf] = '\0';
             break;
         } else if (c == '\b') {
-            backspace();
+            putc(' '); putc('\b'); putc('\b'); putc('_'); putc('\b');
             n_buf--;
-        } else if (n_buf < BUF_MAX) {
-            putc(c);
-            puts("_\b", 2);
+        } else if (n_buf < BUF_MAX - 1) {
+            putc(c); putc('_'); putc('\b');
             buf[n_buf++] = c;
         }
     }
-    puts(buf, n_buf);
+    puts(buf);
 
     free(buf);
     exit();

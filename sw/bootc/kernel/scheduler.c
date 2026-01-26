@@ -99,14 +99,14 @@ bool_t add_task_to_schedule(task_id_t tid) {
 void start_schedule(task_id_t tid) {
     TaskState state;
     if (!get_task_state(tid, &state) || state != TaskState_READY) {
-        k_puts("Panic: invalid entrypoint task\n", 31);
+        k_puts("Panic: invalid entrypoint task");
         panic();
     }
     set_current_task(tid);
     set_task_running(tid);
 
     if (!remove_ready_task(&qready[TASK_SLOT(tid)])) {
-        k_puts("Panic: failed to remove task from queue\n", 40);
+        k_puts("Panic: failed to remove task from queue");
         panic();
     }
     enter_task(tid);
@@ -116,7 +116,7 @@ void schedule(void) {
     task_id_t tid_curr = current_task();
     TaskState state_curr;
     if (!get_task_state(tid_curr, &state_curr)) {
-        k_puts("Panic: invalid current task detected\n", 37);
+        k_puts("Panic: invalid current task detected");
         panic();
     }
 
@@ -129,7 +129,7 @@ void schedule(void) {
         destroy_task(tid_curr);
     } else if (state_curr == TaskState_READY) {
         if (!push_ready_task(&qready[TASK_SLOT(tid_curr)])) {
-            k_puts("Panic: Failed to push task into queue\n", 38);
+            k_puts("Panic: Failed to push task into queue");
             panic();
         }
     }
@@ -152,7 +152,7 @@ void schedule(void) {
 
             if (get_task_state(tid_next, &state_next) && state_next == TaskState_READY) {
                 if (!remove_ready_task(next)) {
-                    k_puts("Panic: failed to remove task from queue\n", 40);
+                    k_puts("Panic: failed to remove task from queue");
                     panic();
                 }
 
@@ -180,14 +180,14 @@ void schedule(void) {
             count++;
 
             if (count > MAX_TASKS) {
-                k_puts("Panic: any task in queue inspected more than once\n", 51);
+                k_puts("Panic: any task in queue inspected more than once");
                 panic();
             }
         }
-        k_puts("Panic: ran out of tasks\n", 24);
+        k_puts("Panic: ran out of tasks");
         panic();
     } else {
-        k_puts("Panic: invalid task queue state\n", 32);
+        k_puts("Panic: invalid task queue state");
         panic();
     }
 }
@@ -214,7 +214,7 @@ size_t wake_irq_tasks(Interrupt interr) {
         TaskState state;
         get_task_state(entr->task_id, &state);
         if (state != TaskState_BLOCKED_IRQ) {
-            k_puts("Panic: non-blocked task in block queue\n", 39);
+            k_puts("Panic: non-blocked task in block queue");
             panic();
         }
 
@@ -224,7 +224,7 @@ size_t wake_irq_tasks(Interrupt interr) {
 
             set_task_ready(entr->task_id);
             if (!push_ready_task(&qready[TASK_SLOT(entr->task_id)])) {
-                k_puts("Panic: failed to move blocked task into the ready queue\n", 56);
+                k_puts("Panic: failed to move blocked task into the ready queue");
                 panic();
             }
 

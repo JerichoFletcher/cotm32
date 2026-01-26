@@ -60,9 +60,11 @@ SyscallStatus k_getc(char* out_c) {
     return SyscallStatus_DONE;
 }
 
-SyscallStatus k_puts(const char* s, size_t len) {
-    for (size_t i = 0; i < len; i++) {
-        k_putc(s[i]);
+SyscallStatus k_puts(const char* s) {
+    for (size_t i = 0;;) {
+        char c = s[i] != '\0' ? s[i] : '\n';
+        while (k_putc(c) != SyscallStatus_DONE);
+        if (s[i++] == '\0') break;
     }
     return SyscallStatus_DONE;
 }

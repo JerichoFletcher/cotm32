@@ -66,7 +66,7 @@ void set_current_task(task_id_t tid) {
     if (task != NULL && task->state == TaskState_READY) {
         current_slot = TASK_SLOT(tid);
     } else {
-        k_puts("Panic: attempting to switch to a non-ready task\n", 48);
+        k_puts("Panic: attempting to switch to a non-ready task");
         panic();
     }
 }
@@ -86,7 +86,7 @@ task_id_t spawn_task(void (*entry)(void), PrivMode priv, size_t priority) {
 void enter_task(task_id_t tid) {
     Task* task = get_task_of_id(tid);
     if (task == NULL) {
-        k_puts("Panic: entering an invalid task\n", 32);
+        k_puts("Panic: entering an invalid task");
         panic();
     }
     enter_context(&task->ctx);

@@ -35,7 +35,7 @@ void dispatch_syscall(Context* ctx) {
             break;
         }
         case SyscallCode_PUTS: {
-            status = k_puts((char*)ctx->regs[10], ctx->regs[11]);
+            status = k_puts((char*)ctx->regs[10]);
             break;
         }
         default: status = SyscallStatus_DONE; break;

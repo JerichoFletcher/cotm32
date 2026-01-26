@@ -98,13 +98,13 @@ void* allocate_heap(size_t size) {
 
 void free_heap(void* ptr) {
     if (!is_valid_heap_ptr(ptr)) {
-        k_puts("Panic: invalid heap pointer\n", 28);
+        k_puts("Panic: invalid heap pointer");
         panic();
     }
 
     HeapBlock* block = ((HeapBlock*)ptr) - 1;
     if (!block->allocated) {
-        k_puts("Panic: double free\n", 19);
+        k_puts("Panic: double free");
         panic();
     }
     block->allocated = FALSE;

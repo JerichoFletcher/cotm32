@@ -17,12 +17,14 @@ typedef enum SyscallStatus {
 /// @brief Terminates the current task.
 /// @param ctx The context of the syscall.
 /// @return Always returns `DONE`.
-SyscallStatus k_exit(Context* ctx);
+SyscallStatus k_exit(Context* ctx)
+__attribute__((nonnull(1)));
 
 /// @brief Yields execution of the current task.
 /// @param ctx The context of the syscall.
 /// @return Always returns `DONE`.
-SyscallStatus k_yield(Context* ctx);
+SyscallStatus k_yield(Context* ctx)
+__attribute__((nonnull(1)));
 
 /// @brief Frees a heap-allocated memory.
 /// @param ptr The pointer to the memory.
@@ -46,8 +48,7 @@ SyscallStatus k_putc(char c);
 /// @return `DONE` if the read is successful, otherwise `BLOCK`.
 SyscallStatus k_getc(char* out_c);
 
-/// @brief Writes a string to the terminal.
+/// @brief Writes a null-terminated string to the terminal with a newline ending (`\n`).
 /// @param s A pointer to the first character in the buffer.
-/// @param len The length of the string.
 /// @return Always returns `DONE`.
-SyscallStatus k_puts(const char* s, size_t len);
+SyscallStatus k_puts(const char* s);

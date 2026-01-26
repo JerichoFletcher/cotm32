@@ -30,7 +30,7 @@ void kernel_main(void) {
         sp_to_mscratch();
         start_schedule(t_entry);
     } else {
-        k_puts("Panic: failed to create task\n", 29);
+        k_puts("Panic: failed to create task");
         panic();
     }
 }

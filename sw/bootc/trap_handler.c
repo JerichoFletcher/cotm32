@@ -40,13 +40,13 @@ void trap_handler(TrapFrame* frame) {
             case Exception_INST_ADDR_MISALIGNED:
             case Exception_LOAD_ADDR_MISALIGNED:
             case Exception_STORE_ADDR_MISALIGNED: {
-                k_puts("Panic: address misaligned", 25);
+                k_puts("Panic: address misaligned");
                 panic();
             }
             case Exception_INST_ACCESS_FAULT:
             case Exception_LOAD_ACCESS_FAULT:
             case Exception_STORE_ACCESS_FAULT: {
-                k_puts("Panic: access fault", 19);
+                k_puts("Panic: access fault");
                 panic();
             }
             case Exception_ECALL_U:

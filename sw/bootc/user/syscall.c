@@ -75,15 +75,14 @@ char getc(void) {
     return (char)a0;
 }
 
-void puts(const char* s, size_t len) {
+void puts(const char* s) {
     register size_t a0 asm("a0") = (size_t)s;
-    register size_t a1 asm("a1") = len;
     register size_t a7 asm("a7") = SyscallCode_PUTS;
 
     asm volatile(
         "ecall"
         :
-        : "r"(a0), "r"(a1), "r"(a7)
+        : "r"(a0), "r"(a7)
         : SYSCALL_CLOBBER_LIST
     );
 }
