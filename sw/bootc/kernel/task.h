@@ -104,13 +104,6 @@ bool_t task_exists(task_id_t tid);
 bool_t get_task_state(task_id_t tid, TaskState* out)
 __attribute__((access(write_only, 2)));
 
-/// @brief Gets the context of a task.
-/// @param tid The ID of the task.
-/// @param out The pointer to the context of the task.
-/// @return `TRUE` if the task exists.
-bool_t get_task_context(task_id_t tid, Context** out)
-__attribute__((access(write_only, 2)));
-
 /// @brief Gets the priority of a task.
 /// @param tid The ID of the task.
 /// @param out The priority of the task.
@@ -141,6 +134,11 @@ void set_task_blocked_irq(task_id_t tid);
 /// @param tid The ID of the task.
 /// @param time_slice The new time slice of the task.
 void set_task_time_slice(task_id_t tid, size_t time_slice);
+
+/// @brief Switches the context to the next scheduled task.
+/// @param ctx A pointer to the current task's active context.
+void switch_to_next_task(Context* ctx)
+__attribute__((access(read_write, 1)));
 
 /// @brief Marks the given task as "terminated".
 /// @brief The task will be cleared on the next scheduler tick.

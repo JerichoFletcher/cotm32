@@ -115,15 +115,6 @@ bool_t get_task_state(task_id_t tid, TaskState* out) {
     return FALSE;
 }
 
-bool_t get_task_context(task_id_t tid, Context** out) {
-    Task* task = get_task_of_id(tid);
-    if (task != NULL) {
-        *out = &task->ctx;
-        return TRUE;
-    }
-    return FALSE;
-}
-
 bool_t get_task_priority(task_id_t tid, size_t* out) {
     Task* task = get_task_of_id(tid);
     if (task != NULL) {
@@ -167,6 +158,21 @@ void set_task_time_slice(task_id_t tid, size_t time_slice) {
     Task* task = get_task_of_id(tid);
     if (task != NULL) {
         task->time_slice = time_slice;
+    }
+}
+
+void switch_to_next_task(Context* ctx) {
+    size_t prev_id = current_task();
+    Task* prev = get_task_of_id(prev_id);
+    if (prev != NULL && prev->state != TaskState_TERMINATED) {
+        copy_context(&prev->ctx, ctx);
+    }
+    schedule();
+
+    size_t next_id = current_task();
+    Task* next = get_task_of_id(next_id);
+    if (next != NULL && prev_id != next_id) {
+        copy_context(ctx, &next->ctx);
     }
 }
 

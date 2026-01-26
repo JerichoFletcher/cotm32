@@ -9,8 +9,10 @@
 typedef struct Context {
     /// @brief The values of general-purpose registers (GPRs).
     size_t regs[NUM_REGS];
+    
     /// @brief The value of `mstatus`.
     size_t mstatus;
+    
     /// @brief The value of the program counter.
     size_t pc;
 } Context;
