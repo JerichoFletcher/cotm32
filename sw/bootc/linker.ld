@@ -32,7 +32,7 @@ SECTIONS {
     *(COMMON)
   } > RAM
   __bss_end = .;
-  stackalloc_start = .;
+  _mem_start = .;
 
   _estack = ORIGIN(RAM) + LENGTH(RAM);
 }

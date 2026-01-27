@@ -1,7 +1,6 @@
 #include "kernel/kernel.h"
 #include "kernel/task.h"
 #include "kernel/scheduler.h"
-#include "kernel/stack.h"
 #include "trap/trap.h"
 #include "sys/ksys.h"
 #include "clint.h"
@@ -9,9 +8,10 @@
 #include "int.h"
 #include "panic.h"
 
-HeapDescriptor global_heap;
-
+extern char _mem_start;
 extern void user_entry(void);
+
+HeapDescriptor global_heap;
 
 void idle(void) {
     for (;;) {
@@ -25,7 +25,7 @@ HeapDescriptor* get_global_heap(void) {
 
 __attribute__((noreturn))
 void kernel_main(void) {
-    global_heap = init_heap(STACK_SPACE_END, 32768U);
+    global_heap = init_heap(&_mem_start, 32768U);
 
     task_id_t t_idle = spawn_task(idle, PrivMode_M, 0);
     task_id_t t_entry = spawn_task(user_entry, PrivMode_U, 50);

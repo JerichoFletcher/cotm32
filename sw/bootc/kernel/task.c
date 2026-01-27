@@ -1,7 +1,6 @@
 #include "kernel/kernel.h"
 #include "kernel/task.h"
 #include "kernel/scheduler.h"
-#include "kernel/stack.h"
 #include "csr.h"
 
 #include "sys/ksys.h"
@@ -37,17 +36,24 @@ Task* create_task(void (*entry)(void), PrivMode priv, size_t priority) {
     
     task->id = TASK_ID(slot, t_gen++);
     task->priority = priority;
-
-    StackDescriptor* s = alloc_stack();
-    if (!s) return NULL;
-
+    
+    // Allocate task-local memory
     HeapDescriptor* h_global = get_global_heap();
     if (!h_global) return NULL;
-    void* h = alloc_heap(h_global, HEAP_INIT_SIZE);
-    if (!h) return NULL;
+    
+    void* s = alloc_heap(h_global, STACK_INIT_SIZE);
+    if (!s) return NULL;
 
-    task->stack = s;
+    void* h = alloc_heap(h_global, HEAP_INIT_SIZE);
+    if (!h) {
+        free_heap(h_global, s);
+        return NULL;
+    }
+
+    task->stack.base = s;
+    task->stack.size = STACK_INIT_SIZE;
     task->heap = init_heap(h, HEAP_INIT_SIZE);
+
     task->priority = priority;
     task->time_slice = SCHED_QUANTUM_TICKS + priority * SCHED_PRIORITY_BONUS_TICKS;
     task->state = TaskState_READY;
@@ -55,7 +61,7 @@ Task* create_task(void (*entry)(void), PrivMode priv, size_t priority) {
     for (size_t i = 0; i < 32; i++) {
         task->ctx.regs[i] = 0;
     }
-    task->ctx.regs[2] = (size_t)s->base + s->size;
+    task->ctx.regs[2] = (size_t)s + STACK_INIT_SIZE;
     
     task->ctx.mstatus = bits_mpp(priv) | bits_mpie(TRUE);
     task->ctx.pc = (size_t)entry;
@@ -104,10 +110,10 @@ void destroy_task(task_id_t tid) {
     if (task != NULL && task->state != TaskState_NOT_CREATED) {
         HeapDescriptor* h_global = get_global_heap();
         if (!!h_global) {
+            free_heap(h_global, task->stack.base);
             free_heap(h_global, task->heap.head);
         }
 
-        free_stack(task->stack);
         task->state = TaskState_NOT_CREATED;
         n_task--;
     }

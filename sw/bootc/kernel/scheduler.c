@@ -1,6 +1,5 @@
 #include "kernel/scheduler.h"
 #include "kernel/task.h"
-#include "kernel/stack.h"
 #include "trap/trap.h"
 #include "csr.h"
 #include "context.h"

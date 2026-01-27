@@ -1,7 +1,6 @@
 #pragma once
 
 #include "context.h"
-#include "kernel/stack.h"
 #include "kernel/heap.h"
 #include "priv/enums.h"
 #include "trap/trap.h"
@@ -9,6 +8,15 @@
 
 /// @brief A task identifier.
 typedef int32_t task_id_t;
+
+/// @brief Descriptor for a stack space.
+typedef struct StackDescriptor {
+    /// @brief The lowest address in the stack space.
+    void* base;
+
+    /// @brief The size of the stack space, in bytes.
+    size_t size;
+} StackDescriptor;
 
 /// @brief Constructs a task ID from its slot index and generation number.
 #define TASK_ID(slot, gen)  (((gen) << 8) | (slot))
@@ -25,8 +33,10 @@ typedef int32_t task_id_t;
 /// @brief The maximum number of tasks the kernel can keep track of.
 #define MAX_TASKS 8U
 
+/// @brief The initial size of a task's stack space, in bytes.
+#define STACK_INIT_SIZE 1024U
 /// @brief The initial size of a task's heap space, in bytes.
-#define HEAP_INIT_SIZE 1024U
+#define HEAP_INIT_SIZE  1024U
 
 /// @brief The state of a task. Determines how the scheduler manages a task.
 typedef enum TaskState {
@@ -57,7 +67,7 @@ typedef struct Task {
     task_id_t id;
 
     /// @brief The descriptor for the stack allocated to this task.
-    StackDescriptor* stack;
+    StackDescriptor stack;
 
     /// @brief The descriptor for the heap allocated to this task.
     HeapDescriptor heap;

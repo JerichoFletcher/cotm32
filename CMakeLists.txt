@@ -27,7 +27,6 @@ set(BOOT_SRC
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/kernel.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/task.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/scheduler.c
-  ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/stack.c
   ${CMAKE_SOURCE_DIR}/sw/bootc/kernel/heap.c
   
   ${CMAKE_SOURCE_DIR}/sw/bootc/lib/cstr.c
