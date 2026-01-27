@@ -1,3 +1,4 @@
+#include "kernel/kernel.h"
 #include "kernel/task.h"
 #include "kernel/scheduler.h"
 #include "kernel/stack.h"
@@ -40,7 +41,13 @@ Task* create_task(void (*entry)(void), PrivMode priv, size_t priority) {
     StackDescriptor* s = alloc_stack();
     if (!s) return NULL;
 
+    HeapDescriptor* h_global = get_global_heap();
+    if (!h_global) return NULL;
+    void* h = alloc_heap(h_global, HEAP_INIT_SIZE);
+    if (!h) return NULL;
+
     task->stack = s;
+    task->heap = init_heap(h, HEAP_INIT_SIZE);
     task->priority = priority;
     task->time_slice = SCHED_QUANTUM_TICKS + priority * SCHED_PRIORITY_BONUS_TICKS;
     task->state = TaskState_READY;
@@ -95,15 +102,28 @@ void enter_task(task_id_t tid) {
 void destroy_task(task_id_t tid) {
     Task* task = get_task_of_id(tid);
     if (task != NULL && task->state != TaskState_NOT_CREATED) {
+        HeapDescriptor* h_global = get_global_heap();
+        if (!!h_global) {
+            free_heap(h_global, task->heap.head);
+        }
+
         free_stack(task->stack);
         task->state = TaskState_NOT_CREATED;
         n_task--;
     }
-    /// TODO: Add a way to keep track of and free owned heap
 }
 
 bool_t task_exists(task_id_t tid) {
     return get_task_of_id(tid) != NULL;
+}
+
+bool_t get_task_heap(task_id_t tid, HeapDescriptor** out) {
+    Task* task = get_task_of_id(tid);
+    if (task != NULL) {
+        *out = &task->heap;
+        return TRUE;
+    }
+    return FALSE;
 }
 
 bool_t get_task_state(task_id_t tid, TaskState* out) {

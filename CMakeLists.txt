@@ -9,7 +9,7 @@ find_package(SDL2 REQUIRED)
 find_package(VERILATOR REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 
-find_program(RISCV_GCC      riscv64-unknown-elf-gcc REQUIRED)
+find_program(RISCV_GCC riscv64-unknown-elf-gcc REQUIRED)
 
 # Bootloader
 set(BOOT_SRC

@@ -22,12 +22,20 @@ SyscallStatus k_yield(Context* ctx) {
 }
 
 SyscallStatus k_free(void* ptr) {
-    if (is_valid_heap_ptr(ptr)) free_heap(ptr);
+    HeapDescriptor* heap;
+    if (get_task_heap(current_task(), &heap) && is_valid_heap_ptr(heap, ptr)) {
+        free_heap(heap, ptr);
+    }
     return SyscallStatus_DONE;
 }
 
 SyscallStatus k_malloc(size_t size, void** out_ptr) {
-    *out_ptr = allocate_heap(size);
+    HeapDescriptor* heap;
+    if (get_task_heap(current_task(), &heap)) {
+        *out_ptr = alloc_heap(heap, size);
+    } else {
+        *out_ptr = NULL;
+    }
     return SyscallStatus_DONE;
 }
 

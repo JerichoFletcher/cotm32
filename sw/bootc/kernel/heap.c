@@ -13,12 +13,6 @@ typedef struct HeapBlock {
     struct HeapBlock* next;
 } HeapBlock;
 
-HeapBlock* mem_head;
-void* mem_max;
-
-size_t max_size = 0;
-size_t total_allocated = 0;
-
 bool_t split_block(HeapBlock* block, size_t mem_size) {
     if (block->size < sizeof(HeapBlock) + mem_size + HEAP_MIN_ALLOC) return FALSE;
 
@@ -63,32 +57,37 @@ void merge_empty_blocks_adjacent(HeapBlock* block) {
     }
 }
 
-void init_heap(void* base_addr, size_t size) {
-    mem_head = (HeapBlock*)ALIGN_UP((size_t)base_addr, HEAP_ALIGN);
-    mem_max = (void*)ALIGN_UP((size_t)base_addr + size, HEAP_ALIGN);
-    max_size = (size_t)mem_max - (size_t)mem_head;
+HeapDescriptor init_heap(void* base_addr, size_t size) {
+    HeapDescriptor heap;
+    heap.head = (void*)ALIGN_UP((size_t)base_addr, HEAP_ALIGN);
+    heap.max = (void*)ALIGN_UP((size_t)base_addr + size, HEAP_ALIGN);
+    heap.size = (size_t)heap.max - (size_t)heap.head;
+    heap.total_allocated = 0;
 
-    mem_head->size = max_size - sizeof(HeapBlock);
-    mem_head->allocated = FALSE;
-    mem_head->prev = NULL;
-    mem_head->next = NULL;
+    HeapBlock* head = heap.head;
+    head->size = heap.size - sizeof(HeapBlock);
+    head->allocated = FALSE;
+    head->prev = NULL;
+    head->next = NULL;
+
+    return heap;
 }
 
-bool_t is_valid_heap_ptr(void* ptr) {
+bool_t is_valid_heap_ptr(HeapDescriptor* heap, void* ptr) {
     return ptr != NULL &&
         (size_t)ptr % HEAP_ALIGN == 0 &&
-        (size_t)(mem_head + 1) <= (size_t)ptr &&
-        (size_t)ptr <= (size_t)mem_max - sizeof(HeapBlock);
+        (size_t)(heap->head + 1) <= (size_t)ptr &&
+        (size_t)ptr <= (size_t)heap->max - sizeof(HeapBlock);
 }
 
-void* allocate_heap(size_t size) {
-    if (total_allocated + sizeof(HeapBlock) + size > max_size) return NULL;
+void* alloc_heap(HeapDescriptor* heap, size_t size) {
+    if (heap->total_allocated + sizeof(HeapBlock) + size > heap->size) return NULL;
     
-    HeapBlock* curr = mem_head;
+    HeapBlock* curr = heap->head;
     while (curr != NULL) {
         if (!curr->allocated && split_block(curr, ALIGN_UP(size, HEAP_ALIGN))) {
             curr->allocated = TRUE;
-            total_allocated += sizeof(HeapBlock) + ALIGN_UP(size, HEAP_ALIGN);
+            heap->total_allocated += sizeof(HeapBlock) + ALIGN_UP(size, HEAP_ALIGN);
             return (void*)(curr + 1);
         }
         curr = curr->next;
@@ -96,8 +95,8 @@ void* allocate_heap(size_t size) {
     return NULL;
 }
 
-void free_heap(void* ptr) {
-    if (!is_valid_heap_ptr(ptr)) {
+void free_heap(HeapDescriptor* heap, void* ptr) {
+    if (!is_valid_heap_ptr(heap, ptr)) {
         k_puts("Panic: invalid heap pointer");
         panic();
     }
@@ -108,6 +107,6 @@ void free_heap(void* ptr) {
         panic();
     }
     block->allocated = FALSE;
-    total_allocated -= sizeof(HeapBlock) + ALIGN_UP(block->size, HEAP_ALIGN);
+    heap->total_allocated -= sizeof(HeapBlock) + ALIGN_UP(block->size, HEAP_ALIGN);
     merge_empty_blocks_adjacent(block);
 }

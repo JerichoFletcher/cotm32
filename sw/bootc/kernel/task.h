@@ -2,6 +2,7 @@
 
 #include "context.h"
 #include "kernel/stack.h"
+#include "kernel/heap.h"
 #include "priv/enums.h"
 #include "trap/trap.h"
 #include "bool.h"
@@ -23,6 +24,9 @@ typedef int32_t task_id_t;
 
 /// @brief The maximum number of tasks the kernel can keep track of.
 #define MAX_TASKS 8U
+
+/// @brief The initial size of a task's heap space, in bytes.
+#define HEAP_INIT_SIZE 1024U
 
 /// @brief The state of a task. Determines how the scheduler manages a task.
 typedef enum TaskState {
@@ -54,6 +58,9 @@ typedef struct Task {
 
     /// @brief The descriptor for the stack allocated to this task.
     StackDescriptor* stack;
+
+    /// @brief The descriptor for the heap allocated to this task.
+    HeapDescriptor heap;
 
     /// @brief The priority of the task.
     /// @brief Higher-priority tasks are executed before lower-priority ones.
@@ -96,6 +103,13 @@ void destroy_task(task_id_t tid);
 /// @param tid The ID of the task.
 /// @return `TRUE` if the task exists.
 bool_t task_exists(task_id_t tid);
+
+/// @brief Gets the heap descriptor of a task.
+/// @param tid The ID of the task.
+/// @param out The heap descriptor of the task.
+/// @return `TRUE` if the task exists.
+bool_t get_task_heap(task_id_t tid, HeapDescriptor** out)
+__attribute__((access(write_only, 2)));
 
 /// @brief Gets the state of a task.
 /// @param tid The ID of the task.
